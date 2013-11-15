@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="4."?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="edu.uah.itsc.cmac.ui.Perspective"
+            icon="icons/cmac-16x16.png"
+            id="edu.uah.itsc.cmac.perspective"
+            name="CMACWB">
+      </perspective>
+   </extension>
+<extension
+      point="org.eclipse.ui.views">
+      <category 
+      	id="edu.uah.itsc.glider.navigator.category"
+      	name="Community Navigator" />   
+      <view
+            allowMultiple="false"
+            name="Experiments"
+            class="edu.uah.itsc.cmac.ui.NavigatorView"
+            id="edu.uah.itsc.cmac.NavigatorView">
+      </view>
+</extension>
+<extension point="org.eclipse.ui.navigator.viewer">
+   <viewerContentBinding 
+        viewerId="edu.uah.itsc.cmac.NavigatorView">
+      <includes>
+   	     <contentExtension pattern="org.eclipse.ui.navigator.resourceContent" />  	
+   	     <contentExtension pattern="org.eclipse.ui.navigator.resources.filters.*"/>
+   	     <contentExtension pattern="edu.uah.itsc.cmac.filters.*"/>      	      
+      </includes>
+   </viewerContentBinding>
+   <viewerActionBinding viewerId="edu.uah.itsc.cmac.NavigatorView">
+         <includes>
+             <actionExtension pattern="org.eclipse.ui.navigator.resources.*" />
+         </includes>
+   </viewerActionBinding>
+</extension>
+   <extension point="org.eclipse.ui.menus">
+  <menuContribution 
+        locationURI="popup:org.python.pydev.editor.PythonEditor.EditorContext">
+    <dynamic
+        class="org.eclipse.ecf.docshare.menu.DocShareRosterMenuContributionItem"
+        id="edu.uah.itsc.cmac.shreedhan.pythonEditorMenuContribution">
+    </dynamic>
+  </menuContribution>
+</extension>
+<extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+         <command
+               commandId="my id"
+               label="my command label"
+               style="push">
+          <visibleWhen>
+           <with variable="activeMenuSelection">
+            <iterate
+                 ifEmpty="false">
+             <adapt type="org.eclipse.core.resources.IResource">
+               <test property="org.eclipse.core.resources.name" value="*.txt" />
+             </adapt>
+            </iterate>
+           </with>
+         </visibleWhen>
+       </command>
+      </menuContribution>
+</extension>
+<extension point="org.eclipse.ui.navigator.viewer">
+   <viewer  viewerId="edu.uah.itsc.cmac.NavigatorView">
+   	<popupMenu allowsPlatformContributions="true"
+   				id="edu.uah.itsc.cmac.PopupMenu">
+        <insertionPoint name="group.new"/>	
+   		<insertionPoint name="group.port"/>	
+   		<insertionPoint name="group.edit"/>
+   		<insertionPoint name="group.build"/>
+   		<insertionPoint name="group.reorganize"/>
+   		<insertionPoint name="group.properties"/> 
+   		
+   		
+   	</popupMenu>			
+   </viewer>
+</extension>
+<extension
+      point="org.eclipse.ui.commands">
+   <command
+         id="edu.uah.itsc.cmac.viewMetadata"
+         name="View Metadata">
+   </command>
+</extension>   
+<extension
+      point="org.eclipse.ui.commands">
+   <command
+         id="edu.uah.itsc.cmac.downloadFile"
+         name="download">
+   </command>
+</extension>  
+<extension
+      point="org.eclipse.ui.commands">
+   <command
+         id="edu.uah.itsc.cmac.viewText"
+         name="View Text">
+   </command>
+</extension>   
+
+<extension point="org.eclipse.ui.decorators">
+<decorator
+    id="edu.uah.itsc.cmac.ui.ProjectDecorator"
+    label="Project Decorator"
+    state="true"
+    class= "edu.uah.itsc.cmac.ui.decorators.ProjectDecorator"
+  objectClass="org.eclipse.core.resources.IProject"
+    adaptable="true">
+    <description>
+       pProject Decorator
+    </description>
+  </decorator>
+</extension>
+
+<extension point="org.eclipse.ui.decorators">
+<decorator
+    id="edu.uah.itsc.cmac.ui.FolderDecorator"
+    label="Folder Decorator"
+    state="true"
+    class= "edu.uah.itsc.cmac.ui.decorators.FolderDecorator"
+  objectClass="org.eclipse.core.resources.IFolder"
+    adaptable="true">
+    <description>
+       Folder Decorator
+    </description>
+  </decorator>
+</extension>
+
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Execute the workflow in cloud"
+        id="edu.uah.itsc.cmac.Execute"
+        name="Execute Workflow"
+        >
+  </command>
+</extension>
+
+<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.ExecuteCommandHandler"
+        commandId="edu.uah.itsc.cmac.Execute">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="execute">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+</extension>
+
+<extension point="org.eclipse.ui.menus">
+  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+     <command
+           commandId="edu.uah.itsc.cmac.Execute"
+           style="push"
+           icon="icons/execute-16x16.png">
+        <visibleWhen>
+            <with variable="activeMenuSelection">
+               <iterate>
+                  <instanceof
+                     value="org.eclipse.core.resources.IFile">
+                  </instanceof>
+               </iterate>
+           </with>
+        </visibleWhen>
+     </command>
+  </menuContribution>
+</extension>
+
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Upload the resource to cloud"
+        id="edu.uah.itsc.cmac.Upload"
+        name="Upload">
+  </command>
+</extension>
+
+<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.UploadCommandHandler"
+        commandId="edu.uah.itsc.cmac.Upload">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="upload">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+</extension>
+
+<extension point="org.eclipse.ui.menus">
+  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+     <command
+           commandId="edu.uah.itsc.cmac.Upload"
+           style="push"
+           icon="icons/upload-16x16.png">
+        <visibleWhen>
+            <with variable="activeMenuSelection">
+               <iterate>
+                  <instanceof
+                     value="org.eclipse.core.resources.IResource">
+                  </instanceof>
+               </iterate>
+           </with>
+        </visibleWhen>
+     </command>
+  </menuContribution>
+</extension>
+
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Share resource"
+        id="edu.uah.itsc.cmac.Share"
+        name="Share">
+  </command>
+</extension>
+
+<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.ShareCommandHandler"
+        commandId="edu.uah.itsc.cmac.Share">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="share">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+</extension>
+
+<extension point="org.eclipse.ui.menus">
+  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+     <command
+           commandId="edu.uah.itsc.cmac.Share"
+           style="push"
+           icon="icons/share-16x16.png">
+        <visibleWhen>
+            <with variable="activeMenuSelection">
+               <iterate>
+                  <instanceof
+                     value="org.eclipse.core.resources.IFolder">
+                  </instanceof>
+               </iterate>
+           </with>
+        </visibleWhen>
+     </command>
+  </menuContribution>
+</extension>
+
+<!-- Shreedhan Added importworkflow command-->
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Import workflow"
+        id="edu.uah.itsc.cmac.ImportWorkflow"
+        name="Import Workflow">
+  </command>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan Added import workflow handler -->
+<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.ImportWorkflowHandler"
+        commandId="edu.uah.itsc.cmac.ImportWorkflow">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="import">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan Add import workflow in the menu -->
+<extension point="org.eclipse.ui.menus">
+  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+     <command
+           commandId="edu.uah.itsc.cmac.ImportWorkflow"
+           style="push"
+           icon="icons/import.png">
+        <visibleWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="import">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+  </menuContribution>
+</extension>
+<!-- Shreedhan Add import workflow in the menu -->
+
+<!-- Shreedhan Added Delete command-->
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Delete from cloud"
+        id="edu.uah.itsc.cmac.Delete"
+        name="Delete from cloud">
+  </command>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan Added Delete handler -->
+<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.DeleteCommandHandler"
+        commandId="edu.uah.itsc.cmac.Delete">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="delete">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan Add Delete in the menu -->
+<extension point="org.eclipse.ui.menus">
+  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+     <command
+           commandId="edu.uah.itsc.cmac.Delete"
+           style="push"
+           icon="icons/delete.png">
+        <visibleWhen>
+            <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="delete">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+  </menuContribution>
+</extension>
+<!-- Shreedhan Add Delete in the menu -->
+
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Refresh the resources"
+        id="edu.uah.itsc.cmac.Refresh"
+        name="Refresh">
+  </command>
+</extension>
+
+<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.RefreshCommandHandler"
+        commandId="edu.uah.itsc.cmac.Refresh">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="refresh">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+</extension>
+
+<extension point="org.eclipse.ui.menus">
+  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+     <command
+           commandId="edu.uah.itsc.cmac.Refresh"
+           style="push"
+           icon="icons/refresh-16x16.png">
+        <visibleWhen>
+            <with variable="activeMenuSelection">
+               <iterate>
+                  <instanceof
+                     value="org.eclipse.core.resources.IProject">
+                  </instanceof>
+               </iterate>
+           </with>
+        </visibleWhen>
+     </command>
+  </menuContribution>
+</extension>
+
+<extension point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="edu.uah.itsc.cmac.actions.CMACArtifactPropertyTester"
+            id="my.proptester.id"
+            namespace="my.property.namespace"
+            properties="type"
+            type="org.eclipse.core.resources.IResource">
+      </propertyTester>
+</extension>
+<extension
+      point="org.eclipse.ui.perspectiveExtensions">
+   <perspectiveExtension
+         targetID="edu.uah.itsc.cmac.perspective">
+      <view
+            id="edu.uah.itsc.cmac.searchview.views.SearchView"
+            minimized="false"
+            ratio="0.125f"
+            relationship="top"
+            relative="edu.uah.itsc.cmac.NavigatorView"
+            visible="true">
+      </view>
+      <view
+            id="edu.uah.itsc.cmac.searchview.views.SearchResultView"
+            minimized="false"
+            ratio="0.95f"
+            relationship="stack"
+            relative="org.eclipse.ui.editorss"
+            visible="false">
+      </view>
+      <view
+            id="edu.uah.itsc.programformview.views.ProgramFormView"
+            minimized="false"
+            ratio="0.95f"
+            relationship="stack"
+            relative="org.eclipse.ui.editorss"
+            visible="false">
+      </view>
+      <view
+            id="edu.uah.itsc.cmac.experimentformview.views.ExperimentFormView"
+            minimized="false"
+            ratio="0.95f"
+            relationship="stack"
+            relative="org.eclipse.ui.editorss"
+            visible="false">
+      </view>
+   </perspectiveExtension>
+</extension>
+
+
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewerActionBinding
+            viewerId="edu.uah.itsc.cmac.NavigatorView">
+         <includes>
+            <actionExtension
+                  pattern="edu.uah.itsc.cmac.ui.EditActionExtension">
+            </actionExtension>
+         </includes>
+      </viewerActionBinding>    
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <actionProvider
+            class="edu.uah.itsc.cmac.ui.CMACEditActionProvider"
+            id="edu.uah.itsc.cmac.ui.EditActionExtension"
+            overrides="org.eclipse.ui.navigator.resources.actions.EditActions"
+            priority="highest">
+         <enablement>
+         <!-- A hack to allways be enabled -->
+         <not>
+            <systemTest
+                  property="MyApp"
+                  value="WONT-EVER-BE-SET">
+            </systemTest>
+         </not>
+         </enablement>
+     </actionProvider>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewerActionBinding
+            viewerId="edu.uah.itsc.cmac.NavigatorView">
+         <includes>
+            <actionExtension
+                  pattern="edu.uah.itsc.cmac.ui.NewActionExtension">
+            </actionExtension>
+         </includes>
+      </viewerActionBinding>    
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <actionProvider
+            class="edu.uah.itsc.cmac.ui.CMACNewActionProvider"
+            id="edu.uah.itsc.cmac.ui.NewActionExtension"
+            overrides="org.eclipse.ui.navigator.resources.actions.NewActions"
+            priority="highest">
+         <enablement>
+         
+         <not>
+            <systemTest
+                  property="MyApp"
+                  value="WONT-EVER-BE-SET">
+            </systemTest>
+         </not>
+         </enablement>
+     </actionProvider>
+   </extension>
+   
+      <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewerActionBinding
+            viewerId="edu.uah.itsc.cmac.NavigatorView">
+         <includes>
+            <actionExtension
+                  pattern="edu.uah.itsc.cmac.ui.GoIntoActionExtension">
+            </actionExtension>
+         </includes>
+      </viewerActionBinding>    
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <actionProvider
+            class="edu.uah.itsc.cmac.ui.CMACGoIntoActionProvider"
+            id="edu.uah.itsc.cmac.ui.GoIntoActionExtension"
+            overrides="org.eclipse.ui.navigator.resources.actions.GoIntoActions"
+            priority="highest">
+         <enablement>
+         <!-- A hack to allways be enabled -->
+         <not>
+            <systemTest
+                  property="MyApp"
+                  value="WONT-EVER-BE-SET">
+            </systemTest>
+         </not>
+         </enablement>
+     </actionProvider>
+   </extension>
+   
+</plugin>

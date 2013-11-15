@@ -1,0 +1,405 @@
+/*
+ * This Class handles the Amazon S3 functionalities
+ * */
+package edu.uah.itsc.aws;
+/*
+This document is a part of the source code and related artifacts for CMAC Project funded by NASA 
+Copyright © 2013, University of Alabama in Huntsville
+You may not use this file except in compliance with University of Alabama in Huntsville License.
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and
+limitations under the license.
+Date: Jul 26, 2013
+Filename: S3.java
+Author: 
+ */
+
+import java.io.BufferedInputStream;
+
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+
+public class S3 {
+	private String prefix = "";
+	private AmazonS3 amazonS3Service;
+	public static String delimiter = "/";
+	public static String communityBucketName = "cmac-community";
+	public static String bucketName = "scattering";
+	private String awsAdminAccessKey = "AKIAIKX2MDKF6M6GXD7Q";	
+	private String awsAdminSecretKey = "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";
+	private String awsAccessKey = "";//"AKIAIKX2MDKF6M6GXD7Q";	
+	private String awsSecretKey = "";//"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";	
+	//private String bucketName;
+	
+	//private String rootFolder;
+
+	//public S3(String aKey,String sKey,String rFolder){
+	public S3(String aKey,String sKey){
+		awsAccessKey = aKey;
+		awsSecretKey = sKey;
+		//rootFolder = rFolder;
+		bucketName = "scattering";
+		communityBucketName = "cmac-community";
+		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
+		amazonS3Service = new AmazonS3Client(credentials);
+	}
+	
+	public S3(){
+		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAdminAccessKey, awsAdminSecretKey);
+		amazonS3Service = new AmazonS3Client(credentials);		
+		bucketName = "scattering";
+		communityBucketName = "cmac-community";
+	}
+
+	public String getAccessKey(){
+		return awsAccessKey;
+	}
+
+	public String getSecretKey(){
+		return awsSecretKey;
+	}
+
+	public AmazonS3 getService(){
+		return amazonS3Service;
+	}
+
+	public String getDelimiter(){
+		return delimiter;
+	}
+
+	public String getBucketName(){
+		return bucketName;
+	}
+
+
+	public String getCommunityBucketName(){
+		return communityBucketName;
+	}
+	//	public String getRootFolder(){
+	//		return rootFolder;
+	//	}
+	//change
+	//	public void downloadFile(String bucketName,String s3fileName,String localfileName){
+	//		try{	
+	//		S3Object object = s3Service.getObject(bucketName, s3fileName);	
+	//		InputStream reader = new BufferedInputStream(
+	//				   object.getDataInputStream());
+	//				File file = new File(localfileName);      
+	//				OutputStream writer = new BufferedOutputStream(new FileOutputStream(file));
+	//	
+	//				int read = -1;
+	//	
+	//				while ( ( read = reader.read() ) != -1 ) {
+	//				    writer.write(read);
+	//				}
+	//	
+	//				writer.flush();
+	//				writer.close();
+	//				reader.close();
+	//		}
+	//		catch (ServiceException se){
+	//			System.out.println("ServiceException: "+se.toString());
+	//		}
+	//		catch (IOException ioe){
+	//			System.out.println("IOException: "+ioe.toString());
+	//		}
+	//	}
+
+
+	public void downloadFile(String bucketName,String s3fileName,String localfileName){
+		try{	
+			System.out.println("S3 downloadFile "+bucketName+"  "+s3fileName);	
+			com.amazonaws.services.s3.model.S3Object object = amazonS3Service.getObject(bucketName, s3fileName);	
+			InputStream reader = new BufferedInputStream(object.getObjectContent());
+			File file = new File(localfileName);
+
+
+			OutputStream writer = new BufferedOutputStream(new FileOutputStream(file));
+
+			int read = -1;
+
+			while ( ( read = reader.read() ) != -1 ) {
+				writer.write(read);
+			}
+
+			writer.flush();
+			writer.close();
+			reader.close();
+		}
+
+		catch (IOException ioe){
+			System.out.println("IOException: in method S3.downloadFile "+ioe.toString());
+		}
+	}
+
+	public void downloadFolder(String bucketName,String folderName){
+		ObjectListing filteredObjects = amazonS3Service.listObjects(bucketName, folderName);
+		
+		System.out.println("downloadFolder ---------> "+bucketName+" "+folderName);
+
+		for (S3ObjectSummary objectSummary : filteredObjects.getObjectSummaries()) {
+			String currentResource = objectSummary.getKey();
+			System.out.println("folderName="+folderName);
+			System.out.println("downloadFolder currentResource="+currentResource);
+			if ((currentResource.indexOf("_$folder$") > 0) && !folderName.equals(currentResource.substring(0, currentResource.indexOf("_$folder$"))) ){
+				String prefix = currentResource.substring(0, currentResource.indexOf("_$folder$"))+File.separator;
+				System.out.println("Downloading folder "+prefix);
+				downloadFolder(bucketName,prefix);
+			}
+			else if ((currentResource.indexOf("_$folder$") > 0) && folderName.equals(currentResource.substring(0, currentResource.indexOf("_$folder$"))) ){
+
+			}
+			else{
+				IFile f;
+				String fullFilePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()+java.io.File.separator+bucketName+java.io.File.separator+ currentResource;
+				System.out.println("Downloading file "+currentResource);
+				downloadFile(bucketName, currentResource, fullFilePath);
+
+			}
+
+		}
+	}
+
+
+	public boolean userFolderExists(String name,String bName){
+		boolean found = false;
+		ObjectListing filteredObjects = amazonS3Service.listObjects(bName, name);
+
+		for (S3ObjectSummary objectSummary : filteredObjects.getObjectSummaries()) {
+			String currentResource = objectSummary.getKey();
+			System.out.println("userFolderExists folderName="+name);
+			if (currentResource.equals(name) || name.equals(currentResource+"_$folder")){
+				found = true;
+				break;
+			}
+		}
+		return found;
+		
+	}
+	
+	public void uploadUserFolder(String name,String bName){
+	
+		amazonS3Service.putObject(bName, name+"_$folder$", new ByteArrayInputStream(new byte[0]), null);
+		
+	}
+	
+	public void uploadFolderName(IFolder folder){
+		String path = folder.getFullPath().toOSString();
+		System.out.println("uploadFolderName path="+path);
+
+		int startPosition = 1;  
+		int endPosition = path.indexOf(File.separator, startPosition);  
+		String bucketName = path.substring(startPosition, endPosition);
+		System.out.println("uploadFolderName bucketName="+bucketName);
+		String projectAndBucket = bucketName+File.separator;
+
+		startPosition = path.indexOf(projectAndBucket) + projectAndBucket.length();  
+		endPosition = path.length();//path.indexOf(File.separator, startPosition);  
+		String folderKey = path.substring(startPosition, endPosition)+ "_$folder$";
+		System.out.println("folderKey="+folderKey);
+		folderKey = folderKey.replaceAll("\\\\", "/");
+		try{
+		
+		amazonS3Service.putObject(bucketName, folderKey, new ByteArrayInputStream(new byte[0]), null);
+		}
+		catch (AmazonServiceException ae) {
+			// TODO: handle exception
+			System.out.println(User.awsAccessKey+"  "+User.awsSecretKey);
+			System.out.println("Error while uploading foldername "+ae.toString());
+		}
+	}
+
+	public void uploadFolder(IFolder folder){
+		try{
+			uploadFolderName(folder);
+			
+			System.out.println("Folder name uploaded!");
+			
+			IResource[] resources =	folder.members();
+
+			for (int i=0;i<resources.length; i++){
+				if (resources[i]  instanceof IFile) {
+					IFile file = (IFile)resources[i];
+					URI uri = file.getLocationURI();
+
+					// what if file is a link, resolve it.
+					if(file.isLinked()){
+						uri = file.getRawLocationURI();
+					}
+
+					// Gets native File using EFS
+					File f = EFS.getStore(uri).toLocalFile(0, new NullProgressMonitor());	
+					uploadFile(f);
+					System.out.println("File uploaded! "+file.getName());
+				}
+				else if (resources[i]  instanceof IFolder){
+					System.out.println("else folder="+((IFolder)resources[i]).getName());	
+					uploadFolder((IFolder)resources[i]);
+				}
+			}
+			System.out.println("Folders uploaded!");	
+		}
+		catch (CoreException ce){
+			ce.printStackTrace();
+		}	
+	}
+
+	public void uploadFile(File file){
+		System.out.println("Selected file getAbsolutePath:"+file.getAbsolutePath());
+		String project = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()+File.separator;
+		int startPosition = file.getAbsolutePath().indexOf(project) + project.length();  
+		int endPosition = file.getAbsolutePath().indexOf(File.separator, startPosition);
+		System.out.println("startPosition:endPosition"+startPosition+":"+endPosition);
+		String bucketName = file.getAbsolutePath().substring(startPosition, endPosition);  
+		project = project+bucketName+File.separator;
+		startPosition = file.getAbsolutePath().indexOf(project) + project.length();  
+		endPosition = file.getAbsolutePath().length();
+		String key = file.getAbsolutePath().substring(startPosition, endPosition);
+
+		System.out.println("project: "+project);
+		System.out.println("bucketName: "+bucketName);
+		System.out.println("Key: "+key);
+		key = key.replaceAll("\\\\", "/");  //if the OS is windows the folder slash needs to be /
+		amazonS3Service.putObject(bucketName, key, file);
+	}
+
+	public void shareFolderName(IFolder folder){
+		String path = folder.getFullPath().toOSString();
+		System.out.println("shareFolderName path="+path);
+
+		int startPosition = 1;  
+		int endPosition = path.indexOf(File.separator, startPosition);  
+		String bucketName = path.substring(startPosition, endPosition); 
+
+		String projectAndBucket = bucketName+File.separator;
+
+		startPosition = path.indexOf(projectAndBucket) + projectAndBucket.length();  
+		endPosition = path.length();//path.indexOf(File.separator, startPosition);  
+		String folderKey = path.substring(startPosition, endPosition)+ "_$folder$";
+		folderKey = folderKey.replaceAll("\\\\", "/");
+		System.out.println("shareFolderName folderKey="+folderKey);
+
+
+		CopyObjectRequest copyObjRequest = new CopyObjectRequest(
+				bucketName, folderKey, communityBucketName, folderKey);
+		
+		//copyObjRequest.setCannedAccessControlList(CannedAccessControlList.PublicRead);
+		try{
+			amazonS3Service.copyObject(copyObjRequest);
+			System.out.println("----------------------shareFolderName folderKey="+folderKey);    
+		}
+		catch (AmazonClientException ace){
+			System.out.println("shareFolderName: AmazonClientException "+ace.toString());
+		}
+		//amazonS3Service.putObject(bucketName, folderKey, new ByteArrayInputStream(new byte[0]), null);
+	}	
+
+
+
+	public String getS3ResourceName(String localFileName){
+		String bn = localFileName.substring(localFileName.indexOf(java.io.File.separator,1)+1,localFileName.length());
+		bn = bn.replace('\\', '/');
+		return bn;
+	}
+
+	public String getBucketName(String localFileName){
+
+		String bn = localFileName.substring(1, localFileName.indexOf(java.io.File.separator,1));
+		return bn;
+	}
+	public String getLocalResourceName(String localFileName){
+		return ResourcesPlugin.getWorkspace().getRoot().getLocation().toString()+localFileName;
+	}	
+
+
+	public void shareFile(File file){
+		System.out.println("Selected file getAbsolutePath:"+file.getAbsolutePath());
+		String project = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()+File.separator;
+		int startPosition = file.getAbsolutePath().indexOf(project) + project.length();  
+		int endPosition = file.getAbsolutePath().indexOf(File.separator, startPosition);  
+		String bucketName = file.getAbsolutePath().substring(startPosition, endPosition);
+		System.out.println("Source Bucket Name:"+bucketName);
+		project = project+bucketName+File.separator;
+		startPosition = file.getAbsolutePath().indexOf(project) + project.length();  
+		endPosition = file.getAbsolutePath().length();
+		String key = file.getAbsolutePath().substring(startPosition, endPosition);  		
+
+		key = key.replace('\\', '/');
+		System.out.println("Key:"+key);
+		CopyObjectRequest copyObjRequest = new CopyObjectRequest(
+				bucketName, key, communityBucketName, key);
+
+		//copyObjRequest.setCannedAccessControlList(CannedAccessControlList.PublicRead);
+
+		try{
+			amazonS3Service.copyObject(copyObjRequest);
+		}
+		catch (AmazonClientException ace){
+			System.out.println("shareFile: AmazonClientException "+ace.toString());
+		}
+		//amazonS3Service.setObjectAcl(communityBucketName, key, CannedAccessControlList.PublicRead);		
+	}
+
+	public void shareFolder(IFolder folder){
+		
+		System.out.println("Share Folder-----------------------> "+folder.getName());
+		shareFolderName(folder);
+		try{
+			IResource[] resources =	folder.members();
+
+			for (int i=0;i<resources.length; i++){
+				if (resources[i]  instanceof IFile) {
+					IFile file = (IFile)resources[i];
+					URI uri = file.getLocationURI();
+
+					// what if file is a link, resolve it.
+					if(file.isLinked()){
+						uri = file.getRawLocationURI();
+					}
+
+					// Gets native File using EFS
+					File f = EFS.getStore(uri).toLocalFile(0, new NullProgressMonitor());	
+					shareFile(f);
+				}
+				else if (resources[i]  instanceof IFolder){
+					System.out.println("else folder="+((IFolder)resources[i]).getName());	
+					shareFolder((IFolder)resources[i]);
+				}
+
+			}
+		}
+		catch (CoreException ce){
+			ce.printStackTrace();
+		}	
+	}
+
+	/**
+	 * @return the amazonS3Service
+	 */
+	public AmazonS3 getAmazonS3Service() {
+		return amazonS3Service;
+	}
+}
