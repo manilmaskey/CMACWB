@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Searchview
+Bundle-SymbolicName: edu.uah.itsc.cmac.searchview;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: edu.uah.itsc.cmac.searchview.Activator
+Bundle-Vendor: UAH ITSC
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.json.simple;bundle-version="1.0.0",
+ edu.uah.itsc.cmac3;bundle-version="1.0.0",
+ org.eclipse.ui.navigator;bundle-version="3.5.300",
+ org.eclipse.core.resources,
+ edu.uah.itsc.cmac.libs
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Export-Package: edu.uah.itsc.cmac.searchview.models
