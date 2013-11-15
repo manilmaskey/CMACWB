@@ -1,0 +1,7 @@
+ITSC_Accuracy -c -h -o -t -v
+ITSC_Crop -h -i -o -x -y -z
+ITSC_Clean -h -i -o -B -H -L
+ITSC_Arithmetic -f -h -i -o
+ITSC_DBScan -c -e -h -i -m -o -B
+ITSC_CvtGifToImage -i -o
+ITSC_CvtImageToArff -i -o
