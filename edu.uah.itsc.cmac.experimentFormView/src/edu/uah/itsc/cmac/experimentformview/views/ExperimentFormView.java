@@ -3,7 +3,9 @@ package edu.uah.itsc.cmac.experimentformview.views;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -111,6 +113,28 @@ public class ExperimentFormView extends ViewPart {
 
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
+							S3 s3 = new S3();
+							AmazonS3 amazonS3Service = s3.getAmazonS3Service();
+							try {
+								amazonS3Service.createBucket(jsonExperiment
+										.get("title").toString());
+							} catch (AmazonServiceException e) {
+								e.printStackTrace();
+								message.setMessage("Could not add the experiment.\n" + e.getMessage());
+								message.setText("Error");
+								return Status.CANCEL_STATUS;
+							} catch (AmazonClientException e) {
+								e.printStackTrace();
+								message.setMessage("Could not add the experiment.\n" + e.getMessage());
+								message.setText("Error");
+								return Status.CANCEL_STATUS;
+							} catch (JSONException e) {
+								e.printStackTrace();
+								message.setMessage("Could not add the experiment.\n" + e.getMessage());
+								message.setText("Error");
+								return Status.CANCEL_STATUS;
+							}
+							monitor.worked(100);
 							response = portalPost.post(
 									PortalUtilities.getNodeRestPoint(),
 									jsonExperiment);
@@ -120,38 +144,21 @@ public class ExperimentFormView extends ViewPart {
 								return Status.CANCEL_STATUS;
 							}
 							monitor.worked(50);
-
-							S3 s3 = new S3();
-							AmazonS3 amazonS3Service = s3.getAmazonS3Service();
-							try {
-								amazonS3Service.createBucket(jsonExperiment
-										.get("title").toString());
-							} catch (AmazonServiceException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (AmazonClientException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-
-							monitor.worked(100);
 							monitor.done();
 							return Status.OK_STATUS;
 						}
 					};
 					job.setUser(true);
 					job.schedule();
+					job.join();
 				} catch (Exception execption) {
 					execption.printStackTrace();
 					message.setMessage("Could not add the experiment.");
 					message.setText("Error");
 					message.open();
 				}
-
-
+				if (message.getText().length() > 0)
+					message.open();
 			}
 
 			@Override
