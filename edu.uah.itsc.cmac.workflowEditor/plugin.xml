@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="CMAC Workflow Editor"
+            extensions="json"
+            icon="icons/sample.gif"
+            contributorClass="piworkflow.editors.MultiPageEditorContributor"
+            class="piworkflow.editors.MultiPageEditor"
+            id="edu.uah.itsc.cmac.workflow.editor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            name="Work Flow Wizard"
+            id="CMACWorkFlow">
+      </category>
+      <wizard
+            name="CMAC Work Flow"
+            icon="icons/sample.gif"
+            category="CMACWorkFlow"
+            class="piworkflow.wizards.SampleNewWizard"
+            id="piworkflow.wizards.SampleNewWizard">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="edu.uah.itsc.cmac"
+            name="CMACWB">
+      </category>
+      <view
+            class="edu.uah.itsc.workflow.methodsView.ProgramsView"
+            icon="icons/page_green.png"
+            id="edu.uah.itsc.cmac.workflow.View.ProgramsView"
+            name="Programs List">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.debug.ui.DebugPerspective">
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            id="PIWorkFlow.actionSet2"
+            label="Workflow "
+            visible="true">
+         <menu
+               id="CMACWorkFlow.menu1"
+               label="Workflow &amp;Options">
+         </menu>
+         <action
+               class="edu.uah.itsc.workflow.menuOptions.WorkFlowSave"
+               icon="icons/sample.gif"
+               id="CMACWorkFlow.action1"
+               label="Save"
+               menubarPath="CMACWorkFlow.menu1/workflowOptions"
+               style="push"
+               tooltip="WorkFlow Save">
+         </action>
+      </actionSet>
+   </extension>
+
+</plugin>
