@@ -10,6 +10,3 @@ target/
 
 # ignore all .db files
 *.db
-
-# ignore all .project files
-*.classpath
