@@ -1,0 +1,15 @@
+{
+	"Effect" : "Allow",
+	"Action" : [
+		"s3:List*"],
+	"Resource" : ["arn:aws:s3:::%cmac-bucketName-cmac%"]
+},
+{
+	"Action" : [
+		"s3:Get*",
+		"s3:Put*",
+		"s3:List*"
+	],
+	"Effect" : "Allow",
+	"Resource" : ["arn:aws:s3:::%cmac-bucketName-cmac%/${aws:username}/*"]
+}

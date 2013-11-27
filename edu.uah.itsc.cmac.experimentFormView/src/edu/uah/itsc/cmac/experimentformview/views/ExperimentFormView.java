@@ -1,11 +1,14 @@
 package edu.uah.itsc.cmac.experimentformview.views;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -28,6 +31,10 @@ import org.json.JSONObject;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
+import com.amazonaws.services.identitymanagement.model.GetGroupPolicyRequest;
+import com.amazonaws.services.identitymanagement.model.GetGroupPolicyResult;
+import com.amazonaws.services.identitymanagement.model.PutGroupPolicyRequest;
 import com.amazonaws.services.s3.AmazonS3;
 
 import edu.uah.itsc.aws.S3;
@@ -39,6 +46,7 @@ import edu.uah.itsc.cmac.portal.PortalUtilities;
 public class ExperimentFormView extends ViewPart {
 	private FormToolkit toolkit;
 	private Form form;
+	private S3 s3;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -113,24 +121,31 @@ public class ExperimentFormView extends ViewPart {
 
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
-							S3 s3 = new S3();
+							s3 = new S3();
 							AmazonS3 amazonS3Service = s3.getAmazonS3Service();
 							try {
-								amazonS3Service.createBucket(jsonExperiment
-										.get("title").toString());
+								String bucketName = jsonExperiment.get("title")
+										.toString();
+								amazonS3Service.createBucket(bucketName);
+								s3.addGroupPolicy("cmac_collaborators",
+										"policy_cmac_collaborators",
+										getPolicyToAdd(bucketName));
 							} catch (AmazonServiceException e) {
 								e.printStackTrace();
-								message.setMessage("Could not add the experiment.\n" + e.getMessage());
+								message.setMessage("Could not add the experiment.\n"
+										+ e.getMessage());
 								message.setText("Error");
 								return Status.CANCEL_STATUS;
 							} catch (AmazonClientException e) {
 								e.printStackTrace();
-								message.setMessage("Could not add the experiment.\n" + e.getMessage());
+								message.setMessage("Could not add the experiment.\n"
+										+ e.getMessage());
 								message.setText("Error");
 								return Status.CANCEL_STATUS;
 							} catch (JSONException e) {
 								e.printStackTrace();
-								message.setMessage("Could not add the experiment.\n" + e.getMessage());
+								message.setMessage("Could not add the experiment.\n"
+										+ e.getMessage());
 								message.setText("Error");
 								return Status.CANCEL_STATUS;
 							}
@@ -189,6 +204,26 @@ public class ExperimentFormView extends ViewPart {
 	@Override
 	public void setFocus() {
 
+	}
+
+	private String getPolicyToAdd(String bucketName) {
+		BufferedReader bufferedReader = null;
+		String fileContent = "";
+		String line = "";
+		try {
+			InputStream stream = this.getClass().getClassLoader()
+					.getResourceAsStream("policy.template");
+			bufferedReader = new BufferedReader(new InputStreamReader(stream));
+			while ((line = bufferedReader.readLine()) != null) {
+				fileContent = fileContent + "\n" + line;
+			}
+			bufferedReader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		fileContent = fileContent.replace("%cmac-bucketName-cmac%", bucketName);
+		return fileContent;
 	}
 
 }

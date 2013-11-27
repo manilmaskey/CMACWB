@@ -15,7 +15,6 @@ Author:
  */
 
 import java.io.BufferedInputStream;
-
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -24,6 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IFile;
@@ -32,12 +35,20 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
+import com.amazonaws.services.identitymanagement.model.GetGroupPolicyRequest;
+import com.amazonaws.services.identitymanagement.model.GetGroupPolicyResult;
+import com.amazonaws.services.identitymanagement.model.PutGroupPolicyRequest;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -74,6 +85,37 @@ public class S3 {
 		communityBucketName = "cmac-community";
 	}
 
+	public void addGroupPolicy(String groupName, String policyName, String policyToAdd) {
+		// Create ami with proper credentials
+		AmazonIdentityManagementClient ami = new AmazonIdentityManagementClient(new BasicAWSCredentials(awsAdminAccessKey, awsAdminSecretKey));
+		GetGroupPolicyRequest ggpRequest = new GetGroupPolicyRequest(
+				groupName, policyName);
+		GetGroupPolicyResult ggpResult = ami.getGroupPolicy(ggpRequest);
+		String policy = ggpResult.getPolicyDocument();
+		try {
+			policy = new URI(policy).getPath().toString();
+			JSONObject policyObject = new JSONObject(policy);
+			JSONArray policyStatementsArray = policyObject.getJSONArray("Statement");
+			JSONArray policyToAddArray = new JSONArray("[" + policyToAdd + "]");
+			for (int i=0;i<policyToAddArray.length();i++){
+				policyStatementsArray.put(policyToAddArray.get(i));
+			}
+			policyObject.put("Statement", policyStatementsArray);
+			policy = policyObject.toString(4);
+			// if (1 == 1 ) return;
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		} catch (JSONException e){
+			e.printStackTrace();
+			
+		}
+		// Add new policy as required
+		PutGroupPolicyRequest pgpRequest = new PutGroupPolicyRequest(
+				groupName, policyName, policy);
+		ami.putGroupPolicy(pgpRequest);
+
+	}
+	
 	public String getAccessKey(){
 		return awsAccessKey;
 	}
@@ -401,5 +443,14 @@ public class S3 {
 	 */
 	public AmazonS3 getAmazonS3Service() {
 		return amazonS3Service;
+	}
+
+	public ArrayList<String> getAllBuckets() {
+		List<Bucket> allBuckets = amazonS3Service.listBuckets();
+		ArrayList<String> allBucketsString = new ArrayList<String>();
+		for (Bucket bucket : allBuckets) {
+			allBucketsString.add(bucket.getName());
+		}
+		return allBucketsString;
 	}
 }

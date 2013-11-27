@@ -1,6 +1,7 @@
 package edu.uah.itsc.cmac.ui;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -119,6 +120,9 @@ public class NavigatorView extends CommonNavigator {
 				// else{
 				// buildTree(User.username+"_$folder$/", p2,s3.getBucketName());
 				// }
+
+				buildAllBucketsAsProjects(monitor);
+
 				viewer.setInput(p1);
 				viewer.setInput(p2);
 			} catch (CoreException e) {
@@ -151,6 +155,29 @@ public class NavigatorView extends CommonNavigator {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+
+	private void buildAllBucketsAsProjects(IProgressMonitor monitor) {
+		ArrayList<String> buckets = s3.getAllBuckets();
+		IProject project;
+		for (String bucket : buckets) {
+			project = ResourcesPlugin.getWorkspace().getRoot()
+					.getProject(bucket);
+			try {
+				if (project.exists()
+						&& (project.getName().equals(
+								s3.getCommunityBucketName()) || project
+								.getName().equals(s3.getBucketName()))) {
+					continue;
+				} else if (project.exists())
+					project.delete(true, monitor);
+				project.create(monitor);
+				buildTree("", project, bucket);
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
+
 		}
 	}
 
@@ -198,8 +225,15 @@ public class NavigatorView extends CommonNavigator {
 		// System.out.println("---------------"+ b.getName()+"  " +
 		// b.getOwner().getDisplayName());
 		// }
-
-		ObjectListing filteredObjects = s3.getService().listObjects(lor);
+		ObjectListing filteredObjects = null;
+		try {
+			filteredObjects = s3.getService().listObjects(lor);
+		} catch (Exception e) {
+			// e.printStackTrace();
+			System.out.println("Cannot build tree for " + bucket + "\n"
+					+ e.getMessage());
+			return;
+		}
 		// if (filteredObjects.getObjectSummaries().isEmpty()){
 		// IFolder tp1 = ((IProject)tp).getFolder(prefix);
 		// if (!tp1.exists())
