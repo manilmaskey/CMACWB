@@ -3,6 +3,7 @@
  */
 package edu.uah.itsc.cmac.portal;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import org.json.JSONArray;
@@ -26,6 +27,8 @@ public class Program {
 	private String contactInfo;
 	private String version;
 	private String uri;
+	private ArrayList<String> inputParameters;
+	private ArrayList<String> outputParameters;
 
 	public Program(String title, String description, String path,
 			String keywords, boolean isShared) {
@@ -50,28 +53,34 @@ public class Program {
 		jsonData.put("title", title);
 		jsonData.put("type", "program");
 		if (description != null && !description.isEmpty())
-			jsonData.put("body", getComplexObject(description));
+			jsonData.put("body", getComplexObject("value", description));
 		if (creator != null && !creator.isEmpty())
-			jsonData.put("field_creator", getComplexObject(creator));
+			jsonData.put("field_creator", getComplexObject("value", creator));
 		if (submittor != null && !submittor.isEmpty())
-			jsonData.put("field_submittor", getComplexObject(submittor));
+			jsonData.put("field_submittor",
+					getComplexObject("value", submittor));
 		if (path != null && !path.isEmpty())
-			jsonData.put("field_could_path", getComplexObject(path));
-		if (keywords != null && !keywords.isEmpty())
-			jsonData.put("field_keywords", new JSONObject("{'und':'" + keywords + "'}"));
+			jsonData.put("field_could_path", getComplexObject("value", path));
+//		if (keywords != null && !keywords.isEmpty())
+//			jsonData.put("field_keywords", new JSONObject("{'und':'" + keywords
+//					+ "'}"));
 		if (docURL != null && !docURL.isEmpty())
-			jsonData.put("field_doc_url", getComplexObject(docURL));
+			jsonData.put("field_doc_url", getComplexObject("value", docURL));
 		if (contactInfo != null && !contactInfo.isEmpty())
-			jsonData.put("field_contact_info", getComplexObject(contactInfo));
+			jsonData.put("field_contact_info",
+					getComplexObject("value", contactInfo));
 		if (version != null && !version.isEmpty())
-			jsonData.put("field_version", getComplexObject(version));
-		// jsonData.put("field_start_time",
-		// getComplexObject(startTime.toString()));
-		// jsonData.put("field_end_time", getComplexObject(description));
+			jsonData.put("field_version", getComplexObject("value", version));
+		inputParameters = new ArrayList<String>();
+		inputParameters.add("202");
+		inputParameters.add("203");
+		jsonData.put("field_parameter", getComplexObject("nid", inputParameters));
+//		jsonData.put("field_parameter", getComplexObject("nid", outputParameters));
 		return jsonData;
 	}
 
-	private JSONObject getComplexObject(String value) throws JSONException {
+	private JSONObject getComplexObject(String key, String value)
+			throws JSONException {
 
 		JSONObject undObject = new JSONObject();
 		JSONArray undArray = new JSONArray();
@@ -82,11 +91,36 @@ public class Program {
 		 * "und": [ { "value": "1" } ] }
 		 */
 
-		undArrayObject.put("value", value);
+		undArrayObject.put(key, value);
 		undArray.put(undArrayObject);
 		undObject.put("und", undArray);
 		return undObject;
 
+	}
+
+	private JSONObject getComplexObject(String key, ArrayList<String> values)
+			throws JSONException {
+		
+		JSONObject undObject = new JSONObject();
+		JSONArray undArray = new JSONArray();
+		
+		/*
+		 * This method will return a JSONObject similar to "field_is_shared": {
+		 * "und": [ [{ "value": "1" }],[{"value":"2"] ] }
+		 */
+		
+		for (String value : values) {
+			JSONArray innerArray = new JSONArray();
+			JSONObject undArrayObject = new JSONObject();
+			undArrayObject.put(key, value);
+			innerArray.put(undArrayObject);
+			undArray.put(innerArray);
+			
+		}
+		
+		undObject.put("und", undArray);
+		return undObject;
+		
 	}
 
 	/**
@@ -262,10 +296,41 @@ public class Program {
 	}
 
 	/**
-	 * @param uri the uri to set
+	 * @param uri
+	 *            the uri to set
 	 */
 	public void setUri(String uri) {
 		this.uri = uri;
+	}
+
+	/**
+	 * @return the inputParameters
+	 */
+	public ArrayList<String> getInputParameters() {
+		return inputParameters;
+	}
+
+	/**
+	 * @param inputParameters
+	 *            the inputParameters to set
+	 */
+	public void setInputParameters(ArrayList<String> inputParameters) {
+		this.inputParameters = inputParameters;
+	}
+
+	/**
+	 * @return the outputParameters
+	 */
+	public ArrayList<String> getOutputParameters() {
+		return outputParameters;
+	}
+
+	/**
+	 * @param outputParameters
+	 *            the outputParameters to set
+	 */
+	public void setOutputParameters(ArrayList<String> outputParameters) {
+		this.outputParameters = outputParameters;
 	}
 
 }

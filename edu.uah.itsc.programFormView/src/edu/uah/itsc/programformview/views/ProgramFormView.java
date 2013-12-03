@@ -1,5 +1,7 @@
 package edu.uah.itsc.programformview.views;
 
+import java.util.ArrayList;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -7,6 +9,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
@@ -15,6 +18,7 @@ import org.eclipse.ui.forms.IFormColors;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ViewPart;
 import org.json.JSONException;
@@ -26,26 +30,27 @@ import edu.uah.itsc.cmac.portal.Program;
 
 public class ProgramFormView extends ViewPart {
 	private FormToolkit toolkit;
-	private Form form;
+	private ScrolledForm form;
 
 	@Override
 	public void createPartControl(Composite parent) {
 		toolkit = new FormToolkit(parent.getDisplay());
-		form = toolkit.createForm(parent);
+		form = toolkit.createScrolledForm(parent);
 		form.setText("Programs");
-		toolkit.decorateFormHeading(form);
+//		toolkit.decorateFormHeading(form);
 		GridLayout layout = new GridLayout();
 		form.getBody().setLayout(layout);
 		Dialog.applyDialogFont(form.getBody());
 		Section s2 = createTableSection(form, toolkit, "Maintain Programs");
+
 		// This call is needed for all the children
 		Dialog.applyDialogFont(form.getBody());
 	}
 
-	private Section createTableSection(final Form form2, FormToolkit toolkit,
-			String title) {
+	private Section createTableSection(final ScrolledForm form2,
+			final FormToolkit toolkit, String title) {
 		GridData gd;
-		Section section = toolkit.createSection(form2.getBody(),
+		final Section section = toolkit.createSection(form2.getBody(),
 				Section.TWISTIE | Section.TITLE_BAR);
 		section.setActiveToggleColor(toolkit.getHyperlinkGroup()
 				.getActiveForeground());
@@ -56,7 +61,7 @@ public class ProgramFormView extends ViewPart {
 				true, false);
 		section.setDescriptionControl(description);
 
-		Composite client = toolkit.createComposite(section, SWT.WRAP);
+		final Composite client = toolkit.createComposite(section, SWT.WRAP);
 		GridLayout layout = new GridLayout();
 		// layout.numColumns = 2;
 
@@ -93,6 +98,84 @@ public class ProgramFormView extends ViewPart {
 		Label versionLabel = toolkit.createLabel(client, "Version");
 		final Text versionText = toolkit.createText(client, "");
 		versionText.setLayoutData(new GridData(200, 15));
+
+//		final Composite parameterComposite = new Composite(client,
+//				SWT.BORDER_SOLID);
+//		final Label parameterLabel = toolkit.createLabel(client,
+//				"Parameter Name");
+//		final Text parameterText = toolkit.createText(client, "");
+//		final Label optionLabel = toolkit.createLabel(client, "Option");
+//		final Text optionText = toolkit.createText(client, "");
+//		parameterText.setLayoutData(new GridData(200, 15));
+		final Button addNewParameterButton = toolkit.createButton(
+				client, "Add a parameter", SWT.PUSH);
+//		parameterLabel.setVisible(false);
+//		parameterText.setVisible(false);
+//		optionLabel.setVisible(false);
+//		optionText.setVisible(false);
+		addNewParameterButton.setVisible(false);
+		
+		final ArrayList<Text> parametersText = new ArrayList<Text>();
+		
+		final ArrayList<Text> optionsText = new ArrayList<Text>();
+		final ArrayList<Combo> ioCombos = new ArrayList<Combo>();
+		
+		addNewParameterButton.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				// TODO Auto-generated method stub
+				Combo io = new Combo(client, SWT.DROP_DOWN | SWT.READ_ONLY);
+				io.add("Input Parameter", 0);
+				io.add("Output Parameter", 1);
+				Label parameterLabel = toolkit.createLabel(client,
+						"Parameter Name");
+				Text parameterText = toolkit.createText(
+						client, "");
+				Label optionLabel = toolkit.createLabel(client,
+						"Option");
+				Text optionText = toolkit.createText(client,
+						"");
+				
+				parametersText.add(parameterText);
+				optionsText.add(optionText);
+				ioCombos.add(io);
+				parameterText.setLayoutData(new GridData(200, 15));
+				form.reflow(true);
+				section.layout(true);
+				form.layout(true);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
+		final Button parameterButton = toolkit.createButton(client,
+				"This program has parameters", SWT.CHECK);
+		parameterButton.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean hasParameters = parameterButton.getSelection();
+				System.out.println(hasParameters);
+//				parameterLabel.setVisible(hasParameters);
+//				parameterText.setVisible(hasParameters);
+//				optionLabel.setVisible(hasParameters);
+//				optionText.setVisible(hasParameters);
+				addNewParameterButton.setVisible(hasParameters);
+				section.layout(true, true);
+				form.layout(true);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+		});
 
 		gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
 		Button submitButton = toolkit.createButton(client, "Submit Program",
