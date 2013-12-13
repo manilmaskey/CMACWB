@@ -39,7 +39,7 @@ public class ReadPrograms {
 			ProgramPOJO program = new ProgramPOJO();
 			
 			// store required values from the JSONObject to program Object
-			program.setVid(program_Object.getInt("vid"));
+//			program.setVid(program_Object.getInt("vid"));
 			program.setTitle(program_Object.getString("title"));
 			program.setUri(uri);
 

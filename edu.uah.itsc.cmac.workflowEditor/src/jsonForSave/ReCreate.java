@@ -28,9 +28,13 @@ public class ReCreate {
 			// int x = widthLeft + dobj.getX();
 			// int y = heightLeft + dobj.getY();
 
-			int x1 = (VariablePoJo.getInstance().getChildCreatorObject()
-					.getChildComposite_WorkSpace().getBounds().width - 987);
-			final int width_difference = (362 - x1);
+			// int x1 = (VariablePoJo.getInstance().getChildCreatorObject()
+			// .getChildComposite_WorkSpace().getBounds().width - 987);
+			// final int width_difference = (362 - x1);
+			// final int height_difference = 112;
+			int width_difference = ((VariablePoJo.getInstance().getDisplayX() - VariablePoJo
+					.getInstance().getChildCreatorObject()
+					.getChildComposite_WorkSpace().getBounds().width) - 17);
 			final int height_difference = 112;
 			int x = width_difference + dobj.getX();
 			int y = height_difference + dobj.getY();

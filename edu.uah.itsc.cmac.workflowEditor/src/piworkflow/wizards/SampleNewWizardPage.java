@@ -97,10 +97,14 @@ public class SampleNewWizardPage extends WizardPage {
 
 	private void initialize() {
 		// declare a default editor
+		/**
+		 * The default editor is text editor for json. The CMAC editor can only be opened using right click pop up option
+		 */
 		IEditorRegistry registry = PlatformUI.getWorkbench()
 				.getEditorRegistry();
 		registry.setDefaultEditor("*.json",
 				"edu.uah.itsc.cmac.workflow.editor");
+//		org.eclipse.ui.DefaultTextEditor
 
 		if (selection != null && selection.isEmpty() == false
 				&& selection instanceof IStructuredSelection) {

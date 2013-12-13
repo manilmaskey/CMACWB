@@ -16,6 +16,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -45,12 +47,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 		IResourceChangeListener {
 
 	// Global Variable
-	// private TextEditor editor;
-	// private MultiPageEditor editor;
 	String Filename;
 
 	/**
-	 * Creates a multi-page editor.
+	 * Creates a editor.
 	 */
 	public MultiPageEditor() {
 		super();
@@ -62,9 +62,9 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 	 */
 	void PI_WorkFlow() {
 
-		
-		// setting up parent composite
-		// set up the parent composites lay out to grid layout
+		/**
+		 * Setting up parent composite, using GridLayout
+		 */
 		CompositeWrapper parentComposite = (CompositeWrapper) VariablePoJo
 				.getInstance().getParentComposite();
 
@@ -75,10 +75,9 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 				parentComposite.getDisplay().getBounds().height);
 		parentComposite.setLayout(new GridLayout(1, false));
 
-		// Create the child composites, pass parentComposite to the
-		// ChildCompositeCreator class
-		// childComposite_coolBar for the cool bar
-		// childComposite_WorkSpace for the Actions (Work Space)
+		/**
+		 * Creating child composite
+		 */
 		VariablePoJo.getInstance().setChildCreatorObject(
 				new ChildCompositeCreator());
 		ChildCompositeCreator childCreatorObject = VariablePoJo.getInstance()
@@ -86,303 +85,76 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 		childCreatorObject.setParentComposite(parentComposite);
 		childCreatorObject.createChildComposites();
 
-		// // Get the child composite for cool bar using the childCreatorObject
-		// Composite childComposite_coolBar = childCreatorObject
-		// .getChildComposite_coolBar();
-		//
-		// // Call method to create cool bar
-		// CreateCoolBar coolBarCreatorObject = new CreateCoolBar();
-		// coolBarCreatorObject.setChildComposite_coolBar(childComposite_coolBar);
-		// coolBarCreatorObject.generateCoolBar();
-
-		// Get the Buttons for the create cool bar class using CreateCoolBar
-		// class
-		// final Button inputButton = coolBarCreatorObject.getInputButton();
-		// final Button saveButton = coolBarCreatorObject.getSaveButton();
-		// final Button outputButton = coolBarCreatorObject.getOutputButton();
-
-		// ----------------------------------------------------------------------------------------------------------------
-		// adding input handler to the button
-		// inputButton.addSelectionListener(new SelectionAdapter() {
-		// public void widgetSelected(SelectionEvent e) {
-		//
-		// // Get child composite for Action (Work Space)
-		// final CompositeWrapper childComposite_WorkSpace = VariablePoJo
-		// .getInstance().getChildCreatorObject()
-		// .getChildComposite_WorkSpace();
-		//
-		// // Set the required data
-		// InputHandler inputHandlerObj = new InputHandler();
-		// inputHandlerObj
-		// .setChildComposite_WorkSpace(childComposite_WorkSpace);
-		// inputHandlerObj.setCompositeList(VariablePoJo.getInstance()
-		// .getCompositeList());
-		// // inputHandlerObj.setConnectorList(VariablePoJo.getInstance()
-		// // .getConnectorList());
-		// inputHandlerObj.setConnectorList(VariablePoJo.getInstance()
-		// .getConnectorList());
-		//
-		// inputHandlerObj.setStartingComposite(VariablePoJo.getInstance()
-		// .getStartingComposite());
-		//
-		// // Call the method
-		// inputHandlerObj.inputCompositeCreator();
-		//
-		// // Get the input composite created when the input button is hit
-		// final CompositeWrapper inputComposite = inputHandlerObj
-		// .getInputComposite();
-		//
-		// // add a new mouse listener to enable the new input composite to
-		// // move
-		// inputComposite.addListener(SWT.MouseDown, new Listener() {
-		// public void handleEvent(Event e) {
-		// InputCompositeTracker inputTrackerObject = new
-		// InputCompositeTracker();
-		// inputTrackerObject.setCompositeList(VariablePoJo
-		// .getInstance().getCompositeList());
-		// inputTrackerObject.setInputComposite(inputComposite);
-		// inputTrackerObject
-		// .setChildComposite_WorkSpace(childComposite_WorkSpace);
-		// inputTrackerObject.setParentComposite(VariablePoJo
-		// .getInstance().getParentComposite());
-		// // inputTrackerObject.setConnectorList(VariablePoJo
-		// // .getInstance().getConnectorList());
-		// inputTrackerObject.setConnectorList(VariablePoJo
-		// .getInstance().getConnectorList());
-		// inputTrackerObject.inputTracker();
-		//
-		// }
-		// });
-		// }
-		//
-		// });
-		// //
-		// --------------------------------------------------------------------------------------------------------------
-		//
-		// //
-		// ----------------------------------------------------------------------------------------------------------------
-		// // adding input handler to the button
-		//
-		// saveButton.addSelectionListener(new SelectionAdapter() {
-		// public void widgetSelected(SelectionEvent e) {
-		//
-		// /**
-		// * On the event of button click We get the name of the page Call
-		// * the method to create an XML The new XML file's name if of
-		// * format filename.xml (filename is the name of .mpe file)
-		// */
-		// // get the name of the file
-		// IWorkbenchPage activePage = getSite().getPage();
-		// System.out.println("active editor"
-		// + activePage.getActiveEditor());
-		// String name = activePage.getActiveEditor().getEditorInput()
-		// .getName();
-		// System.out.println(name); // for testing the name
-		//
-		// // Create an object of create XML and call createFile method
-		// // CreateXML xmlObj = new CreateXML();
-		// // xmlObj.createFile(name);
-		// CopyOfCreateXML obj = new CopyOfCreateXML();
-		// obj.createFile(name);
-		//
-		// // JSONWrite writeObject = new JSONWrite();
-		// // writeObject.createJSONFile(name);
-		// }
-		// });
-		//
-		// //
-		// --------------------------------------------------------------------------------------------------------------
-		//
-		// //
-		// ----------------------------------------------------------------------------------------------------------------
-		// // adding input handler to the button
-		//
-		// outputButton.addSelectionListener(new SelectionAdapter() {
-		// public void widgetSelected(SelectionEvent e) {
-		//
-		// // Get child composite for Action (Work Space)
-		// final CompositeWrapper childComposite_WorkSpace = VariablePoJo
-		// .getInstance().getChildCreatorObject()
-		// .getChildComposite_WorkSpace();
-		//
-		// // Get an object of the output handler class
-		// final OutputHandler outputHandlerObj = new OutputHandler();
-		//
-		// // Set all the required data
-		// outputHandlerObj
-		// .setChildComposite_WorkSpace(childComposite_WorkSpace);
-		// outputHandlerObj.setCompositeList(VariablePoJo.getInstance()
-		// .getCompositeList());
-		// // outputHandlerObj.setConnectorList(VariablePoJo.getInstance()
-		// // .getConnectorList());
-		// outputHandlerObj.setConnectorList(VariablePoJo.getInstance()
-		// .getConnectorList());
-		// outputHandlerObj.setConnectorObj(VariablePoJo.getInstance()
-		// .getConnectorObj());
-		// // outputHandlerObj.setEndingComposite(endingComposite);
-		// outputHandlerObj.setParentComposite(VariablePoJo.getInstance()
-		// .getParentComposite());
-		//
-		// // Call the method to create the composite on clicking the
-		// // output button
-		// outputHandlerObj.outputCompositeCreator();
-		//
-		// // Get the output composite created by the output handler class
-		// final CompositeWrapper outputComposite = outputHandlerObj
-		// .getOutputComposite();
-		//
-		// // adding mouse listener to the output composite to enable the
-		// // block to move
-		// outputComposite.addListener(SWT.MouseDown, new Listener() {
-		// public void handleEvent(Event e) {
-		//
-		// OutputCompositeTracker outputTrackerObject = new
-		// OutputCompositeTracker();
-		// outputTrackerObject.setCompositeList(VariablePoJo
-		// .getInstance().getCompositeList());
-		// outputTrackerObject.setOutputComposite(outputComposite);
-		// outputTrackerObject
-		// .setChildComposite_WorkSpace(childComposite_WorkSpace);
-		// outputTrackerObject.setParentComposite(VariablePoJo
-		// .getInstance().getParentComposite());
-		// // outputTrackerObject.setConnectorList(VariablePoJo
-		// // .getInstance().getConnectorList());
-		// outputTrackerObject.setConnectorList(VariablePoJo
-		// .getInstance().getConnectorList());
-		// outputTrackerObject.outputTracker();
-		// }
-		// });
-		// }
-		// });
-		//
-		// // Adding listener to the refresh button
-		// coolBarCreatorObject.getRefreshButton().addSelectionListener(
-		// new SelectionAdapter() {
-		// public void widgetSelected(SelectionEvent e) {
-		//
-		// RefreshButtonHandler refreshHandlerObj = new RefreshButtonHandler();
-		// refreshHandlerObj.handleRefreshButton();
-		//
-		// }
-		// });
-		// //
-		// --------------------------------------------------------------------------------------------------------------
-		//
-		// childCreatorObject.getChildComposite_WorkSpace().pack();
-		// childComposite_coolBar.pack();
-
-		// childCreatorObject.getChildComposite_WorkSpace().addMouseListener(
-		// new MouseListener() {
-		//
-		// @Override
-		// public void mouseUp(MouseEvent e) {
-		//
-		// }
-		//
-		// @Override
-		// public void mouseDown(MouseEvent e) {
-		// // x, y of where event occured
-		// int click_x = e.x;
-		// int click_y = e.y;
-		//
-		// System.out.println("X" + click_x);
-		// System.out.println("Y" + click_y);
-		//
-		// List<CompositeConnectors> connectorList = VariablePoJo
-		// .getInstance().getConnectorList();
-		//
-		// for (int i = 0; i < connectorList.size(); i++) {
-		// CompositeConnectors tempConnector = connectorList
-		// .get(i);
-		// // equation of a line
-		// int dY = tempConnector.getDestination().getParent()
-		// .getLocation().y
-		// + (tempConnector.getDestination()
-		// .getLocation().y)
-		// + ((tempConnector.getDestination()
-		// .getBounds().height) / 2);
-		//
-		// int dX = tempConnector.getDestination().getParent()
-		// .getLocation().x
-		// + (tempConnector.getDestination()
-		// .getLocation().x);
-		// int sY = tempConnector.getSource().getParent()
-		// .getLocation().y
-		// + (tempConnector.getSource().getLocation().y)
-		// + ((tempConnector.getSource().getBounds().height) / 2);
-		// int sX = tempConnector.getSource().getParent()
-		// .getLocation().x
-		// + (tempConnector.getSource().getLocation().x)
-		// + (tempConnector.getSource().getBounds().width);
-		//
-		// int mY = dY - sY;
-		// int mX = dX - sX;
-		// double m = mY / mX;
-		// // int c =
-		// //
-		// (tempConnector.getSource().getBounds().y)-m*(tempConnector.getSource().getBounds().x);
-		//
-		// double result = (click_y - sY) - m * click_x;
-		// if (-3 <= result && result <=3) {
-		// System.out.println("trial");
-		// }
-		//
-		// }
-		// }
-		//
-		// @Override
-		// public void mouseDoubleClick(MouseEvent e) {
-		//
-		// }
-		// });
-
-		// this will get the programs list from the programview plug in and set
-		// it in the variablePOJO singleton class
+		/**
+		 * Grab the program objects list from programview plugin
+		 */
 		VariablePoJo.getInstance().setProgram_List();
 
-		// set the drop target
+		/**
+		 * Set the Drop target
+		 */
 		setDropTarget();
-		
 
+		/**
+		 * Listener for repaint
+		 */
 		VariablePoJo.getInstance().getChildCreatorObject()
 				.getChildComposite_WorkSpace()
 				.addPaintListener(new PaintListener() {
-					
+
 					@Override
 					public void paintControl(PaintEvent e) {
-						
-//						if (VariablePoJo.getInstance().isCreated() == true) {
-							RelayComposites object = new RelayComposites();
-							System.out.println("In paint event");
-							object.reDraw();
-//						}
+						RelayComposites object = new RelayComposites();
+						System.out.println("In paint event");
+						object.reDraw();
 					}
 				});
 
 		int index = addPage(parentComposite);
 		setPageText(index, "CMAC Workflow Editor");
-
 	}
 
-	// Create Work flow Pages
+	/**
+	 * Create Pages
+	 */
 	protected void createPages() {
-		// create the page
+		/**
+		 * Create work flow editor page
+		 */
 		PI_WorkFlow();
-			// check if it can be recreated and redraw 
-			disposeall();
-			try {
-				checkForReCreate();
-				refresh();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+
+		/**
+		 * If programs list is not yet created then close the editor. Programs
+		 * list is a must to be created in order for this editor to work
+		 */
+		if (VariablePoJo.getInstance().getProgram_List() == null) {
+			IWorkbenchPage[] pagelist = PlatformUI.getWorkbench()
+					.getActiveWorkbenchWindow().getPages();
+			IWorkbenchPage page = pagelist[0];
+
+			IEditorReference[] referencelist = page.getEditorReferences();
+			IEditorPart editorPart = referencelist[0].getEditor(false);
+			page.closeEditor(editorPart, true);
+		}
+
+		/**
+		 * Check if recreate is possible (if the work flow was save before
+		 * quitting)
+		 */
+		disposeall();
+		try {
+			checkForReCreate();
 			refresh();
-			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		refresh();
 	}
-	
-	public void refresh (){
+
+	/*
+	 * Refresh the workflow's workspace
+	 */
+	public void refresh() {
 		RelayComposites object = new RelayComposites();
 		object.reDraw();
 	}
@@ -396,6 +168,12 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 				.getChildCreatorObject().getChildComposite_WorkSpace());
 	}
 
+	/**
+	 * Get the file name
+	 * 
+	 * @return String filename
+	 * @throws IOException
+	 */
 	public String getFileName() throws IOException {
 
 		System.out.println("\n In the getFileName method ...");
@@ -464,7 +242,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 			ReCreate obj = new ReCreate();
 			obj.recreateWorkFlow();
 		}
-		
+
 		RelayComposites object = new RelayComposites();
 		object.reDraw();
 	}
@@ -491,7 +269,8 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 				.getConnectorDetectableList()
 				.removeAll(
 						VariablePoJo.getInstance().getConnectorDetectableList());
-		DataPOJO.getInstance().getPrograms_data().removeAll(DataPOJO.getInstance().getPrograms_data());
+		DataPOJO.getInstance().getPrograms_data()
+				.removeAll(DataPOJO.getInstance().getPrograms_data());
 	}
 
 	/**
@@ -544,28 +323,5 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 	public void resourceChanged(IResourceChangeEvent event) {
 
 	}
-
-	// /**
-	// * Closes all project files on project close.
-	// */
-	// public void resourceChanged(final IResourceChangeEvent event) {
-	// if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
-	// Display.getDefault().asyncExec(new Runnable() {
-	// public void run() {
-	// IWorkbenchPage[] pages = getSite().getWorkbenchWindow()
-	// .getPages();
-	// for (int i = 0; i < pages.length; i++) {
-	// if (((FileEditorInput) editor.getEditorInput())
-	// .getFile().getProject()
-	// .equals(event.getResource())) {
-	// IEditorPart editorPart = pages[i].findEditor(editor
-	// .getEditorInput());
-	// pages[i].closeEditor(editorPart, true);
-	// }
-	// }
-	// }
-	// });
-	// }
-	// }
 
 }

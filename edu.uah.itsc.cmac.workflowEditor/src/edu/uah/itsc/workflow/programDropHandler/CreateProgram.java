@@ -110,21 +110,29 @@ public class CreateProgram {
 
 		// Height/Width of the parent composite - Height/Width of the
 		// Child Work Space Composite
-		System.out.println("the child composite dimentions x,y,w,h"
+		System.out.println("the child composite dimentions x,y,w,h "
 				+ ChildComposite_WorkSpace.getBounds().x + ","
 				+ ChildComposite_WorkSpace.getBounds().y + ","
 				+ ChildComposite_WorkSpace.getBounds().width + ","
 				+ ChildComposite_WorkSpace.getBounds().height);
-		System.out.println("the parent composite dimentions w,h"
+		System.out.println("the parent composite dimentions w,h "
 				+ VariablePoJo.getInstance().getDisplayX() + ","
 				+ VariablePoJo.getInstance().getDisplayY());
 
-		int x1 = (ChildComposite_WorkSpace.getBounds().width - 987);
-		final int width_difference = (362 - x1);
+//		int x1 = (ChildComposite_WorkSpace.getBounds().width - 987);
+//		final int width_difference = (362 - x1);
+		int width_difference = ((VariablePoJo.getInstance().getDisplayX() - ChildComposite_WorkSpace.getBounds().width) -  17);
 		final int height_difference = 112;
+
+		System.out.println("width "
+				+ ChildComposite_WorkSpace.getBounds().width);
+//		System.out.println("x1 " + x1);
 
 		methodComposite.setBounds(x - width_difference, y - height_difference,
 				240, 40);
+
+		System.out.println("method x " + methodComposite.getBounds().x);
+		System.out.println("method y " + methodComposite.getBounds().y);
 
 		methodComposite.setBackground(ChildComposite_WorkSpace.getDisplay()
 				.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));

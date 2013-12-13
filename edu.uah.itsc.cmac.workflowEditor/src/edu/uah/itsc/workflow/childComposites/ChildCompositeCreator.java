@@ -44,16 +44,28 @@ public class ChildCompositeCreator {
 	public void createChildComposites() {
 		childComposite_WorkSpace = new CompositeWrapper(parentComposite,
 				SWT.NONE);
-		childComposite_WorkSpace.setBounds(0, 0, 768, 1300);
+
+//		childComposite_WorkSpace.setBounds(0, 0, parentComposite.getDisplay()
+//				.getBounds().width,
+//				parentComposite.getDisplay().getBounds().height);
 		GridData gd_childComposite_WorkSpace = new GridData(SWT.NONE, SWT.NONE,
 				true, true, 1, 1);
 		System.out.println("parent height"
 				+ parentComposite.getDisplay().getBounds().height);
+		System.out.println("parent width"
+				+ parentComposite.getDisplay().getBounds().width);
+
+		System.out.println("ccws height "
+				+ childComposite_WorkSpace.getBounds().height);
+		System.out.println("ccws width "
+				+ childComposite_WorkSpace.getBounds().width);
 
 		// Preferred height and width are the preferred height and width of the
 		// parent composite
-		gd_childComposite_WorkSpace.heightHint = 768;
-		gd_childComposite_WorkSpace.widthHint = 1366;
+		gd_childComposite_WorkSpace.heightHint = parentComposite.getDisplay()
+				.getBounds().height;
+		gd_childComposite_WorkSpace.widthHint = parentComposite.getDisplay()
+				.getBounds().width;
 		childComposite_WorkSpace.setLayoutData(gd_childComposite_WorkSpace);
 
 	}

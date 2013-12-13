@@ -26,10 +26,13 @@ public class ProgramsHolder {
 		return instance;
 	}
 
-	List<ProgramPOJO> programs_list = new ArrayList<>();
+	List<ProgramPOJO> programs_list; // = new ArrayList<>()
 
 	public List<ProgramPOJO> getPrograms_list() {
-		return programs_list;
+		if (programs_list != null) {
+			return programs_list;
+		} else
+			return null;
 	}
 
 	public void setPrograms_list(List<ProgramPOJO> programs_list) {

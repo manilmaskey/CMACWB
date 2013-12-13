@@ -28,24 +28,24 @@ public class ReadIOFile {
 		
 		IOPOJO object = new IOPOJO();
 		// set vid
-		object.setVid(input_Object.getInt("vid"));
+//		object.setVid(input_Object.getInt("vid"));
 		// set title
 		object.setTitle(input_Object.getString("title"));
 		// set data type
-		if (input_Object.get("field_data_type") instanceof JSONArray){
-			
-		}else{
-		JSONObject dataType_Object = input_Object.getJSONObject("field_data_type");
-		object.setData_Type((dataType_Object.getJSONArray("und")).getJSONObject(0).getString("value"));
-		}
-		// set data value
-		if (input_Object.get("field_data_value") instanceof JSONArray){
-			// the data value is empty
-			object.setData_Value(null);
-		}else if(input_Object.get("field_data_value") instanceof JSONObject){
-			JSONObject dataValue_Object = input_Object.getJSONObject("field_data_value");
-			object.setData_Value((dataValue_Object.getJSONArray("und")).getJSONObject(0).getString("value"));
-		}
+//		if (input_Object.get("field_data_type") instanceof JSONArray){
+//			
+//		}else{
+//		JSONObject dataType_Object = input_Object.getJSONObject("field_data_type");
+//		object.setData_Type((dataType_Object.getJSONArray("und")).getJSONObject(0).getString("value"));
+//		}
+//		// set data value
+//		if (input_Object.get("field_data_value") instanceof JSONArray){
+//			// the data value is empty
+//			object.setData_Value(null);
+//		}else if(input_Object.get("field_data_value") instanceof JSONObject){
+//			JSONObject dataValue_Object = input_Object.getJSONObject("field_data_value");
+//			object.setData_Value((dataValue_Object.getJSONArray("und")).getJSONObject(0).getString("value"));
+//		}
 		return object;
 	}
 
