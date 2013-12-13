@@ -33,7 +33,7 @@ public class CompositePropertyShellHeight {
 		shellHeight = (shellHeight + method.getNumberOfInputs() * 22);
 
 		// add the height of the buttons = 23 and a little padding = 35
-		shellHeight = (shellHeight + 23 + 35);
+		shellHeight = (shellHeight + 23 + 45);
 
 		return shellHeight;
 	}

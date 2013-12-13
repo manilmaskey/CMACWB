@@ -13,12 +13,11 @@ import org.eclipse.ui.part.ResourceTransfer;
 import edu.uah.itsc.workflow.programDropHandler.ProgramDropHandler;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 
-
-
 /**
  * This method sets the drop target for the methods tree
+ * 
  * @author Rohith Samudrala
- *
+ * 
  */
 public class FavoritesDropTarget extends DropTargetAdapter {
 	Point p = null;
@@ -40,18 +39,18 @@ public class FavoritesDropTarget extends DropTargetAdapter {
 
 			@Override
 			public void drop(DropTargetEvent event) {
-				
-				
+
 				System.out.println("x = " + event.x + "y = " + event.y);
-				
-				
-//				Method1_Events method1EventsObj = new Method1_Events(p);
-//				method1EventsObj.handleMethod1_Events(event.data);
-//				MethodEvents obj = new MethodEvents(event.x, event.y);
-//				obj.MethodEventsHandler(event.data);
-				
+
+				// Method1_Events method1EventsObj = new Method1_Events(p);
+				// method1EventsObj.handleMethod1_Events(event.data);
+				// MethodEvents obj = new MethodEvents(event.x, event.y);
+				// obj.MethodEventsHandler(event.data);
+
 				ProgramDropHandler handlerObject = new ProgramDropHandler();
 				try {
+					System.out.println("event x " + event.x);
+					System.out.println("event y " + event.y);
 					handlerObject.handleDrop(event.x, event.y, event.data);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block

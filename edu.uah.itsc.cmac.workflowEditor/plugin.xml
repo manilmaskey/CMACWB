@@ -5,40 +5,26 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            name="CMAC Workflow Editor"
-            extensions="json"
-            icon="icons/sample.gif"
-            contributorClass="piworkflow.editors.MultiPageEditorContributor"
             class="piworkflow.editors.MultiPageEditor"
-            id="edu.uah.itsc.cmac.workflow.editor">
+            contributorClass="piworkflow.editors.MultiPageEditorContributor"
+            icon="icons/cmac-16x16.png"
+            id="edu.uah.itsc.cmac.workflow.editor"
+            name="CMAC Workflow Editor">
       </editor>
    </extension>
    <extension
          point="org.eclipse.ui.newWizards">
       <category
-            name="Work Flow Wizard"
+            name="Workflow Wizard"
             id="CMACWorkFlow">
       </category>
       <wizard
-            name="CMAC Work Flow"
-            icon="icons/sample.gif"
+            name="CMAC Workflow"
+            icon="icons/cmac-16x16.png"
             category="CMACWorkFlow"
             class="piworkflow.wizards.SampleNewWizard"
             id="piworkflow.wizards.SampleNewWizard">
       </wizard>
-   </extension>
-   <extension
-         point="org.eclipse.ui.views">
-      <category
-            id="edu.uah.itsc.cmac"
-            name="CMACWB">
-      </category>
-      <view
-            class="edu.uah.itsc.workflow.methodsView.ProgramsView"
-            icon="icons/page_green.png"
-            id="edu.uah.itsc.cmac.workflow.View.ProgramsView"
-            name="Programs List">
-      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -69,6 +55,20 @@
                tooltip="WorkFlow Save">
          </action>
       </actionSet>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            id="edu.uah.itsc.cmac.workflowEditor.openWorkflowEditor"
+            nameFilter="*.json"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="edu.uah.itsc.workflow.actionHandler.OpenCMACEditor"
+               icon="icons/cmac-16x16.png"
+               id="edu.uah.itsc.cmac.workflowEditor.openWorkFlow"
+               label="Open CMAC Editor">
+         </action>
+      </objectContribution>
    </extension>
 
 </plugin>
