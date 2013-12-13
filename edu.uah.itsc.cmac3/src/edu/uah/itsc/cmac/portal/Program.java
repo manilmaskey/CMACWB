@@ -27,8 +27,8 @@ public class Program {
 	private String contactInfo;
 	private String version;
 	private String uri;
-	private ArrayList<String> inputParameters;
-	private ArrayList<String> outputParameters;
+	private ArrayList<Parameter> inputParameters;
+	private ArrayList<Parameter> outputParameters;
 
 	public Program(String title, String description, String path,
 			String keywords, boolean isShared) {
@@ -48,36 +48,59 @@ public class Program {
 	public Program() {
 	}
 
-	public JSONObject getJSON() throws JSONException {
-		JSONObject jsonData = new JSONObject();
-		jsonData.put("title", title);
-		jsonData.put("type", "program");
+	public String getQueryString() {
+		StringBuffer stringData = new StringBuffer();
+		stringData.append("title=" + title);
+		stringData.append("&type=program");
 		if (description != null && !description.isEmpty())
-			jsonData.put("body", getComplexObject("value", description));
+			stringData.append("&body[und][0][value]=" + description);
 		if (creator != null && !creator.isEmpty())
-			jsonData.put("field_creator", getComplexObject("value", creator));
+			stringData.append("&field_creator[und][0][uid]=" + creator);
 		if (submittor != null && !submittor.isEmpty())
-			jsonData.put("field_submittor",
-					getComplexObject("value", submittor));
+			stringData.append("&field_submittor[und][0][uid]=" + submittor);
 		if (path != null && !path.isEmpty())
-			jsonData.put("field_could_path", getComplexObject("value", path));
-//		if (keywords != null && !keywords.isEmpty())
-//			jsonData.put("field_keywords", new JSONObject("{'und':'" + keywords
-//					+ "'}"));
+			stringData.append("&field_could_path[und][0][value]=" + path);
+		if (keywords != null && !keywords.isEmpty())
+			stringData.append("&field_keywords[und]=" + keywords);
 		if (docURL != null && !docURL.isEmpty())
-			jsonData.put("field_doc_url", getComplexObject("value", docURL));
+			stringData.append("&field_doc_url[und][0][value]=" + docURL);
 		if (contactInfo != null && !contactInfo.isEmpty())
-			jsonData.put("field_contact_info",
-					getComplexObject("value", contactInfo));
+			stringData.append("&field_contact_info[und][0][value]="
+					+ contactInfo);
 		if (version != null && !version.isEmpty())
-			jsonData.put("field_version", getComplexObject("value", version));
-		inputParameters = new ArrayList<String>();
-		inputParameters.add("202");
-		inputParameters.add("203");
-		jsonData.put("field_parameter", getComplexObject("nid", inputParameters));
-//		jsonData.put("field_parameter", getComplexObject("nid", outputParameters));
-		return jsonData;
+			stringData.append("&field_version[und][0][value]=" + version);
+		for (Parameter parameter : inputParameters) {
+			stringData.append("&field_input_file[und][]=" + parameter.getNid());
+		}
+		for (Parameter parameter : outputParameters) {
+			stringData
+					.append("&field_output_file[und][]=" + parameter.getNid());
+		}
+		return stringData.toString();
 	}
+
+	// public JSONObject getJSON() throws JSONException {
+	// JSONObject jsonData = new JSONObject();
+	// jsonData.put("title", title);
+	// jsonData.put("type", "program");
+	// if (description != null && !description.isEmpty())
+	// jsonData.put("body", getComplexObject("value", description));
+	// if (creator != null && !creator.isEmpty())
+	// jsonData.put("field_creator", getComplexObject("value", creator));
+	// if (submittor != null && !submittor.isEmpty())
+	// jsonData.put("field_submittor",
+	// getComplexObject("value", submittor));
+	// if (path != null && !path.isEmpty())
+	// jsonData.put("field_could_path", getComplexObject("value", path));
+	// if (docURL != null && !docURL.isEmpty())
+	// jsonData.put("field_doc_url", getComplexObject("value", docURL));
+	// if (contactInfo != null && !contactInfo.isEmpty())
+	// jsonData.put("field_contact_info",
+	// getComplexObject("value", contactInfo));
+	// if (version != null && !version.isEmpty())
+	// jsonData.put("field_version", getComplexObject("value", version));
+	// return jsonData;
+	// }
 
 	private JSONObject getComplexObject(String key, String value)
 			throws JSONException {
@@ -100,27 +123,27 @@ public class Program {
 
 	private JSONObject getComplexObject(String key, ArrayList<String> values)
 			throws JSONException {
-		
+
 		JSONObject undObject = new JSONObject();
 		JSONArray undArray = new JSONArray();
-		
+
 		/*
 		 * This method will return a JSONObject similar to "field_is_shared": {
 		 * "und": [ [{ "value": "1" }],[{"value":"2"] ] }
 		 */
-		
+
 		for (String value : values) {
 			JSONArray innerArray = new JSONArray();
 			JSONObject undArrayObject = new JSONObject();
 			undArrayObject.put(key, value);
 			innerArray.put(undArrayObject);
 			undArray.put(innerArray);
-			
+
 		}
-		
+
 		undObject.put("und", undArray);
 		return undObject;
-		
+
 	}
 
 	/**
@@ -306,7 +329,7 @@ public class Program {
 	/**
 	 * @return the inputParameters
 	 */
-	public ArrayList<String> getInputParameters() {
+	public ArrayList<Parameter> getInputParameters() {
 		return inputParameters;
 	}
 
@@ -314,14 +337,14 @@ public class Program {
 	 * @param inputParameters
 	 *            the inputParameters to set
 	 */
-	public void setInputParameters(ArrayList<String> inputParameters) {
+	public void setInputParameters(ArrayList<Parameter> inputParameters) {
 		this.inputParameters = inputParameters;
 	}
 
 	/**
 	 * @return the outputParameters
 	 */
-	public ArrayList<String> getOutputParameters() {
+	public ArrayList<Parameter> getOutputParameters() {
 		return outputParameters;
 	}
 
@@ -329,7 +352,7 @@ public class Program {
 	 * @param outputParameters
 	 *            the outputParameters to set
 	 */
-	public void setOutputParameters(ArrayList<String> outputParameters) {
+	public void setOutputParameters(ArrayList<Parameter> outputParameters) {
 		this.outputParameters = outputParameters;
 	}
 

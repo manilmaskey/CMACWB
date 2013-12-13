@@ -4,8 +4,8 @@
 package edu.uah.itsc.cmac.actions;
 
 import java.util.HashMap;
-import java.util.List;
 
+import org.apache.http.HttpResponse;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -13,7 +13,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -22,8 +21,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -32,7 +29,6 @@ import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
-import edu.uah.itsc.cmac.ui.NavigatorView;
 
 /**
  * @author sshrestha
@@ -131,7 +127,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 			nodeID = null;
 		if (nodeID != null && nodeID.length() > 0) {
 			PortalPost portalPost = new PortalPost();
-			String response = portalPost.delete(PortalUtilities
+			HttpResponse response = portalPost.delete(PortalUtilities
 					.getNodeRestPoint() + "/" + nodeID);
 			System.out.println(response);
 		}

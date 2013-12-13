@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import org.apache.http.HttpResponse;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -31,10 +32,6 @@ import org.json.JSONObject;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
-import com.amazonaws.services.identitymanagement.model.GetGroupPolicyRequest;
-import com.amazonaws.services.identitymanagement.model.GetGroupPolicyResult;
-import com.amazonaws.services.identitymanagement.model.PutGroupPolicyRequest;
 import com.amazonaws.services.s3.AmazonS3;
 
 import edu.uah.itsc.aws.S3;
@@ -79,7 +76,7 @@ public class ExperimentFormView extends ViewPart {
 
 		Composite client = toolkit.createComposite(section, SWT.WRAP);
 		GridLayout layout = new GridLayout();
-		// layout.numColumns = 2;
+		layout.numColumns = 2;
 
 		client.setLayout(layout);
 
@@ -104,7 +101,7 @@ public class ExperimentFormView extends ViewPart {
 				SWT.PUSH);
 		submitButton.setLayoutData(gd);
 		submitButton.addSelectionListener(new SelectionListener() {
-			String response;
+			HttpResponse response;
 			PortalPost portalPost = new PortalPost();
 			Experiment experiment = new Experiment();
 
@@ -153,8 +150,9 @@ public class ExperimentFormView extends ViewPart {
 							response = portalPost.post(
 									PortalUtilities.getNodeRestPoint(),
 									jsonExperiment);
+							String stringResponse = response.toString();
 							if (response == null
-									|| !response
+									|| !stringResponse
 											.matches("^HTTP/\\d\\.\\d\\s200\\sOK.*")) {
 								return Status.CANCEL_STATUS;
 							}

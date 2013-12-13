@@ -37,16 +37,24 @@ public class PortalPost {
 
 	private PortalConnector portalConnector = new PortalConnector();
 
-	public void put(String url, JSONObject putData) {
-		executeRequest(url, putData, "PUT");
+	public HttpResponse put(String url, JSONObject putData) {
+		return executeRequest(url, putData, "PUT");
 	}
 
-	public String post(String url, JSONObject postData) {
+	public HttpResponse post(String url, JSONObject postData) {
 		return executeRequest(url, postData, "POST");
 	}
 
-	public String delete(String url) {
-		return executeRequest(url, null, "DELETE");
+	public HttpResponse delete(String url) {
+		return executeRequest(url, "", "DELETE");
+	}
+
+	public HttpResponse put(String url, String putData) {
+		return executeRequest(url, putData, "PUT");
+	}
+
+	public HttpResponse post(String url, String postData) {
+		return executeRequest(url, postData, "POST");
 	}
 
 	public void runCron() {
@@ -93,7 +101,8 @@ public class PortalPost {
 
 	}
 
-	private String executeRequest(String url, JSONObject postData, String action) {
+	private HttpResponse executeRequest(String url, JSONObject postData,
+			String action) {
 
 		HttpClient httpClient = new DefaultHttpClient();
 		HttpResponse response = null;
@@ -130,10 +139,56 @@ public class PortalPost {
 		} catch (Exception e) {
 
 		}
+		return response;
+		// if (response != null)
+		// return response.toString();
+		// else
+		// return null;
+	}
 
-		if (response != null)
-			return response.toString();
-		else
-			return null;
+	private HttpResponse executeRequest(String url, String postData,
+			String action) {
+
+		HttpClient httpClient = new DefaultHttpClient();
+		HttpResponse response = null;
+
+		BasicHttpContext mHttpContext = getHttpContext();
+		StringEntity se = null;
+		if (postData != null)
+			try {
+				se = new StringEntity(postData.toString());
+				// set request content type
+				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
+						"application/x-www-form-urlencoded"));
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		try {
+			if (action.equalsIgnoreCase("put")) {
+				HttpPut httpPut = new HttpPut(url);
+				httpPut.setEntity(se);
+				response = httpClient.execute(httpPut, mHttpContext);
+
+			} else if (action.equalsIgnoreCase("post")) {
+				HttpPost httpPost = new HttpPost(url);
+				httpPost.setEntity(se);
+				response = httpClient.execute(httpPost, mHttpContext);
+
+			} else if (action.equalsIgnoreCase("delete")) {
+				HttpDelete httpDelete = new HttpDelete(url);
+				response = httpClient.execute(httpDelete, mHttpContext);
+
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		return response;
+		// if (response != null)
+		// return response.toString();
+		// else
+		// return null;
 	}
 }

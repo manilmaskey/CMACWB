@@ -18,6 +18,7 @@ public class Parameter {
 	private String type;
 	private String status;
 	private String format;
+	private String nid;
 
 	public JSONObject getJSON() throws JSONException {
 		JSONObject jsonData = new JSONObject();
@@ -143,5 +144,19 @@ public class Parameter {
 	 */
 	public void setFormat(String format) {
 		this.format = format;
+	}
+
+	/**
+	 * @return the nid
+	 */
+	public String getNid() {
+		return nid;
+	}
+
+	/**
+	 * @param nid the nid to set
+	 */
+	public void setNid(String nid) {
+		this.nid = nid;
 	}
 }
