@@ -280,6 +280,8 @@ public class NavigatorView extends CommonNavigator {
 							.replaceAll(prefix, ""));
 					if (!tp1.exists()) {
 						try {
+							if (!((IProject) tp).isOpen())
+								((IProject) tp).open(null);
 							tp1.create(false, true, null);
 						} catch (CoreException e) {
 							// TODO Auto-generated catch block
