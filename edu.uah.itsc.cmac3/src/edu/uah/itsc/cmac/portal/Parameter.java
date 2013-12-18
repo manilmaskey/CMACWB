@@ -19,6 +19,7 @@ public class Parameter {
 	private String status;
 	private String format;
 	private String nid;
+	private String default_value;
 
 	public JSONObject getJSON() throws JSONException {
 		JSONObject jsonData = new JSONObject();
@@ -32,8 +33,12 @@ public class Parameter {
 			jsonData.put("field_type", getComplexObject("value", type));
 		if (status != null && !status.isEmpty())
 			jsonData.put("field_status", getComplexObject("value", status));
-		if (format!= null && !format.isEmpty())
+		if (format != null && !format.isEmpty())
 			jsonData.put("field_format", getComplexObject("value", format));
+		// added field - rohith
+		if (default_value != null && !default_value.isEmpty())
+			jsonData.put("field_default",
+					getComplexObject("value", default_value));
 		return jsonData;
 	}
 
@@ -154,9 +159,29 @@ public class Parameter {
 	}
 
 	/**
-	 * @param nid the nid to set
+	 * @param nid
+	 *            the nid to set
 	 */
 	public void setNid(String nid) {
 		this.nid = nid;
 	}
+
+	// --------------- Getters and setters added by rohith
+	/**
+	 * 
+	 * @return default_value
+	 */
+	public String getDefault_value() {
+		return default_value;
+	}
+
+	/**
+	 * 
+	 * @param default_value
+	 */
+	public void setDefault_value(String default_value) {
+		this.default_value = default_value;
+		// -----------------end of newly added code ---------
+	}
+
 }
