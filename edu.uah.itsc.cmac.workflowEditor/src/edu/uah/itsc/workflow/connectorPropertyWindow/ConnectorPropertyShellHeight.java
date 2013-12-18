@@ -19,7 +19,7 @@ public class ConnectorPropertyShellHeight {
 		 * height of labels = 21 Separator distance between labels = 27 height
 		 * of labels = 23 gap between end of button and shell = 10
 		 */
-		int height = (maximum * 21) + (maximum * 27) + 33 + 35;
+		int height = (maximum * 21) + (maximum * 27) + 33 + 35 + 21;
 
 		return height;
 	}
