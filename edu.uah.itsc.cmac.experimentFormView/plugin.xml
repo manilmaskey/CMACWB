@@ -10,7 +10,7 @@
       </category>
       <view
             name="Experiment"
-            icon="icons/brick.png"
+            icon="icons/experiment.png"
             category="edu.uah.itsc.cmac"
             class="edu.uah.itsc.cmac.experimentformview.views.ExperimentFormView"
             id="edu.uah.itsc.cmac.experimentformview.views.ExperimentFormView">

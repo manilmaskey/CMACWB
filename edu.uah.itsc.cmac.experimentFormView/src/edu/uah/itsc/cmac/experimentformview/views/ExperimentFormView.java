@@ -152,12 +152,13 @@ public class ExperimentFormView extends ViewPart {
 									jsonExperiment);
 							String stringResponse = response.toString();
 							if (response == null
-									|| !stringResponse
-											.matches("^HTTP/\\d\\.\\d\\s200\\sOK.*")) {
+									|| response.getStatusLine().getStatusCode() != 200) {
+								message.setMessage("Invalid Status Code");
 								return Status.CANCEL_STATUS;
 							}
 							monitor.worked(50);
 							monitor.done();
+							message.setMessage("Added Experiment Successfully");
 							return Status.OK_STATUS;
 						}
 					};

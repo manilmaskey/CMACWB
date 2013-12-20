@@ -112,7 +112,7 @@ public class ProgramView extends ViewPart {
 //	changes private to public to access this from workflow project
 	public ArrayList<Program> getPrograms() {
 		String data = PortalUtilities.getDataFromURL(PortalUtilities
-				.getNodeRestPoint() + "?parameters[type]=program");
+				.getNodeRestPoint() + "?parameters[type]=program&pagesize=1000000");
 		ArrayList<Program> programs = new ArrayList<Program>();
 		try {
 			JSONArray jsonData = new JSONArray(data);
