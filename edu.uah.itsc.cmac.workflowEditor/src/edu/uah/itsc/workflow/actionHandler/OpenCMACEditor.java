@@ -48,7 +48,7 @@ public class OpenCMACEditor implements IWorkbenchWindowActionDelegate {
 						page.openEditor(editorInput,
 								"edu.uah.itsc.cmac.workflow.editor");
 					} catch (PartInitException e) {
-						// TODO Auto-generated catch block
+
 						e.printStackTrace();
 					}
 				}

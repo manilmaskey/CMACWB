@@ -54,12 +54,12 @@ public class PopulateCompositePropertyWindow {
 					.getTitle())) {
 				Label lblNewLabel = new Label(composite, SWT.NONE);
 				y = (y + seperator);
-				lblNewLabel.setBounds(10, y, 104, 19);
+				lblNewLabel.setBounds(10, y, 200, 19); //104
 				lblNewLabel.setText(method.getProgram_inputs().get(i)
 						.getTitle());
 
 				Text text = new Text(composite, SWT.BORDER);
-				text.setBounds(120, y, 312, 19);
+				text.setBounds(220, y, 216, 19); //312
 				// check to see if the compositeInputValues list has a key with
 				// that input (it will have the key if the input was assigned a
 				// value

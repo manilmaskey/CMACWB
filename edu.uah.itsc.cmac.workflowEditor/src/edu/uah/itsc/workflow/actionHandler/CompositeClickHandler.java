@@ -34,7 +34,7 @@ public class CompositeClickHandler {
 				.calculate_CompositePropertyShellHeight(methodComposite);
 
 		// Set Size
-		shell.setSize(450, shellHeight);
+		shell.setSize(500, shellHeight);
 		// Set Title
 		shell.setText(methodComposite.getMethodName() + "'s Inputs");
 		// Set Layout

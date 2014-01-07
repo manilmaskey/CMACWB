@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Wsdl2Durpal
+Bundle-SymbolicName: edu.uah.itsc.cmac.wsdl2Durpal;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: edu.uah.itsc.cmac.wsdl2durpal.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ edu.uah.itsc.programFormView;bundle-version="1.0.0",
+ edu.uah.itsc.cmac3;bundle-version="1.0.0",
+ edu.uah.itsc.WSDLParserJARS;bundle-version="1.0.0",
+ edu.uah.itsc.cmac.libs;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy

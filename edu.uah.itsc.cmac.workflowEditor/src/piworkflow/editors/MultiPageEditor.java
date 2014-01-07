@@ -16,8 +16,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -31,7 +32,6 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 
 import edu.uah.itsc.workflow.childComposites.ChildCompositeCreator;
 import edu.uah.itsc.workflow.methodDragAndDrop.FavoritesDropTarget;
-import edu.uah.itsc.workflow.movementTrackers.MethodCompositeTracker;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
 import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
@@ -128,6 +128,21 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 		 * list is a must to be created in order for this editor to work
 		 */
 		if (VariablePoJo.getInstance().getProgram_List() == null) {
+
+			/**
+			 * Show a message dialogue to tell user that the programs are still
+			 * downloading
+			 */
+			// create dialog with ok and cancel button and info icon
+			Shell shell = new Shell();
+
+			MessageBox messageBox = new MessageBox(shell, SWT.ICON_QUESTION
+					| SWT.OK);
+			messageBox.setText("Programs not ready !");
+			messageBox.setMessage("Programs are still being downloaded ..");
+			messageBox.open();
+
+			// close the editor
 			IWorkbenchPage[] pagelist = PlatformUI.getWorkbench()
 					.getActiveWorkbenchWindow().getPages();
 			IWorkbenchPage page = pagelist[0];
