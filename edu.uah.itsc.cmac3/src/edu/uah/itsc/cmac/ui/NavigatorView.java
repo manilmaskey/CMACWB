@@ -173,11 +173,27 @@ public class NavigatorView extends CommonNavigator {
 				} else if (project.exists())
 					project.delete(true, monitor);
 				project.create(monitor);
-				buildTree("", project, bucket);
+				buildTree(User.username + "_$folder$", project, bucket);
 			} catch (CoreException e) {
 				e.printStackTrace();
 			}
 
+		}
+	}
+
+	public void buildBucketAsProject(String bucket, IProgressMonitor monitor) {
+		IProject project = ResourcesPlugin.getWorkspace().getRoot()
+				.getProject(bucket);
+		try {
+			if (project.exists())
+				project.delete(true, monitor);
+			else
+				project.create(monitor);
+			buildTree(User.username + "_$folder$", project, bucket);
+			project.refreshLocal(0, monitor);
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

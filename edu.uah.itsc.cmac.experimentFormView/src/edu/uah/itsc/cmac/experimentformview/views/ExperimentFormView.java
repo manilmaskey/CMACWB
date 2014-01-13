@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import org.apache.http.HttpResponse;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
@@ -21,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IFormColors;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormText;
@@ -39,6 +41,7 @@ import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.Experiment;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
+import edu.uah.itsc.cmac.ui.NavigatorView;
 
 public class ExperimentFormView extends ViewPart {
 	private FormToolkit toolkit;
@@ -159,12 +162,24 @@ public class ExperimentFormView extends ViewPart {
 							monitor.worked(50);
 							monitor.done();
 							message.setMessage("Added Experiment Successfully");
+							
 							return Status.OK_STATUS;
 						}
 					};
 					job.setUser(true);
 					job.schedule();
 					job.join();
+					NavigatorView view = (NavigatorView) PlatformUI
+							.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage()
+							.findView("edu.uah.itsc.cmac.NavigatorView");
+					S3 adminS3 = new S3();
+					if (!adminS3.userFolderExists(User.username, experiment.getTitle())){
+						adminS3.uploadUserFolder(User.username, experiment.getTitle());
+					}
+					view.buildBucketAsProject(experiment.getTitle(), new NullProgressMonitor());
+					descriptionText.setText("");
+					titleText.setText("");
 				} catch (Exception execption) {
 					execption.printStackTrace();
 					message.setMessage("Could not add the experiment.");

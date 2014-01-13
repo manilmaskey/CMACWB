@@ -9,5 +9,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.forms,
  edu.uah.itsc.cmac3,
  org.json.simple;bundle-version="1.0.0",
- edu.uah.itsc.cmac.libs;bundle-version="1.0.0"
+ edu.uah.itsc.cmac.libs;bundle-version="1.0.0",
+ org.eclipse.ui.navigator;bundle-version="3.5.300"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
