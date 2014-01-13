@@ -42,8 +42,8 @@ public class SampleNewWizardPage extends WizardPage {
 	 */
 	public SampleNewWizardPage(ISelection selection) {
 		super("wizardPage");
-		setTitle("Multi-page Editor File");
-		setDescription("This wizard creates a new file with *.mpe extension that can be opened by a multi-page editor.");
+		setTitle("CMAC Editor");
+		setDescription("This wizard creates a new file with *.json extension that can be opened by a CMAC Editor.");
 		this.selection = selection;
 	}
 
