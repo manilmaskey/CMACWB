@@ -568,5 +568,31 @@
          </enablement>
      </actionProvider>
    </extension>
-   
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+         <command
+               commandId="edu.uah.itsc.cmac3.AddExperiment"
+               icon="icons/experiment.png"
+               label="Add Experiment"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            description="Add Experiment"
+            id="edu.uah.itsc.cmac3.AddExperiment"
+            name="AddExperiment">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="edu.uah.itsc.cmac.actions.AddExperimentHandler"
+            commandId="edu.uah.itsc.cmac3.AddExperiment">
+      </handler>
+   </extension>
 </plugin>

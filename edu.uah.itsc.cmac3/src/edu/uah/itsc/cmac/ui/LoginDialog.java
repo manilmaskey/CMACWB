@@ -3,6 +3,7 @@ package edu.uah.itsc.cmac.ui;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -190,9 +191,15 @@ public class LoginDialog {
 					User.password = password;
 					
 					S3 adminS3 = new S3();
-					if (!adminS3.userFolderExists(username, adminS3.getBucketName())){
-						adminS3.uploadUserFolder(username, adminS3.getBucketName());
+					ArrayList<String> allBuckets = adminS3.getAllBuckets();
+					for (String bucket : allBuckets) {
+						if (!adminS3.userFolderExists(username, bucket)){
+							adminS3.uploadUserFolder(username, bucket);
+						}
 					}
+//					if (!adminS3.userFolderExists(username, adminS3.getBucketName())){
+//						adminS3.uploadUserFolder(username, adminS3.getBucketName());
+//					}
 					shell.close();
 					
 					System.out.println("Connecting to XMPP-----------------------");
