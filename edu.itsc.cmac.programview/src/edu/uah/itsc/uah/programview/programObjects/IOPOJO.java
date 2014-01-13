@@ -6,7 +6,35 @@ public class IOPOJO {
 	String title;
 	String data_Type;
 	String data_Value;
+	String option;
+	String type;
+	String status;
+	String format;
 	
+	public String getOption() {
+		return option;
+	}
+	public void setOption(String option) {
+		this.option = option;
+	}
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	public String getFormat() {
+		return format;
+	}
+	public void setFormat(String format) {
+		this.format = format;
+	}
 	public int getVid() {
 		return vid;
 	}

@@ -36,12 +36,6 @@ public class ReadProgramsThread extends Thread {
 			Display display = new Display();
 			Shell shell = new Shell(display);
 
-			MessageBox messageBox = new MessageBox(shell, SWT.ICON_QUESTION
-					| SWT.OK);
-			messageBox.setText("Programs ready !");
-			messageBox.setMessage("Programs are downloaded ..");
-			messageBox.open();
-			System.out.println("Programs Read ...");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
