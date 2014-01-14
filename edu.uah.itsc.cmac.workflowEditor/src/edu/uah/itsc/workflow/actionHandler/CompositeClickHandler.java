@@ -33,8 +33,15 @@ public class CompositeClickHandler {
 		int shellHeight = calculatorObject
 				.calculate_CompositePropertyShellHeight(methodComposite);
 
+		// decide where the shell is going to be visible
+		int x = methodComposite.getBounds().x;
+		int y = methodComposite.getBounds().y;
+
 		// Set Size
-		shell.setSize(500, shellHeight);
+		// shell.setSize(500, shellHeight);
+
+		shell.setBounds(x + 500, y + 200, 500, shellHeight);
+
 		// Set Title
 		shell.setText(methodComposite.getMethodName() + "'s Inputs");
 		// Set Layout

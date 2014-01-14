@@ -7,6 +7,7 @@
       <editor
             class="piworkflow.editors.MultiPageEditor"
             contributorClass="piworkflow.editors.MultiPageEditorContributor"
+            extensions="json"
             icon="icons/cmac-16x16.png"
             id="edu.uah.itsc.cmac.workflow.editor"
             name="CMAC Workflow Editor">
@@ -66,7 +67,7 @@
                class="edu.uah.itsc.workflow.actionHandler.OpenCMACEditor"
                icon="icons/cmac-16x16.png"
                id="edu.uah.itsc.cmac.workflowEditor.openWorkFlow"
-               label="CMAC Editor Visualization">
+               label="CMAC Workflow Editor">
          </action>
       </objectContribution>
    </extension>

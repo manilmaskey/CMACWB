@@ -1,14 +1,19 @@
 package edu.uah.itsc.workflow.connectorPropertyWindow;
 
+import javax.lang.model.element.VariableElement;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
+import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
 
 /**
  * 
@@ -29,6 +34,12 @@ public class ConnectorPropertyWindow {
 			throws Exception {
 
 		final Shell shell = new Shell();
+		
+		
+		// decide where the shell is going to be visible 
+		int x = cd.getConnector().getStartingComposite().getBounds().x;
+		int y = cd.getConnector().getStartingComposite().getBounds().y;
+		
 
 		ConnectorPropertyShellHeight calculatorObject = new ConnectorPropertyShellHeight();
 		int shellHeight = calculatorObject.calculate_shellHeight(cd);
@@ -36,7 +47,21 @@ public class ConnectorPropertyWindow {
 		// checking the shell height
 		System.out.println("shell height " + shellHeight);
 
-		shell.setSize(500, shellHeight);
+//		shell.setSize(500, shellHeight);
+		
+		shell.setBounds(x + 500, y + 200, 500, shellHeight);
+		
+		
+		VariablePoJo.getInstance().getChildCreatorObject().getChildComposite_WorkSpace().addListener(SWT.MouseDown, new Listener() {
+			
+			@Override
+			public void handleEvent(Event event) {
+				System.out.println("event bounds x " + event.getBounds().x + "event bounds y " + event.getBounds().y);
+				System.out.println("event x " + event.x + "event y " + event.y);
+			}
+		});
+		
+		
 		shell.setText(cd.getConnector().getStartingComposite().getMethodName()
 				+ "-" + cd.getConnector().getEndingComposite().getMethodName());
 
