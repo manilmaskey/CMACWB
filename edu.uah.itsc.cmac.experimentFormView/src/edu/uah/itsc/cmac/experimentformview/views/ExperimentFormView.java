@@ -6,9 +6,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.apache.http.HttpResponse;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
@@ -35,6 +43,10 @@ import org.json.JSONObject;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
@@ -122,67 +134,71 @@ public class ExperimentFormView extends ViewPart {
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
 							s3 = new S3();
+							if (s3.doesBucketExist(experiment.getTitle())){
+								message.setMessage("This bucket is already created under your AWS ID");
+								message.setText("Error");
+								return Status.CANCEL_STATUS;
+							}
 							AmazonS3 amazonS3Service = s3.getAmazonS3Service();
 							try {
 								String bucketName = jsonExperiment.get("title")
 										.toString();
-								amazonS3Service.createBucket(bucketName);
+								Bucket newBucket = amazonS3Service
+										.createBucket(bucketName);
+								if (newBucket != null)
+									System.out.println("Created new bucket: "
+											+ newBucket.getName()
+											+ "\nCreated At: "
+											+ newBucket.getCreationDate()
+											+ "\nOwner: "
+											+ newBucket.getOwner());
 								s3.addGroupPolicy("cmac_collaborators",
 										"policy_cmac_collaborators",
 										getPolicyToAdd(bucketName));
-							} catch (AmazonServiceException e) {
-								e.printStackTrace();
-								message.setMessage("Could not add the experiment.\n"
-										+ e.getMessage());
-								message.setText("Error");
-								return Status.CANCEL_STATUS;
-							} catch (AmazonClientException e) {
-								e.printStackTrace();
-								message.setMessage("Could not add the experiment.\n"
-										+ e.getMessage());
-								message.setText("Error");
-								return Status.CANCEL_STATUS;
-							} catch (JSONException e) {
+
+								response = portalPost.post(
+										PortalUtilities.getNodeRestPoint(),
+										jsonExperiment);
+								String stringResponse = response.toString();
+								if (response == null
+										|| response.getStatusLine()
+												.getStatusCode() != 200) {
+									message.setMessage("Invalid Status Code");
+									return Status.CANCEL_STATUS;
+								}
+								monitor.worked(50);
+								S3 adminS3 = new S3();
+								Thread.sleep(5000);
+								if (!adminS3.userFolderExists(User.username,
+										experiment.getTitle())) {
+									adminS3.uploadUserFolder(User.username,
+											experiment.getTitle());
+								}
+								buildBucketAsProject(experiment.getTitle(),
+										new NullProgressMonitor());
+								monitor.done();
+								message.setMessage("Added Experiment Successfully");
+
+								return Status.OK_STATUS;
+							} catch (Exception e) {
 								e.printStackTrace();
 								message.setMessage("Could not add the experiment.\n"
 										+ e.getMessage());
 								message.setText("Error");
 								return Status.CANCEL_STATUS;
 							}
-							monitor.worked(100);
-							response = portalPost.post(
-									PortalUtilities.getNodeRestPoint(),
-									jsonExperiment);
-							String stringResponse = response.toString();
-							if (response == null
-									|| response.getStatusLine().getStatusCode() != 200) {
-								message.setMessage("Invalid Status Code");
-								return Status.CANCEL_STATUS;
-							}
-							monitor.worked(50);
-							monitor.done();
-							message.setMessage("Added Experiment Successfully");
-							
-							return Status.OK_STATUS;
 						}
 					};
 					job.setUser(true);
 					job.schedule();
 					job.join();
-					NavigatorView view = (NavigatorView) PlatformUI
-							.getWorkbench().getActiveWorkbenchWindow()
-							.getActivePage()
-							.findView("edu.uah.itsc.cmac.NavigatorView");
-					S3 adminS3 = new S3();
-					if (!adminS3.userFolderExists(User.username, experiment.getTitle())){
-						adminS3.uploadUserFolder(User.username, experiment.getTitle());
-					}
-					view.buildBucketAsProject(experiment.getTitle(), new NullProgressMonitor());
+
 					descriptionText.setText("");
 					titleText.setText("");
-				} catch (Exception execption) {
-					execption.printStackTrace();
-					message.setMessage("Could not add the experiment.");
+				} catch (Exception exception) {
+					exception.printStackTrace();
+					message.setMessage("Could not add the experiment.\n"
+							+ exception.getMessage());
 					message.setText("Error");
 					message.open();
 				}
@@ -240,4 +256,145 @@ public class ExperimentFormView extends ViewPart {
 		return fileContent;
 	}
 
+	public void buildBucketAsProject(String bucket, IProgressMonitor monitor) {
+		IProject project = ResourcesPlugin.getWorkspace().getRoot()
+				.getProject(bucket);
+		try {
+			if (!project.exists())
+				project.create(monitor);
+			buildTree(User.username + "_$folder$", project, bucket);
+			project.refreshLocal(0, monitor);
+		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void buildTree(String prefix, IResource tp, String bucket) {
+		ListObjectsRequest lor = new ListObjectsRequest();
+		lor.setBucketName(bucket);
+		lor.setDelimiter(s3.getDelimiter());
+		lor.setPrefix(prefix);
+
+		System.out.println("Building tree.............." + bucket
+				+ " delimiter=" + s3.getDelimiter() + " prefix=" + prefix);
+
+		// Just listing the buckets here
+		// List<Bucket> bu = s3.getService().listBuckets();
+		//
+		// for (int i=0;i<bu.size();i++){
+		// Bucket b = bu.get(i);
+		// System.out.println("---------------"+ b.getName()+"  " +
+		// b.getOwner().getDisplayName());
+		// }
+		ObjectListing filteredObjects = null;
+		try {
+			filteredObjects = s3.getService().listObjects(lor);
+		} catch (Exception e) {
+			// e.printStackTrace();
+			System.out.println("Cannot build tree for " + bucket + "\n"
+					+ e.getMessage());
+			return;
+		}
+		// if (filteredObjects.getObjectSummaries().isEmpty()){
+		// IFolder tp1 = ((IProject)tp).getFolder(prefix);
+		// if (!tp1.exists())
+		// tp1.create(false, true, null);
+		// }
+		//
+		for (S3ObjectSummary objectSummary : filteredObjects
+				.getObjectSummaries()) {
+			String currentResource = objectSummary.getKey();
+			System.out.println("Prefix=" + prefix);
+			System.out.println("buildTree currentResource=" + currentResource);
+
+			// check if the resource is a folder
+			if (currentResource.indexOf("_$folder$") > 0) {
+				IFolder tp1;
+
+				System.out.println("Folder="
+						+ currentResource.substring(0,
+								currentResource.indexOf("_$folder$")));
+
+				if (tp instanceof IFolder) {
+					System.out.println("IFolder="
+							+ currentResource.substring(0,
+									currentResource.indexOf("_$folder$")));
+					System.out
+							.println("Current Foldername tp= " + tp.getName());
+					tp1 = ((IFolder) tp).getFolder(currentResource.substring(0,
+							currentResource.indexOf("_$folder$")).replaceAll(
+							prefix, ""));
+					System.out.println("Current Foldername tp1= "
+							+ tp1.getName());
+					if (!tp1.exists())
+						try {
+							tp1.create(false, true, null);
+						} catch (CoreException e) {
+							// TODO Auto-generated catch block
+							System.err
+									.println("buildTree method tp1.create for IFolder ->"
+											+ e.toString());
+						}
+				} else {
+					tp1 = ((IProject) tp).getFolder(currentResource.substring(
+							0, currentResource.indexOf("_$folder$"))
+							.replaceAll(prefix, ""));
+					if (!tp1.exists()) {
+						try {
+							if (!((IProject) tp).isOpen())
+								((IProject) tp).open(null);
+							tp1.create(false, true, null);
+						} catch (CoreException e) {
+							// TODO Auto-generated catch block
+							System.err
+									.println("buildTree method tp1.create for IProject ->"
+											+ e.toString());
+						}
+					}
+				}
+				buildTree(
+						currentResource.substring(0,
+								currentResource.indexOf("_$folder$"))
+								+ "/", tp1, bucket);
+			} else { // not a folder, must be a file
+				System.out.println("Not a folder prefix: " + prefix);
+				IFile f;
+				String fullFilePath = ResourcesPlugin.getWorkspace().getRoot()
+						.getLocation().toOSString()
+						+ java.io.File.separator
+						+ bucket
+						+ java.io.File.separator + currentResource;
+				System.out.println("full path: " + fullFilePath);
+				IPath location = new Path(fullFilePath);
+
+				java.io.File file = new java.io.File(fullFilePath);
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					System.err
+							.println("buildTree method file.createNewFile() ->"
+									+ e.toString());
+				}
+				if (tp instanceof IFolder)
+					f = ((IFolder) tp).getFile(currentResource.replaceAll(
+							prefix, ""));
+				else
+					f = ((IProject) tp).getFile(currentResource.replaceAll(
+							prefix, ""));
+				if (!f.exists())
+					try {
+						f.createLink(location, IResource.NONE, null);
+					} catch (CoreException e) {
+						// TODO Auto-generated catch block
+						System.err
+								.println("buildTree method f.createLink(location, IResource.NONE, null) ->"
+										+ e.toString());
+					}
+				// tp.addChild(new TreeObject(currentResource.replaceAll(prefix,
+				// ""),currentResource));
+				System.out.println("File=" + currentResource);
+			}
+		}
+	}
 }

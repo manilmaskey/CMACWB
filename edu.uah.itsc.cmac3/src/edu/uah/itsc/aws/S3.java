@@ -453,4 +453,14 @@ public class S3 {
 		}
 		return allBucketsString;
 	}
+	
+	public boolean doesBucketExist (String bucketToCheck){
+		ArrayList<String> allBuckets = getAllBuckets();
+		for (String bucket : allBuckets) {
+			if (bucketToCheck.equalsIgnoreCase(bucket))
+				return true;
+		}
+		return false;
+	}
+	
 }
