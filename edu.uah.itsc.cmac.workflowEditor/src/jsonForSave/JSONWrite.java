@@ -1,10 +1,27 @@
 package jsonForSave;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.refresh.IRefreshMonitor;
+import org.eclipse.core.resources.refresh.IRefreshResult;
+import org.eclipse.core.resources.refresh.RefreshProvider;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -20,14 +37,13 @@ import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
  * @author Rohith Samudrala
  * 
  */
-public class JSONWrite {
+public class JSONWrite extends RefreshProvider {
 
 	/**
 	 * This method is responsible for creating the JSON file
 	 * 
 	 * @param name
-	 *            is the name of the .mpe file the name of the JSON File will be
-	 *            of format filename.mpe.json
+	 *            is the name of the file
 	 */
 	@SuppressWarnings("unchecked")
 	public void createJSONFile(String name) {
@@ -68,7 +84,8 @@ public class JSONWrite {
 			int height = program.getBounds().height;
 
 			// inputs
-			// int vid = program.getProgram_inputs().get(j).getVid(); changes i to j
+			// int vid = program.getProgram_inputs().get(j).getVid(); changes i
+			// to j
 			JSONArray inputs = new JSONArray();
 			for (int j = 0; j < program.getProgram_inputs().size(); j++) {
 				JSONObject inputObject = new JSONObject();
@@ -198,16 +215,14 @@ public class JSONWrite {
 		obj.put("inputsHooked", inputs_hooked);
 
 		try {
-//			String path = "C:\\Users\\Rohith Samudrala\\runtime-EclipseApplication\\CMACTEST\\TESTFILES\\"
-//					+ name;
+
 			String path = name;
-			// String path =
-			// "C:\\Users\\Rohith Samudrala\\workspace\\PIWorkFlow"
-			// + name + ".json";
 			FileWriter file = new FileWriter(path);
 			file.write(obj.toJSONString());
 			file.flush();
 			file.close();
+
+			wf_fileCreator(path);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -215,5 +230,56 @@ public class JSONWrite {
 
 		System.out.print(obj);
 
+	}
+
+	/**
+	 * Creates a .wf file in the same folder as the .json file
+	 * 
+	 * @param path
+	 */
+	private void wf_fileCreator(String path) {
+		// try {
+		//
+		// String key = StringFormatter(path);
+		//
+		// File file = new File(key + ".wf");
+		//
+		// if (file.createNewFile()) {
+		// System.out.println("File is created!");
+		// } else {
+		// System.out.println("File already exists.");
+		// }
+		//
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+
+		IWorkspaceRoot myWorkspaceRoot = ResourcesPlugin.getWorkspace()
+				.getRoot();
+
+		IProject myWebProject = myWorkspaceRoot.getProject();
+
+	}
+
+	/**
+	 * Removes the .json extension from the file name
+	 * 
+	 * @param path
+	 *            name of the file
+	 * @return the file name with out any extensions
+	 */
+	private String StringFormatter(String path) {
+
+		StringTokenizer st = new StringTokenizer(path, ".");
+		String key = st.nextToken();
+		System.out.println(key);
+		return key;
+	}
+
+	@Override
+	public IRefreshMonitor installMonitor(IResource resource,
+			IRefreshResult result) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

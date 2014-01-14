@@ -383,6 +383,53 @@
 
 <extension point="org.eclipse.ui.commands">
   <command
+        id="edu.uah.itsc.cmac.NewFile"
+        name="New File">
+  </command>
+</extension>
+
+<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.NewFileHandler"
+        commandId="edu.uah.itsc.cmac.NewFile">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="delete">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+</extension>
+
+<extension point="org.eclipse.ui.menus">
+  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?before=additions">
+     <command
+           commandId="edu.uah.itsc.cmac.NewFile"
+           style="push">
+        <visibleWhen>
+            <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="delete">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+  </menuContribution>
+</extension>
+
+<extension point="org.eclipse.ui.commands">
+  <command
         description="Refresh the resources"
         id="edu.uah.itsc.cmac.Refresh"
         name="Refresh">
