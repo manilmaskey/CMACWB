@@ -36,8 +36,8 @@ public class CompositeWrapper extends Composite /*
 	int numberOfInputs;
 	int numberOfOutputs;
 
-	List<String> inputValues = new ArrayList<>();
-	List<String> textList = new ArrayList<>();
+	List<String> inputValues = new ArrayList<String>();
+	List<String> textList = new ArrayList<String>();
 	List<String> loInputNames = new ArrayList<String>();
 
 	public List<String> getLoInputNames() {
@@ -57,8 +57,8 @@ public class CompositeWrapper extends Composite /*
 	Map<Label, String> IOConnections = new HashMap<Label, String>();
 
 	// Holds input JSONObjects
-	List<IOPOJO> program_inputs = new ArrayList<>();
-	List<IOPOJO> program_outputs = new ArrayList<>();
+	List<IOPOJO> program_inputs = new ArrayList<IOPOJO>();
+	List<IOPOJO> program_outputs = new ArrayList<IOPOJO>();
 
 	// the connection between output name and input name
 	Map<String, String> connectionsMap = new HashMap<String, String>();

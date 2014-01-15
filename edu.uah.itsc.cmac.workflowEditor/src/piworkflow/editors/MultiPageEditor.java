@@ -1,5 +1,6 @@
 package piworkflow.editors;
 
+import java.awt.AWTError;
 import java.io.IOException;
 
 import jsonForSave.DataPOJO;
@@ -17,6 +18,8 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -107,6 +110,18 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 						RelayComposites object = new RelayComposites();
 						System.out.println("In paint event");
 						object.reDraw();
+					}
+				});
+
+		VariablePoJo.getInstance().getChildCreatorObject()
+				.getChildComposite_WorkSpace()
+				.addListener(SWT.MouseDown, new Listener() {
+
+					@Override
+					public void handleEvent(Event event) {
+						System.out.println("event x " + event.x);
+						System.out.println("event y " + event.y);
+															
 					}
 				});
 

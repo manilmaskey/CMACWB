@@ -20,7 +20,7 @@ public class ClearComboBoxes {
 
 	// left over input names, global as it will be needed to
 	// populate the combo boxes
-	List<String> lo_inputNames = new ArrayList<>();
+	List<String> lo_inputNames = new ArrayList<String>();
 
 	public void clearComboBoxes(ConnectorDetectable cd,
 			List<Label> outputLabels2, Map<Label, Combo> labelMap2)

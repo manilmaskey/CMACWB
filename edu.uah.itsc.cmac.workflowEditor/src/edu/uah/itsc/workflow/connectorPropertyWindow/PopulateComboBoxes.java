@@ -24,7 +24,7 @@ public class PopulateComboBoxes {
 		// them is assigned a value in the composite window. If a value is
 		// assigned then do not add it to the list. This is a list of the input
 		// names that will be added to the combo boxes
-		List<String> lo_inputNames = new ArrayList<>();
+		List<String> lo_inputNames = new ArrayList<String>();
 		// This a map of all the input names and the values assigned to it in
 		// the composite window
 		Map<String, String> comp_inputValue = cd.getConnector()

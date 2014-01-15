@@ -22,7 +22,7 @@ public class FillInputValues {
 			throws JSONException, Exception {
 
 		// inputs that did not get an input value from the composite window
-		List<IOPOJO> inputsNotHooked = new ArrayList<>();
+		List<IOPOJO> inputsNotHooked = new ArrayList<IOPOJO>();
 		for (int i = 0; i < cd.getConnector().getEndingComposite()
 				.getComposite_InputsMap().size(); i++) {
 			// if the map which contains the input name and the value given to

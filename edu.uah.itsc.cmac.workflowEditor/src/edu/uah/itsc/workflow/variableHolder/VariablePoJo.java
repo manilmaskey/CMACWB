@@ -58,7 +58,7 @@ public class VariablePoJo /* implements SerializableCompatibility */{
 	// int inputID = 0;
 
 	// list of programs read from save
-	List<CompositeWrapper> programsFromSave = new ArrayList<>();
+	List<CompositeWrapper> programsFromSave = new ArrayList<CompositeWrapper>();
 
 	// list of composite on the editor
 	List<CompositeWrapper> compositeList = new ArrayList<CompositeWrapper>();

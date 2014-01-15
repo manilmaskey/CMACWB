@@ -82,7 +82,7 @@ public class JSONRead {
 						.setCompositeID((String) progObject.get("compositeID"));
 
 				JSONArray inputs = (JSONArray) progObject.get("inputs");
-				List<String> values = new ArrayList<>();
+				List<String> values = new ArrayList<String>();
 				for (int j = 0; j < inputs.size(); j++) {
 					JSONObject input = (JSONObject) inputs.get(j);
 					values.add((String) input.get("data_value"));
@@ -90,7 +90,7 @@ public class JSONRead {
 				composite.setInputValues(values);
 
 				JSONArray textList = (JSONArray) progObject.get("textList");
-				List<String> textValues = new ArrayList<>();
+				List<String> textValues = new ArrayList<String>();
 				for (int j = 0; j < textList.size(); j++) {
 					String txt = (String) textList.get(i);
 					textValues.add(txt);
@@ -99,7 +99,7 @@ public class JSONRead {
 				// connections map out
 				JSONArray connectionsMO = (JSONArray) progObject
 						.get("connectionsMapOut");
-				List<String> connetionsMapOut = new ArrayList<>();
+				List<String> connetionsMapOut = new ArrayList<String>();
 				for (int j = 0; j < connectionsMO.size(); j++) {
 					String txt = (String) connectionsMO.get(j);
 					connetionsMapOut.add(txt);
@@ -108,7 +108,7 @@ public class JSONRead {
 				// connections map in
 				JSONArray connectionsMI = (JSONArray) progObject
 						.get("connectionsMapIn");
-				List<String> connetionsMapIn = new ArrayList<>();
+				List<String> connetionsMapIn = new ArrayList<String>();
 				for (int j = 0; j < connectionsMI.size(); j++) {
 					String txt = (String) connectionsMI.get(j);
 					connetionsMapIn.add(txt);
@@ -128,7 +128,7 @@ public class JSONRead {
 				// given a value in the composite window)
 				JSONArray compositeIN = (JSONArray) progObject
 						.get("composite_Inputs");
-				List<String> composite_Inputs = new ArrayList<>();
+				List<String> composite_Inputs = new ArrayList<String>();
 				for (int j = 0; j < compositeIN.size(); j++) {
 					String txt = (String) compositeIN.get(j);
 					composite_Inputs.add(txt);
@@ -137,7 +137,7 @@ public class JSONRead {
 				// composite input values
 				JSONArray compositeVALUES = (JSONArray) progObject
 						.get("composite_Values");
-				List<String> composite_Values = new ArrayList<>();
+				List<String> composite_Values = new ArrayList<String>();
 				for (int j = 0; j < compositeVALUES.size(); j++) {
 					String txt = (String) compositeVALUES.get(j);
 					composite_Values.add(txt);
@@ -157,12 +157,12 @@ public class JSONRead {
 			// ---------------new composite list has all the programs
 
 			JSONArray CDList = (JSONArray) fileObject.get("CDList");
-			List<ConnectorDetectable> cd = new ArrayList<>();
-			List<Connectors> connectors = new ArrayList<>();
+			List<ConnectorDetectable> cd = new ArrayList<ConnectorDetectable>();
+			List<Connectors> connectors = new ArrayList<Connectors>();
 			for (int i = 0; i < CDList.size(); i++) {
 				Connectors connector = new Connectors();
 				JSONObject cdObject = (JSONObject) CDList.get(i);
-				List<String> loInputNames = new ArrayList<>();
+				List<String> loInputNames = new ArrayList<String>();
 				ConnectorDetectable newcd = new ConnectorDetectable(
 						childComposite_WorkSpace, SWT.NONE);
 
@@ -203,7 +203,7 @@ public class JSONRead {
 			vp_instance.setMethod1_IDCounter(Integer.parseInt(methodID.get(
 					"MethodID").toString()));
 
-			List<String> inputsHooked = new ArrayList<>();
+			List<String> inputsHooked = new ArrayList<String>();
 			JSONArray iHooked = (JSONArray) fileObject.get("inputsHooked");
 			for (int i = 0; i < iHooked.size(); i++) {
 				inputsHooked.add((String) iHooked.get(i));

@@ -30,7 +30,7 @@ public class PopulateCompositePropertyWindow {
 		int seperator = 22;
 		// list will hold the input names that are not hooked to any output in
 		// the connector window
-		List<String> inputsNotHooked = new ArrayList<>();
+		List<String> inputsNotHooked = new ArrayList<String>();
 		// check if the input has a value assigned to it in the connector window
 		// if not value is assigned to it then add the input name to the list.
 		// if there is a value assigned then check if the value is <Select> if
