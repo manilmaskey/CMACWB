@@ -27,10 +27,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.IFormColors;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormText;
@@ -40,8 +40,6 @@ import org.eclipse.ui.part.ViewPart;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
@@ -53,7 +51,6 @@ import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.Experiment;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
-import edu.uah.itsc.cmac.ui.NavigatorView;
 
 public class ExperimentFormView extends ViewPart {
 	private FormToolkit toolkit;
@@ -122,44 +119,39 @@ public class ExperimentFormView extends ViewPart {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				try{
+					
 				final MessageBox message = new MessageBox(form2.getShell());
-				experiment.setTitle(titleText.getText());
-				experiment.setDescription(descriptionText.getText());
-				experiment.setCreator(User.portalUserID);
-				// experiment.setWorkflows(workflowsText.getText());
 				try {
-					final JSONObject jsonExperiment = experiment.getJSON();
+					experiment.setTitle(titleText.getText());
+					experiment.setDescription(descriptionText.getText());
+					experiment.setCreator(User.portalUserID);
+					// experiment.setWorkflows(workflowsText.getText());
 					Job job = new Job("Creating experiment..") {
 
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
-							s3 = new S3();
-							if (s3.doesBucketExist(experiment.getTitle())){
-								message.setMessage("This bucket is already created under your AWS ID");
-								message.setText("Error");
-								return Status.CANCEL_STATUS;
-							}
-							AmazonS3 amazonS3Service = s3.getAmazonS3Service();
 							try {
+								final JSONObject jsonExperiment = experiment
+										.getJSON();
+								s3 = new S3();
+								if (s3.doesBucketExist(experiment.getTitle())) {
+									message.setMessage("This bucket is already created under your AWS ID");
+									message.setText("Error");
+									return Status.CANCEL_STATUS;
+								}
+								AmazonS3 amazonS3Service = s3
+										.getAmazonS3Service();
 								String bucketName = jsonExperiment.get("title")
 										.toString();
 								Bucket newBucket = amazonS3Service
 										.createBucket(bucketName);
-								if (newBucket != null)
-									System.out.println("Created new bucket: "
-											+ newBucket.getName()
-											+ "\nCreated At: "
-											+ newBucket.getCreationDate()
-											+ "\nOwner: "
-											+ newBucket.getOwner());
 								s3.addGroupPolicy("cmac_collaborators",
 										"policy_cmac_collaborators",
 										getPolicyToAdd(bucketName));
-
 								response = portalPost.post(
 										PortalUtilities.getNodeRestPoint(),
 										jsonExperiment);
-								String stringResponse = response.toString();
 								if (response == null
 										|| response.getStatusLine()
 												.getStatusCode() != 200) {
@@ -178,13 +170,33 @@ public class ExperimentFormView extends ViewPart {
 										new NullProgressMonitor());
 								monitor.done();
 								message.setMessage("Added Experiment Successfully");
-
+								Display.getDefault().asyncExec(new Runnable() {
+									  public void run() {
+									  message.open();
+									  }
+								});
 								return Status.OK_STATUS;
-							} catch (Exception e) {
+							} catch (JSONException e) {
 								e.printStackTrace();
-								message.setMessage("Could not add the experiment.\n"
+								message.setMessage("Could not add the experiment in JSONException.\n"
 										+ e.getMessage());
 								message.setText("Error");
+								Display.getDefault().syncExec(new Runnable() {
+									  public void run() {
+									  message.open();
+									  }
+								});
+								return Status.CANCEL_STATUS;
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+								message.setMessage("Could not add the experiment in InterruptedException\n"
+										+ e.getMessage());
+								message.setText("Error");
+								Display.getDefault().syncExec(new Runnable() {
+									  public void run() {
+									  message.open();
+									  }
+								});
 								return Status.CANCEL_STATUS;
 							}
 						}
@@ -192,18 +204,28 @@ public class ExperimentFormView extends ViewPart {
 					job.setUser(true);
 					job.schedule();
 					job.join();
-
-					descriptionText.setText("");
-					titleText.setText("");
-				} catch (Exception exception) {
-					exception.printStackTrace();
-					message.setMessage("Could not add the experiment.\n"
-							+ exception.getMessage());
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+					message.setMessage("Could not add the experiment in InterruptedException during join\n"
+							+ e1.getMessage());
 					message.setText("Error");
 					message.open();
-				}
-				if (message.getText().length() > 0)
+				} catch (Exception e2){
+					message.setText("Error, the last resort");
 					message.open();
+				}
+
+				descriptionText.setText("");
+				titleText.setText("");
+				if (message.getText().length() > 0) {
+					message.open();
+
+				}
+				} catch (Exception e3){
+					MessageBox message = new MessageBox(Display.getDefault().getActiveShell().getShell());
+					message.setMessage("THE ULTIMATE ERROR");
+					message.open();
+				}
 			}
 
 			@Override
@@ -269,6 +291,7 @@ public class ExperimentFormView extends ViewPart {
 			e.printStackTrace();
 		}
 	}
+
 	private void buildTree(String prefix, IResource tp, String bucket) {
 		ListObjectsRequest lor = new ListObjectsRequest();
 		lor.setBucketName(bucket);
