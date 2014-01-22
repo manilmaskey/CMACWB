@@ -57,6 +57,11 @@ public class PortalPost {
 		return executeRequest(url, postData, "POST");
 	}
 
+	public HttpResponse get(String url){
+		String data = null;
+		return executeRequest(url, data, "GET");
+	}
+
 	public void runCron() {
 		String url = PortalUtilities.getCronURL();
 		HttpClient httpclient = new DefaultHttpClient();
@@ -104,10 +109,8 @@ public class PortalPost {
 	private HttpResponse executeRequest(String url, JSONObject postData,
 			String action) {
 
-		HttpClient httpClient = new DefaultHttpClient();
 		HttpResponse response = null;
 
-		BasicHttpContext mHttpContext = getHttpContext();
 		StringEntity se = null;
 		if (postData != null)
 			try {
@@ -119,44 +122,19 @@ public class PortalPost {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-		try {
-			if (action.equalsIgnoreCase("put")) {
-				HttpPut httpPut = new HttpPut(url);
-				httpPut.setEntity(se);
-				response = httpClient.execute(httpPut, mHttpContext);
-
-			} else if (action.equalsIgnoreCase("post")) {
-				HttpPost httpPost = new HttpPost(url);
-				httpPost.setEntity(se);
-				response = httpClient.execute(httpPost, mHttpContext);
-
-			} else if (action.equalsIgnoreCase("delete")) {
-				HttpDelete httpDelete = new HttpDelete(url);
-				response = httpClient.execute(httpDelete, mHttpContext);
-
-			}
-
-		} catch (Exception e) {
-
-		}
+		response = execute(url, action, se);
 		return response;
-		// if (response != null)
-		// return response.toString();
-		// else
-		// return null;
 	}
 
 	private HttpResponse executeRequest(String url, String postData,
 			String action) {
 
-		HttpClient httpClient = new DefaultHttpClient();
 		HttpResponse response = null;
 
-		BasicHttpContext mHttpContext = getHttpContext();
 		StringEntity se = null;
 		if (postData != null)
 			try {
-				se = new StringEntity(postData.toString());
+				se = new StringEntity(postData);
 				// set request content type
 				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
 						"application/x-www-form-urlencoded"));
@@ -164,7 +142,26 @@ public class PortalPost {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+		response = execute(url, action, se);
+
+		return response;
+	}
+
+	/**
+	 * @param url
+	 * @param action
+	 * @param se
+	 * @return
+	 */
+	private HttpResponse execute(String url, String action, StringEntity se) {
+		HttpClient httpClient = new DefaultHttpClient();
+		HttpResponse response = null;
+		BasicHttpContext mHttpContext = getHttpContext();
 		try {
+			if (action.equalsIgnoreCase("get")){
+				HttpGet httpGet = new HttpGet(url);
+				response = httpClient.execute(httpGet, mHttpContext);
+			}
 			if (action.equalsIgnoreCase("put")) {
 				HttpPut httpPut = new HttpPut(url);
 				httpPut.setEntity(se);
@@ -178,17 +175,9 @@ public class PortalPost {
 			} else if (action.equalsIgnoreCase("delete")) {
 				HttpDelete httpDelete = new HttpDelete(url);
 				response = httpClient.execute(httpDelete, mHttpContext);
-
 			}
-
 		} catch (Exception e) {
-
 		}
-
 		return response;
-		// if (response != null)
-		// return response.toString();
-		// else
-		// return null;
 	}
 }

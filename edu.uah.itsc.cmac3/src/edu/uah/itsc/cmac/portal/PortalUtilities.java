@@ -14,6 +14,11 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -27,6 +32,29 @@ public class PortalUtilities {
 	private static Properties properties = null;
 
 	private PortalUtilities() {
+	}
+
+	public static String getDataFromHTTP(String url) {
+		PortalPost portalPost = new PortalPost();
+		HttpResponse response = portalPost.get(url);
+		InputStream is = null;
+		StringBuilder sb = new StringBuilder();
+		try {
+			is = response.getEntity().getContent();
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is,
+					Charset.forName("UTF-8")));
+			int cp;
+			while ((cp = rd.read()) != -1) {
+				sb.append((char) cp);
+			}
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return sb.toString(); 
 	}
 
 	public static String getDataFromURL(String url) {

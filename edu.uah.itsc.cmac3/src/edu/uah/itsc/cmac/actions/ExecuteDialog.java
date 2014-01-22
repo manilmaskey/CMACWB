@@ -3,11 +3,9 @@
  */
 package edu.uah.itsc.cmac.actions;
 
-import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -18,15 +16,17 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPage;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
+import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.Tag;
+
+import edu.uah.itsc.aws.EC2;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
@@ -67,30 +67,48 @@ public class ExecuteDialog {
 		keywordLabel.setText("Keywords");
 		final Text keywordText = new Text(shell, SWT.BORDER);
 		addSpanData(keywordText);
-
+		Label instanceLabel = new Label(shell, SWT.NONE);
+		instanceLabel.setText("Run on instance");
+		final Combo instanceCombo = new Combo(shell, SWT.READ_ONLY);
+		String[] instanceList = getInstanceList();
+		if (instanceList.length > 0){
+			instanceCombo.setItems(instanceList);
+			instanceCombo.select(0);
+		}
+		addSpanData(instanceCombo);
+		
 		Button ok = new Button(shell, SWT.PUSH);
 		ok.setText("  OK  ");
 		Button cancel = new Button(shell, SWT.PUSH);
 		cancel.setText("Cancel");
+		
+		if (instanceList.length <= 0){
+			ok.setEnabled(false);
+			MessageDialog.openError(shell, "No running Instances of EC2", "There are no running instances of Amazon EC2. Cannot execute workflow");
+			shell.close();
+			return;
+		}
+		
 		final String nodeID;
-		HashMap<String, String> nodeMap = pathExistsinPortal(path);
-		if (nodeMap != null) {
-			String link = (String) nodeMap.get("link");
-			String[] linkParts = link.split("/");
-			System.out.println("link part" + linkParts[linkParts.length - 1]);
-			nodeID = linkParts[linkParts.length - 1];
-			titleText.setText((String) nodeMap.get("title"));
-			descText.setText(((String) nodeMap.get("description")).replaceAll(
-					"\\<.*?\\>", ""));
-		} else
-			nodeID = null;
+		HashMap<String, String> nodeMap = PortalUtilities.getPortalWorkflowDetails(path);
+		if (nodeMap != null){
+			nodeID = nodeMap.get("nid");
+			titleText.setText((String)nodeMap.get("title"));
+			keywordText.setText((String)nodeMap.get("keywords"));
+			descText.setText(((String)nodeMap.get("description")).replaceAll("\\<.*?\\>", ""));
+		}
+		else nodeID = null;
 		ok.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				try {
-
 					System.out.println("Button clicked");
+					EC2 amazonEC2 = new EC2();
 					PortalPost portalPost = new PortalPost();
-
+					String instanceNameTag = instanceCombo.getItem(instanceCombo.getSelectionIndex());
+					String publicURL = amazonEC2.getInstancePublicURL(instanceNameTag);
+					if (publicURL == null)
+						throw new Exception("This instance does not have a public IP. Cannot execute workflow.");
+					System.out.println(publicURL);
 					Workflow workflow = new Workflow(titleText.getText(),
 							descText.getText(), keywordText.getText());
 					workflow.setPath(path);
@@ -107,12 +125,11 @@ public class ExecuteDialog {
 					new ProgressMonitorDialog(shell).run(true, true,
 							new LongRunningOperation(true, titleText.getText(),
 									descText.getText(), file, folder, bucket,
-									folderResource, page));
-
+									folderResource, page, publicURL));
+					shell.close();
 				} catch (Exception e) {
 					MessageDialog.openError(shell, "Error", e.getMessage());
 				}
-				shell.close();
 			}
 		});
 		cancel.addSelectionListener(new SelectionAdapter() {
@@ -126,61 +143,22 @@ public class ExecuteDialog {
 		shell.open();
 	}
 
-	private HashMap<String, String> pathExistsinPortal(String path) {
-
-		String xmlText = PortalUtilities.getDataFromURL(PortalUtilities
-				.getWorkflowFeedURL());
-		Node node, parentNode;
-		NodeList childNodes;
-		HashMap<String, String> nodeMap = null;
-		int i = 0, j = 0;
-		int listSize = 0;
-		String remotePath = null;
-		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder documentBuilder = dbFactory.newDocumentBuilder();
-			Document document = documentBuilder.parse(new ByteArrayInputStream(
-					xmlText.getBytes("utf-8")));
-			document.getDocumentElement().normalize();
-
-			NodeList nodeList = document.getElementsByTagName("guid");
-			listSize = nodeList.getLength();
-			if (nodeList.getLength() <= 0)
-				return null;
-			for (i = 0; i < listSize; i++) {
-				node = nodeList.item(i);
-				remotePath = node.getTextContent();
-				remotePath = remotePath.trim();
-				if (remotePath.equalsIgnoreCase(path)) {
-					parentNode = node.getParentNode();
-					nodeMap = new HashMap<String, String>();
-					// System.out.println("parentNode: " + parentNode);
-					childNodes = parentNode.getChildNodes();
-					// System.out.println("No. of childnodes: "
-					// + childNodes.getLength());
-					for (j = 0; j < childNodes.getLength(); j++) {
-						if (childNodes.item(j).getNodeName()
-								.equalsIgnoreCase("link"))
-							nodeMap.put("link", childNodes.item(j)
-									.getFirstChild().getNodeValue());
-						if (childNodes.item(j).getNodeName()
-								.equalsIgnoreCase("title"))
-							nodeMap.put("title", childNodes.item(j)
-									.getFirstChild().getNodeValue());
-						if (childNodes.item(j).getNodeName()
-								.equalsIgnoreCase("description"))
-							nodeMap.put("description", childNodes.item(j)
-									.getFirstChild().getNodeValue());
-					}
-
-				}
+	private String[] getInstanceList() {
+		EC2 amazonEC2 = new EC2();
+		ArrayList<Instance> instances = amazonEC2.getInstances();
+		String[] instanceString = new String[instances.size()];
+		int count = 0;
+		for (Instance instance: instances){
+			List<Tag> tags = instance.getTags();
+			for (Tag tag : tags) {
+				if (tag.getKey().equalsIgnoreCase("name"))
+					instanceString[count++] = tag.getValue();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+//			instanceString[count++] = instance.getKeyName();
 		}
-
-		return nodeMap;
+		return instanceString;
 	}
+	
+
 
 }

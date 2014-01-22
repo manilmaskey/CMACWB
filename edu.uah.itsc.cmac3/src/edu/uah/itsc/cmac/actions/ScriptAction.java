@@ -142,7 +142,9 @@ class LongRunningOperation implements IRunnableWithProgress {
 	  
 	  private IWorkbenchPage page;
 	  
-	  public LongRunningOperation(boolean indeterminate, String title, String desc, String file, String folder, String bucket, IFolder folderResource, IWorkbenchPage page) {
+	  private String publicURL;
+	  
+	  public LongRunningOperation(boolean indeterminate, String title, String desc, String file, String folder, String bucket, IFolder folderResource, IWorkbenchPage page, String publicURL) {
 	    this.indeterminate = indeterminate;
 	    this.title = title;
 	    this.desc = desc;
@@ -151,12 +153,13 @@ class LongRunningOperation implements IRunnableWithProgress {
 	    this.bucket = bucket;
 	    this.folderResource = folderResource;
 	    this.page = page;
+	    this.publicURL = publicURL;
 	  }
 
 	  public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 	    monitor.beginTask("Executing workflow...", indeterminate ? IProgressMonitor.UNKNOWN
 	        : TOTAL_TIME);
-        new RubyClient(title,desc,bucket,folder,file);
+        new RubyClient(title,desc,bucket,folder,file,publicURL);
          
 		try{
 			
