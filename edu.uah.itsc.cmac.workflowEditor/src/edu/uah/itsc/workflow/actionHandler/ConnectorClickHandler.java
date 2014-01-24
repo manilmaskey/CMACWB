@@ -5,6 +5,7 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.workflow.connectorPropertyWindow.ConnectorPropertyWindow;
 import edu.uah.itsc.workflow.connectorPropertyWindow.Connector_DeleteButtonHandler;
@@ -34,6 +35,12 @@ public class ConnectorClickHandler {
 		cd.addListener(SWT.MouseDown, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
+				try{
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().doSaveAs();
+					}
+					catch (Exception e){
+						System.out.println("No active page ...");
+					}
 				cd.forceFocus();
 			}
 		});

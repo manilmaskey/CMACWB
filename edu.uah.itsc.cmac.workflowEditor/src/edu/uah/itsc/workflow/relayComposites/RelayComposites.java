@@ -1,14 +1,22 @@
 package edu.uah.itsc.workflow.relayComposites;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Path;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
 import edu.uah.itsc.workflow.connectors.Connectors;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
+//import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 
 /**
@@ -18,16 +26,25 @@ import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
  * 
  */
 public class RelayComposites {
+	
+	String filename = "";
+	
+	
+	
+	public RelayComposites() {
+		super();
+	}
+
+	public RelayComposites(String filename) {
+		super();
+		this.filename = filename;
+	}
 
 	// Global Variables
-	CompositeWrapper parentComposite = VariablePoJo.getInstance()
-			.getParentComposite();
-	CompositeWrapper childComposite_WorkSpace = VariablePoJo.getInstance()
-			.getChildCreatorObject().getChildComposite_WorkSpace();
-	List<CompositeWrapper> compositeList = VariablePoJo.getInstance()
-			.getCompositeList();
-	List<Connectors> connectorList = VariablePoJo.getInstance()
-			.getConnectorList();
+	CompositeWrapper parentComposite;
+	CompositeWrapper childComposite_WorkSpace;
+	List<CompositeWrapper> compositeList;
+	List<Connectors> connectorList;
 
 	// Getters and Setters
 	public CompositeWrapper getParentComposite() {
@@ -68,25 +85,36 @@ public class RelayComposites {
 	 * entire composite and redraws everything
 	 */
 	public void reDraw() {
+		
+		CopyOfVariablePoJo dataobj = setdata ();
 
-		if (VariablePoJo.getInstance().getSelected_composite() != null) {
-			if (!(VariablePoJo.getInstance().getSelected_composite()
+		IWorkbenchPage[] pagelist = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getPages();
+		IWorkbenchPage page = pagelist[0];
+
+		IEditorReference[] referencelist = page.getEditorReferences();
+		IEditorPart editorPart = referencelist[0].getEditor(false);
+
+		if (dataobj.getSelected_composite() != null) {
+			if (!(dataobj.getSelected_composite()
 					.isDisposed())) {
-				CompositeWrapper composite = VariablePoJo.getInstance()
+				CompositeWrapper composite = dataobj
 						.getSelected_composite();
-				composite.setBackground(VariablePoJo.getInstance()
+				composite.setBackground(dataobj
 						.getChildCreatorObject().getChildComposite_WorkSpace()
 						.getDisplay()
 						.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 			}
 		}
-//		for (int i = 0; i < VariablePoJo.getInstance().getCompositeList().size(); i++){
-//			CompositeWrapper composite = VariablePoJo.getInstance().getCompositeList().get(i);
-//			composite.setBackground(VariablePoJo.getInstance()
-//					.getChildCreatorObject().getChildComposite_WorkSpace()
-//					.getDisplay()
-//					.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-//		}
+		// for (int i = 0; i <
+		// VariablePoJo.getInstance().getCompositeList().size(); i++){
+		// CompositeWrapper composite =
+		// VariablePoJo.getInstance().getCompositeList().get(i);
+		// composite.setBackground(VariablePoJo.getInstance()
+		// .getChildCreatorObject().getChildComposite_WorkSpace()
+		// .getDisplay()
+		// .getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+		// }
 
 		GC gc = new GC(childComposite_WorkSpace);
 		gc.fillRectangle(childComposite_WorkSpace.getClientArea());
@@ -95,8 +123,7 @@ public class RelayComposites {
 				SWT.COLOR_DARK_GRAY));
 		gc.setLineWidth(3);
 
-		List<ConnectorDetectable> connectorDetectableList = VariablePoJo
-				.getInstance().getConnectorDetectableList();
+		List<ConnectorDetectable> connectorDetectableList = dataobj.getConnectorDetectableList();
 		for (int i = 0; i < connectorDetectableList.size(); i++) {
 			ConnectorDetectable cd = connectorDetectableList.get(i);
 			Connectors connector = cd.getConnector();
@@ -134,5 +161,28 @@ public class RelayComposites {
 					.getSystemColor(SWT.COLOR_DARK_GREEN));
 		}
 
+	}
+
+	private CopyOfVariablePoJo setdata() {
+		
+		final CopyOfVariablePoJo dataobj;
+		
+		if (filename.equals("")){
+		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+		}else {
+			dataobj = (POJOHolder.getInstance().getEditorsmap().get(filename));
+		}
+		
+		parentComposite = dataobj
+				.getParentComposite();
+		childComposite_WorkSpace = dataobj
+				.getChildCreatorObject().getChildComposite_WorkSpace();
+		compositeList = dataobj
+				.getCompositeList();
+		connectorList = dataobj
+				.getConnectorList();
+		
+		return dataobj;
 	}
 }

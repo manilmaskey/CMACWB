@@ -3,10 +3,12 @@ package edu.uah.itsc.workflow.connectorPropertyWindow;
 import java.util.List;
 
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
 
 /**
  * 
@@ -23,6 +25,12 @@ public class Connector_DeleteButtonHandler {
 	 * @param shell
 	 */
 	public void deleteFromConnectorWindow(ConnectorDetectable cd, Shell shell) {
+		try{
+			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().doSaveAs();
+			}
+			catch (Exception e){
+				System.out.println("No active page ...(Connector_DeleteButtonHandler from connector window)");
+			}
 		deleteConnector(cd);
 		// close the shell
 		shell.close();
@@ -30,32 +38,47 @@ public class Connector_DeleteButtonHandler {
 	}
 
 	public void deleteFromConnector(ConnectorDetectable cd) {
+		try{
+			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().doSaveAs();
+			}
+			catch (Exception e){
+				System.out.println("No active page ... (Connector_DeleteButtonHandler from connector)");
+			}
 		deleteConnector(cd);
 		redraw_WorkFlow();
 	}
 
 	public void redraw_WorkFlow() {
+		
+		
+		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+		
 
 		// variable pojo instance
-		VariablePoJo instance = VariablePoJo.getInstance();
+//		VariablePoJo instance = VariablePoJo.getInstance();
 
 		// instance.getConnectorDetectableList().indexOf(arg0);
 
 		// refresh the workspace
 		RelayComposites relayObject = new RelayComposites();
-		relayObject.setChildComposite_WorkSpace(instance
+		relayObject.setChildComposite_WorkSpace(dataobj
 				.getChildCreatorObject().getChildComposite_WorkSpace());
-		relayObject.setParentComposite(instance.getParentComposite());
-		relayObject.setCompositeList(instance.getCompositeList());
-		relayObject.setConnectorList(VariablePoJo.getInstance()
-				.getConnectorList());
+		relayObject.setParentComposite(dataobj.getParentComposite());
+		relayObject.setCompositeList(dataobj.getCompositeList());
+		relayObject.setConnectorList(dataobj.getConnectorList());
 
 		relayObject.reDraw();
 	}
 
 	public void deleteConnector(ConnectorDetectable cd) {
-		List<ConnectorDetectable> cdlist = VariablePoJo.getInstance()
-				.getConnectorDetectableList();
+		
+		
+		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+		
+		
+		List<ConnectorDetectable> cdlist = dataobj.getConnectorDetectableList();
 		// This will always be true as the delete option is selected from the
 		// connector.
 		// Get the index of the cd in the cdlist. Then that particular cd's
@@ -72,7 +95,7 @@ public class Connector_DeleteButtonHandler {
 			cdlist.remove(i);
 			i = -1;
 		}
-		VariablePoJo.getInstance().setConnectorDetectableList(cdlist);
+		dataobj.setConnectorDetectableList(cdlist);
 	}
 
 }

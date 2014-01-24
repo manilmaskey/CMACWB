@@ -77,8 +77,8 @@ public class ProgramPOJO {
 	int output_Count;
 	String title;
 	String uri;
-	List<IOPOJO> input_List = new ArrayList<>();
-	List<IOPOJO> output_List = new ArrayList<>();
+	List<IOPOJO> input_List = new ArrayList<IOPOJO>();
+	List<IOPOJO> output_List = new ArrayList<IOPOJO>();
 	
 	public int getVid() {
 		return vid;

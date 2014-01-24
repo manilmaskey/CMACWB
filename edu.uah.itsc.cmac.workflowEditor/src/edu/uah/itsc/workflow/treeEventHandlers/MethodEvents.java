@@ -7,11 +7,14 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.workflow.actionHandler.CompositeClickHandler;
 import edu.uah.itsc.workflow.actionHandler.MethodHandlerUpdated;
 import edu.uah.itsc.workflow.movementTrackers.MethodCompositeTracker;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
+//import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 
 /**
@@ -41,9 +44,13 @@ public class MethodEvents {
 	@SuppressWarnings("unused")
 	public void MethodEventsHandler(Object obj) {
 
+		
+		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+		
+		
 		// Get the list of all methods
-		final List<edu.uah.itsc.uah.programview.programObjects.ProgramPOJO> methodsList = VariablePoJo
-				.getInstance().getProgram_List();
+		final List<edu.uah.itsc.uah.programview.programObjects.ProgramPOJO> methodsList = dataobj.getProgram_List();
 		// Is the selected a method
 		loop: for (int i = 0; i < methodsList.size(); i++) {
 			if (obj.toString()
@@ -65,17 +72,13 @@ public class MethodEvents {
 					public void handleEvent(Event e) {
 
 						MethodCompositeTracker methodTrackerObject = new MethodCompositeTracker();
-						methodTrackerObject.setCompositeList(VariablePoJo
-								.getInstance().getCompositeList());
+						methodTrackerObject.setCompositeList(dataobj.getCompositeList());
 						methodTrackerObject.setMethodComposite(methodComposite);
 						methodTrackerObject
-								.setChildComposite_WorkSpace(VariablePoJo
-										.getInstance().getChildCreatorObject()
+								.setChildComposite_WorkSpace(dataobj.getChildCreatorObject()
 										.getChildComposite_WorkSpace());
-						methodTrackerObject.setParentComposite(VariablePoJo
-								.getInstance().getParentComposite());
-						methodTrackerObject.setConnectorList(VariablePoJo
-								.getInstance().getConnectorList());
+						methodTrackerObject.setParentComposite(dataobj.getParentComposite());
+						methodTrackerObject.setConnectorList(dataobj.getConnectorList());
 						methodTrackerObject.methodTracker();
 					}
 				});
@@ -98,10 +101,9 @@ public class MethodEvents {
 
 						CompositeClickHandler handlerObject = new CompositeClickHandler();
 						try {
-							for (int i = 0; i < VariablePoJo.getInstance()
+							for (int i = 0; i < dataobj
 									.getCompositeList().size(); i++) {
-								if (VariablePoJo
-										.getInstance()
+								if (dataobj
 										.getCompositeList()
 										.get(i)
 										.getCompositeID()

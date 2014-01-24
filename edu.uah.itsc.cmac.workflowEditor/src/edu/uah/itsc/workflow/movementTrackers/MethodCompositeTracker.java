@@ -5,6 +5,7 @@ import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Tracker;
+import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.workflow.connectors.Connectors;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
@@ -75,6 +76,15 @@ public class MethodCompositeTracker {
 		Rectangle rect = methodComposite.getBounds();
 		tracker.setRectangles(new Rectangle[] { rect });
 		if (tracker.open()) {
+			
+			
+			try{
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().doSaveAs();
+				}
+				catch (Exception e){
+					System.out.println("No active page ...method tracker");
+				}
+			
 			Rectangle after = tracker.getRectangles()[0];
 			// checking through the composite array list to
 			// reset the bounds

@@ -384,7 +384,7 @@
 <extension point="org.eclipse.ui.commands">
   <command
         id="edu.uah.itsc.cmac.NewFile"
-        name="New File">
+        name="New CMAC Editor">
   </command>
 </extension>
 
@@ -411,6 +411,7 @@
   <menuContribution locationURI="popup:org.eclipse.ui.popup.any?before=additions">
      <command
            commandId="edu.uah.itsc.cmac.NewFile"
+           icon="icons/cmac-16x16.png"
            style="push">
         <visibleWhen>
             <with variable="selection">

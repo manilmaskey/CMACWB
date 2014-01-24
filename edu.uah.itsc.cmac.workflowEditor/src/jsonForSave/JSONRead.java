@@ -14,7 +14,8 @@ import org.json.simple.parser.ParseException;
 
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
 import edu.uah.itsc.workflow.connectors.Connectors;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 
 /**
@@ -26,11 +27,25 @@ import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
  */
 public class JSONRead {
 
+	String filename;
 	boolean isFile;
+	
+	
+
+	public JSONRead(String filename) {
+		super();
+		this.filename = filename;
+	}
+
+
 
 	public boolean readJSONFile(String name) {
 
 		JSONParser parser = new JSONParser();
+		
+		
+		CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(filename));
+		
 
 		try {
 
@@ -43,14 +58,14 @@ public class JSONRead {
 			JSONObject fileObject = (JSONObject) obj;
 
 			// instance of variable pojo
-			VariablePoJo vp_instance = VariablePoJo.getInstance();
+//			VariablePoJo vp_instance = VariablePoJo.getInstance();
 			DataPOJO dp_instance = DataPOJO.getInstance();
 
 			// array of programs
 			JSONArray programs = (JSONArray) fileObject.get("programs");
 
 			// workspace for work flow
-			CompositeWrapper childComposite_WorkSpace = vp_instance
+			CompositeWrapper childComposite_WorkSpace = dataobj
 					.getChildCreatorObject().getChildComposite_WorkSpace();
 
 			for (int i = 0; i < programs.size(); i++) {
@@ -170,14 +185,14 @@ public class JSONRead {
 				String ending = (String) cdObject.get("ending");
 				connector.setStartingCompositeID(starting);
 				connector.setEndingCompositeID(ending);
-				for (int j = 0; j < vp_instance.getCompositeList().size(); j++) {
-					if (vp_instance.getCompositeList().get(j).getCompositeID()
+				for (int j = 0; j < dataobj.getCompositeList().size(); j++) {
+					if (dataobj.getCompositeList().get(j).getCompositeID()
 							.equals(starting)) {
-						connector.setStartingComposite(vp_instance
+						connector.setStartingComposite(dataobj
 								.getCompositeList().get(j));
-					} else if (vp_instance.getCompositeList().get(j)
+					} else if (dataobj.getCompositeList().get(j)
 							.getCompositeID().equals(ending)) {
-						connector.setEndingComposite(vp_instance
+						connector.setEndingComposite(dataobj
 								.getCompositeList().get(j));
 					}
 				}
@@ -193,14 +208,14 @@ public class JSONRead {
 				newcd.setConnector(connector);
 				cd.add(newcd);
 			}
-			vp_instance.setConnectorDetectableList(cd);
-			vp_instance.setConnectorList(connectors);
+			dataobj.setConnectorDetectableList(cd);
+			dataobj.setConnectorList(connectors);
 
 			// -----------the above code will populate both connector detectable
 			// list as well as connectors list4
 
 			JSONObject methodID = (JSONObject) fileObject.get("methodID");
-			vp_instance.setMethod1_IDCounter(Integer.parseInt(methodID.get(
+			dataobj.setMethod1_IDCounter(Integer.parseInt(methodID.get(
 					"MethodID").toString()));
 
 			List<String> inputsHooked = new ArrayList<String>();
@@ -208,7 +223,7 @@ public class JSONRead {
 			for (int i = 0; i < iHooked.size(); i++) {
 				inputsHooked.add((String) iHooked.get(i));
 			}
-			vp_instance.setInputsHooked(inputsHooked);
+			dataobj.setInputsHooked(inputsHooked);
 			// input hooked list is ready
 
 			isFile = true;

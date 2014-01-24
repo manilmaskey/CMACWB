@@ -16,14 +16,17 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.ui.PlatformUI;
 
+import piworkflow.editors.MultiPageEditor;
 import edu.uah.itsc.uah.programview.programObjects.ProgramPOJO;
 import edu.uah.itsc.workflow.actionHandler.CompositeClickHandler;
 import edu.uah.itsc.workflow.actionHandler.ConnectorClickHandler;
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
 import edu.uah.itsc.workflow.connectors.Connectors;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 
 /**
@@ -40,6 +43,18 @@ public class CreateProgram {
 	CompositeWrapper methodComposite;
 	Label inflow;
 	Label outflow;
+	String filename = "";
+
+	// Constructor using the filename
+	public CreateProgram(String filename) {
+		super();
+		this.filename = filename;
+	}
+
+	// Regular constructor
+	public CreateProgram() {
+		super();
+	}
 
 	public Label getInflow() {
 		return inflow;
@@ -79,14 +94,27 @@ public class CreateProgram {
 	 */
 	public void createMethod(int x, int y, Object obj) throws Exception {
 
+		final CopyOfVariablePoJo dataobj;
+
+		// if filename is passed through constructor then use that to get the
+		// data object, else get it from the active page
+		if (filename.equals("")) {
+			String editorName = PlatformUI.getWorkbench()
+					.getActiveWorkbenchWindow().getActivePage()
+					.getActiveEditor().getTitle();
+			dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+			filename = editorName;
+		} else {
+			dataobj = (POJOHolder.getInstance().getEditorsmap().get(filename));
+		}
 		/**
 		 * Identify the object that was dropped onto the work space
 		 */
-		List<CompositeWrapper> compositesList = VariablePoJo.getInstance()
-				.getCompositeList(); // List of composites
+		List<CompositeWrapper> compositesList = dataobj.getCompositeList(); // List
+																			// of
+																			// composites
 
-		List<ProgramPOJO> programsList = VariablePoJo.getInstance()
-				.getProgram_List();
+		List<ProgramPOJO> programsList = dataobj.getProgram_List();
 		ProgramPOJO program = null;
 
 		for (int i = 0; i < programsList.size(); i++) {
@@ -96,13 +124,23 @@ public class CreateProgram {
 			}
 		}
 
+		// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 		/**
 		 * Create the method composite
 		 */
-		// Get the workspace where the method composite is to be created
-		final CompositeWrapper ChildComposite_WorkSpace = VariablePoJo
-				.getInstance().getChildCreatorObject()
-				.getChildComposite_WorkSpace();
+		// // Get the workspace where the method composite is to be created
+		// final CompositeWrapper ChildComposite_WorkSpace = VariablePoJo
+		// .getInstance().getChildCreatorObject()
+		// .getChildComposite_WorkSpace();
+		MultiPageEditor mpe = new MultiPageEditor();
+
+		// String editorName =
+		// PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+
+		final CompositeWrapper ChildComposite_WorkSpace = dataobj
+				.getChildCreatorObject().getChildComposite_WorkSpace();
+
+		// $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 		// Create a new method Composite
 		methodComposite = new CompositeWrapper(ChildComposite_WorkSpace,
@@ -116,17 +154,17 @@ public class CreateProgram {
 				+ ChildComposite_WorkSpace.getBounds().width + ","
 				+ ChildComposite_WorkSpace.getBounds().height);
 		System.out.println("the parent composite dimentions w,h "
-				+ VariablePoJo.getInstance().getDisplayX() + ","
-				+ VariablePoJo.getInstance().getDisplayY());
+				+ dataobj.getDisplayX() + "," + dataobj.getDisplayY());
 
-//		int x1 = (ChildComposite_WorkSpace.getBounds().width - 987);
-//		final int width_difference = (362 - x1);
-		int width_difference = ((VariablePoJo.getInstance().getDisplayX() - ChildComposite_WorkSpace.getBounds().width) -  17);
+		// int x1 = (ChildComposite_WorkSpace.getBounds().width - 987);
+		// final int width_difference = (362 - x1);
+		int width_difference = ((dataobj.getDisplayX() - ChildComposite_WorkSpace
+				.getBounds().width) - 17);
 		final int height_difference = 112;
 
 		System.out.println("width "
 				+ ChildComposite_WorkSpace.getBounds().width);
-//		System.out.println("x1 " + x1);
+		// System.out.println("x1 " + x1);
 
 		methodComposite.setBounds(x - width_difference, y - height_difference,
 				240, 40);
@@ -138,13 +176,12 @@ public class CreateProgram {
 				.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 
 		// setting the composite id
-		int method1_IDCounter = VariablePoJo.getInstance()
-				.getMethod1_IDCounter();
+		int method1_IDCounter = dataobj.getMethod1_IDCounter();
 		String methodID = "Method1 " + method1_IDCounter; // method1 id
 		method1_IDCounter++; // increment the id counter
 
 		// setting back the ID counter
-		VariablePoJo.getInstance().setMethod1_IDCounter(method1_IDCounter);
+		dataobj.setMethod1_IDCounter(method1_IDCounter);
 		methodComposite.setCompositeID(methodID); // setting the method id
 
 		// Set the name of method as method type
@@ -161,10 +198,8 @@ public class CreateProgram {
 		label.addListener(SWT.MouseDoubleClick, new Listener() {
 			public void handleEvent(Event e) {
 				CompositeClickHandler handlerObject = new CompositeClickHandler();
-				for (int i = 0; i < VariablePoJo.getInstance()
-						.getCompositeList().size(); i++) {
-					if (VariablePoJo.getInstance().getCompositeList().get(i)
-							.getCompositeID()
+				for (int i = 0; i < dataobj.getCompositeList().size(); i++) {
+					if (dataobj.getCompositeList().get(i).getCompositeID()
 							.equals(methodComposite.getCompositeID())) {
 						try {
 							handlerObject.handleCompositeClick(i);
@@ -179,32 +214,29 @@ public class CreateProgram {
 		label.addListener(SWT.MouseDown, new Listener() {
 			public void handleEvent(Event e) {
 
-				if (VariablePoJo.getInstance().getSelected_composite() != null) {
+				if (dataobj.getSelected_composite() != null) {
 
-					if (VariablePoJo.getInstance().getSelected_composite()
-							.getCompositeID()
+					if (dataobj.getSelected_composite().getCompositeID()
 							.equals(methodComposite.getCompositeID())) {
-						CompositeWrapper composite = VariablePoJo.getInstance()
+						CompositeWrapper composite = dataobj
 								.getSelected_composite();
 						// Label label = VariablePoJo.getInstance()
 						// .getTitleLabel();
 						composite
-								.setBackground(VariablePoJo
-										.getInstance()
+								.setBackground(dataobj
 										.getChildCreatorObject()
 										.getChildComposite_WorkSpace()
 										.getDisplay()
 										.getSystemColor(
 												SWT.COLOR_WIDGET_NORMAL_SHADOW));
-						VariablePoJo.getInstance().setSelected_composite(null);
+						dataobj.setSelected_composite(null);
 					} else {
-						CompositeWrapper composite = VariablePoJo.getInstance()
+						CompositeWrapper composite = dataobj
 								.getSelected_composite();
 						// Label label = VariablePoJo.getInstance()
 						// .getTitleLabel();
 						composite
-								.setBackground(VariablePoJo
-										.getInstance()
+								.setBackground(dataobj
 										.getChildCreatorObject()
 										.getChildComposite_WorkSpace()
 										.getDisplay()
@@ -220,15 +252,12 @@ public class CreateProgram {
 					System.out.println("force focus = " + false);
 				}
 
-				methodComposite.setBackground(VariablePoJo.getInstance()
-						.getChildCreatorObject().getChildComposite_WorkSpace()
-						.getDisplay()
+				methodComposite.setBackground(dataobj.getChildCreatorObject()
+						.getChildComposite_WorkSpace().getDisplay()
 						.getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND));
 
-				VariablePoJo.getInstance().setSelected_composite(
-						methodComposite);
-				VariablePoJo.getInstance().setTitleLabel(
-						methodComposite.getTitleLabel());
+				dataobj.setSelected_composite(methodComposite);
+				dataobj.setTitleLabel(methodComposite.getTitleLabel());
 
 			}
 		});
@@ -270,8 +299,7 @@ public class CreateProgram {
 				event.data = outGoing.getText();
 
 				// Create a new connector object
-				Connectors connectorObj = VariablePoJo.getInstance()
-						.getConnectorObj();
+				Connectors connectorObj = dataobj.getConnectorObj();
 				connectorObj = new Connectors();
 
 				// Set the starting composite into the connector
@@ -287,7 +315,16 @@ public class CreateProgram {
 						.getCompositeID());
 
 				// Set the connector object into a list of connectors
-				VariablePoJo.getInstance().setConnectorObj(connectorObj);
+				dataobj.setConnectorObj(connectorObj);
+				
+				
+				try{
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().doSaveAs();
+					}
+					catch (Exception e){
+						System.out.println("No active page ... create program drag source");
+					}
+				
 
 			}
 		});
@@ -299,8 +336,7 @@ public class CreateProgram {
 			public void drop(DropTargetEvent event) {
 				// Get the connector object initiated
 				// by the drag source
-				Connectors connectorObj = VariablePoJo.getInstance()
-						.getConnectorObj();
+				Connectors connectorObj = dataobj.getConnectorObj();
 
 				// Set the ending composite in to the connector
 				CompositeWrapper endingComposite = methodComposite;
@@ -314,13 +350,12 @@ public class CreateProgram {
 						.getCompositeID());
 
 				// add the connector object to the connector list
-				VariablePoJo.getInstance().getConnectorList().add(connectorObj);
+				dataobj.getConnectorList().add(connectorObj);
 
 				// Save the connector object in a Connector Detectable
 				// object
-				CompositeWrapper childCompositeWorkSpace = VariablePoJo
-						.getInstance().getChildCreatorObject()
-						.getChildComposite_WorkSpace();
+				CompositeWrapper childCompositeWorkSpace = dataobj
+						.getChildCreatorObject().getChildComposite_WorkSpace();
 
 				/**
 				 * a new cd is added when drop occurs then cd is added to the
@@ -330,7 +365,7 @@ public class CreateProgram {
 						childCompositeWorkSpace, SWT.NONE);
 				cd.setConnector(connectorObj);
 				// 2nd instance of adding cd
-				VariablePoJo.getInstance().getConnectorDetectableList().add(cd);
+				dataobj.getConnectorDetectableList().add(cd);
 
 				// Add handlers for composite detectable
 				ConnectorClickHandler handlerObject = new ConnectorClickHandler();
@@ -339,9 +374,16 @@ public class CreateProgram {
 				/**
 				 * Redraw everything
 				 */
-				RelayComposites relayCompositesObject = new RelayComposites();
+				RelayComposites relayCompositesObject = new RelayComposites(filename);
 				relayCompositesObject.reDraw();
 
+				try{
+					PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().doSaveAs();
+					}
+					catch (Exception e){
+						System.out.println("No active page ... create program drop target");
+					}
+				
 			}
 		});
 
@@ -357,6 +399,14 @@ public class CreateProgram {
 		methodComposite.setNumberOfOutputs(program.getOutput_Count());
 
 		compositesList.add(methodComposite);
+		
+		// program created ... set the editor dirty
+		try{
+		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().doSaveAs();
+		}
+		catch (Exception e){
+			System.out.println("No active page ...(triggered while setting editor to dirty in create program)");
+		}
 	}
 
 }

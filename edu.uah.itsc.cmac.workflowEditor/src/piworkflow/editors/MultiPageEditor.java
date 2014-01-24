@@ -1,7 +1,7 @@
 package piworkflow.editors;
 
-import java.awt.AWTError;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import jsonForSave.DataPOJO;
 import jsonForSave.JSONRead;
@@ -13,11 +13,11 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
@@ -31,15 +31,19 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.internal.EditorReference;
+import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
 import edu.uah.itsc.workflow.childComposites.ChildCompositeCreator;
+import edu.uah.itsc.workflow.menuOptions.WorkFlowSave;
 import edu.uah.itsc.workflow.methodDragAndDrop.FavoritesDropTarget;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
+import edu.uah.itsc.workflow.variableHolder.t_VariablePoJo;
+//import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
-
-//import edu.uah.itsc.workflow.saveHandler.CopyOfCreateXML;
 
 /**
  * 
@@ -51,6 +55,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 
 	// Global Variable
 	String Filename;
+	protected boolean dirty = false;
 
 	/**
 	 * Creates a editor.
@@ -61,74 +66,218 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 	}
 
 	/**
+	 * Sets the state of the editor to value entered
+	 * 
+	 * @param value
+	 *            the state of the editor (dirty or not)
+	 */
+	public void setDirty(boolean value) {
+		dirty = value;
+		firePropertyChange(PROP_DIRTY);
+	}
+
+	/**
+	 * returns the state of the editor
+	 */
+	public boolean isDirty() {
+		return dirty;
+	}
+
+	/**
 	 * Creates Work Space for the Work Flow
 	 */
+	@SuppressWarnings("deprecation")
 	void PI_WorkFlow() {
 
+		final CopyOfVariablePoJo newpojo = new CopyOfVariablePoJo();
+
+		
+		
 		/**
 		 * Setting up parent composite, using GridLayout
 		 */
-		CompositeWrapper parentComposite = (CompositeWrapper) VariablePoJo
-				.getInstance().getParentComposite();
+//		CompositeWrapper parentComposite = (CompositeWrapper) VariablePoJo
+//				.getInstance().getParentComposite();
+		CompositeWrapper parentComposite = (CompositeWrapper) newpojo.getParentComposite();
+		
+		
+		
 
 		parentComposite = new CompositeWrapper(getContainer(), SWT.NONE);
-		VariablePoJo.getInstance().setDisplayX(
-				parentComposite.getDisplay().getBounds().width);
-		VariablePoJo.getInstance().setDisplayY(
-				parentComposite.getDisplay().getBounds().height);
-		parentComposite.setLayout(new GridLayout(1, false));
+//		VariablePoJo.getInstance().setDisplayX(
+//				parentComposite.getDisplay().getBounds().width);
+//		VariablePoJo.getInstance().setDisplayY(
+//				parentComposite.getDisplay().getBounds().height);
+		
+		
+		
+		//--------------------------------------------------
+			newpojo.setDisplayX(parentComposite.getDisplay().getBounds().width);
+			newpojo.setDisplayY(parentComposite.getDisplay().getBounds().height);
+		//--------------------------------------------------
+			
+			parentComposite.setLayout(new GridLayout(1, false));
+			
+		
 
 		/**
 		 * Creating child composite
 		 */
-		VariablePoJo.getInstance().setChildCreatorObject(
-				new ChildCompositeCreator());
-		ChildCompositeCreator childCreatorObject = VariablePoJo.getInstance()
-				.getChildCreatorObject();
+//		VariablePoJo.getInstance().setChildCreatorObject(
+//				new ChildCompositeCreator());
+//		ChildCompositeCreator childCreatorObject = VariablePoJo.getInstance()
+//				.getChildCreatorObject();
+		
+			newpojo.setChildCreatorObject(
+					new ChildCompositeCreator());
+			ChildCompositeCreator childCreatorObject = newpojo
+					.getChildCreatorObject();
+			
+			t_VariablePoJo.getInstance().setChildCreatorObject(newpojo.getChildCreatorObject());
+		
+		
 		childCreatorObject.setParentComposite(parentComposite);
 		childCreatorObject.createChildComposites();
 
+//		//--------------------------------------------------
+//			newpojo.setChildCreatorObject(VariablePoJo.getInstance().getChildCreatorObject());
+//		//--------------------------------------------------
+		
+		
 		/**
 		 * Grab the program objects list from programview plugin
 		 */
-		VariablePoJo.getInstance().setProgram_List();
+//		VariablePoJo.getInstance().setProgram_List();
+		
+		//--------------------------------------------------
+			newpojo.setProgram_List();
+			t_VariablePoJo.getInstance().setProgram_List();
+		//--------------------------------------------------
 
-		/**
+		 /**
 		 * Set the Drop target
 		 */
-		setDropTarget();
+		 setDropTarget();
 
 		/**
 		 * Listener for repaint
 		 */
-		VariablePoJo.getInstance().getChildCreatorObject()
+		newpojo.getChildCreatorObject()
 				.getChildComposite_WorkSpace()
 				.addPaintListener(new PaintListener() {
 
 					@Override
 					public void paintControl(PaintEvent e) {
-						RelayComposites object = new RelayComposites();
+						
+						String filename = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+						
+						RelayComposites object = new RelayComposites(filename);
 						System.out.println("In paint event");
 						object.reDraw();
 					}
 				});
 
-		VariablePoJo.getInstance().getChildCreatorObject()
+		/**
+		 * Temp listener to check mouse down event's location and save function
+		 */
+		newpojo.getChildCreatorObject()
 				.getChildComposite_WorkSpace()
 				.addListener(SWT.MouseDown, new Listener() {
 
 					@Override
 					public void handleEvent(Event event) {
+
+						// trigger the setDirty and mark the editor dirty
+//						setDirty(true);
+//						System.out.println("The editor is now dirty");
+
+						// get the event location
 						System.out.println("event x " + event.x);
 						System.out.println("event y " + event.y);
-															
+
 					}
 				});
 
-		int index = addPage(parentComposite);
-		setPageText(index, "CMAC Workflow Editor");
-	}
+		/**
+		 * Test to see if mouse entered event moves across different focuses
+		 */
+		final EditorPart editorPart = this;
+		newpojo.getChildCreatorObject()
+				.getChildComposite_WorkSpace()
+				.addListener(SWT.MouseEnter, new Listener() {
 
+					@Override
+					public void handleEvent(Event event) {
+
+						System.out.println("mouse entered the editor " + this);
+						System.out.println("get part name"
+								+ editorPart.getPartName());
+						System.out.println("get part title "
+								+ editorPart.getTitle());
+						
+						IWorkbenchPage[] pagelist = PlatformUI.getWorkbench()
+								.getActiveWorkbenchWindow().getPages();
+						IWorkbenchPage page = pagelist[0];
+						IEditorReference[] referencelist = page.getEditorReferences();
+						
+						String activefilename = page.getActiveEditor().getTitle();
+						System.out.println("the active editor file name is " + activefilename);
+						
+						CompositeWrapper tempcompositewrapper = null;
+						for (int i = 0; i < newpojo.getChildcompositewrappers().size(); i++){
+							tempcompositewrapper = newpojo.getChildcompositewrappers().get(i);
+							
+							System.out.println("\nActive filename " + activefilename);
+							System.out.println("\ntemp cpmposite filename " + tempcompositewrapper.getFilename());
+							
+							
+							if (tempcompositewrapper.getFilename().equals(activefilename)){
+								System.out.println("\n Active file name found " + tempcompositewrapper.getFilename() + "\n");
+//								new FavoritesDropTarget(tempcompositewrapper);
+							}
+							else
+							{
+								System.out.println("\n the active file is not " + tempcompositewrapper.getFilename() + "\n");
+							}
+						}
+						
+					}
+				});
+
+		String filename = null;
+
+		// try {
+		// filename = getFileName();
+		// } catch (IOException e1) {
+		// // TODO Auto-generated catch block
+		// e1.printStackTrace();
+		// }
+
+		EditorMethods em = new EditorMethods();
+		try {
+			filename = em.getFileName();
+			int index = addPage(parentComposite);
+			
+			newpojo.getChildCreatorObject().getChildComposite_WorkSpace().setFilename(filename);
+			
+			setPageText(index, filename);
+			setPartName(filename);
+			setTitleToolTip(filename);
+			
+			newpojo.getChildcompositewrappers().add(newpojo.getChildCreatorObject().getChildComposite_WorkSpace());
+
+			//--------------------------------------------------
+				POJOHolder.getInstance().getEditorsmap().put(filename, newpojo);
+			//--------------------------------------------------
+			
+			
+		} catch (Exception e) {
+			System.out.println("custom exception caught");
+			// e.printStackTrace();
+		}
+		
+	}
+	
 	/**
 	 * Create Pages
 	 */
@@ -137,12 +286,17 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 		 * Create work flow editor page
 		 */
 		PI_WorkFlow();
+		
+		
+//		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+//		CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+		
 
 		/**
 		 * If programs list is not yet created then close the editor. Programs
 		 * list is a must to be created in order for this editor to work
 		 */
-		if (VariablePoJo.getInstance().getProgram_List() == null) {
+		if (t_VariablePoJo.getInstance().getProgram_List() == null) {
 
 			/**
 			 * Show a message dialogue to tell user that the programs are still
@@ -163,22 +317,32 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 			IWorkbenchPage page = pagelist[0];
 
 			IEditorReference[] referencelist = page.getEditorReferences();
-			IEditorPart editorPart = referencelist[0].getEditor(false);
-			page.closeEditor(editorPart, true);
-		}
+			// IEditorPart editorPart = referencelist[0].getEditor(false);
+			// page.closeEditor(editorPart, true);
 
-		/**
-		 * Check if recreate is possible (if the work flow was save before
-		 * quitting)
-		 */
-		disposeall();
+			for (int i = 0; i < referencelist.length; i++) {
+				IEditorPart editorPart = referencelist[i].getEditor(false);
+				page.closeEditor(editorPart, true);
+			}
+
+		}
+//
+//		/**
+//		 * Check if recreate is possible (if the work flow was save before
+//		 * quitting)
+//		 */
+//		disposeall();
 		try {
 			checkForReCreate();
-			refresh();
+//			refresh();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		refresh();
+//		refresh();
+
+//		// set selection listeners for the editor
+//		EditorMethods em = new EditorMethods();
+//		em.setSelectionListeners();
 	}
 
 	/*
@@ -194,7 +358,11 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 	 */
 	public void setDropTarget() {
 		System.out.println("Setting Drop Target ...");
-		new FavoritesDropTarget(VariablePoJo.getInstance()
+		
+//		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+//		CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+		
+		new FavoritesDropTarget(t_VariablePoJo.getInstance()
 				.getChildCreatorObject().getChildComposite_WorkSpace());
 	}
 
@@ -205,6 +373,11 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 	 * @throws IOException
 	 */
 	public String getFileName() throws IOException {
+
+		/**
+		 * $$$$$$$ Need to change $$$$$$$$ this should access page selection
+		 * from platform ui and then get the file name from there
+		 */
 
 		System.out.println("\n In the getFileName method ...");
 		IWorkbenchPage[] pagelist = PlatformUI.getWorkbench()
@@ -245,35 +418,63 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 				.getActiveWorkbenchWindow().getPages();
 		IWorkbenchPage page = pagelist[0];
 
-		IEditorReference[] referencelist = page.getEditorReferences();
-		String fileName = null;
-		System.out.println("test ...");
-		IFile ifile = (IFile) referencelist[0].getEditorInput().getAdapter(
-				IFile.class);
-		System.out.println("absolute path " + ifile.getName());
-		String path = ifile.getRawLocation().toOSString();
-		System.out.println("path: " + path);
+		/**
+		 * $$$$$$$$ Need to work on $$$$$$$$$$$$ Page.getselection gives us the
+		 * current selection ie the current file name on which the double click
+		 * event occurred. grab the file name and then get the respective editor
+		 * and open it
+		 */
+		System.out.println("pagelist size " + pagelist.length);
+		System.out.println("page selection " + page.getSelection());
+		ISelection selection = page.getSelection();
+		System.out.println("selection string " + selection.toString());
+		/**
+		 * ------------------------------------------------------------------
+		 */
 
-		try {
-			System.out.println(referencelist[0].getEditorInput().getName());
-			fileName = referencelist[0].getEditorInput().getName();
-		} catch (PartInitException e1) {
-			e1.printStackTrace();
-		}
+		EditorMethods em = new EditorMethods();
+		String filename = em.getFileName();
+
+		String path = em.getPath(page, filename);
+
+		// IEditorReference[] referencelist = page.getEditorReferences();
+		// String fileName = null;
+		// System.out.println("test ...");
+		// IFile ifile = (IFile) referencelist[0].getEditorInput().getAdapter(
+		// IFile.class);
+		// System.out.println("absolute path " + ifile.getName());
+		// String path = ifile.getRawLocation().toOSString();
+		// System.out.println("path: " + path);
+		//
+		// System.out.println("editor reference list " + referencelist.length);
+
+		// try {
+		// System.out.println(referencelist[0].getEditorInput().getName());
+		// fileName = referencelist[0].getEditorInput().getName();
+		// } catch (PartInitException e1) {
+		// e1.printStackTrace();
+		// }
 
 		/**
 		 * The readJSONFile will return false if the file is not readable of if
 		 * there is no such file. If false we do no recreate it.
 		 */
-		JSONRead reader = new JSONRead();
+		
+//		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+//		CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));		
+		
+		DataPOJO.getInstance().getPrograms_data().clear();
+		
+		JSONRead reader = new JSONRead(filename);
 		boolean isFile = reader.readJSONFile(path);
-		VariablePoJo.getInstance().setFile(isFile);
-		if (VariablePoJo.getInstance().isFile() == true) {
+		t_VariablePoJo.getInstance().setFile(isFile);
+		if (t_VariablePoJo.getInstance().isFile() == true) {
+			
 			ReCreate obj = new ReCreate();
-			obj.recreateWorkFlow();
+			obj.recreateWorkFlow(filename);
 		}
 
-		RelayComposites object = new RelayComposites();
+		RelayComposites object = new RelayComposites(filename);
 		object.reDraw();
 	}
 
@@ -285,40 +486,50 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 	public void dispose() {
 
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-		disposeall();
+//		disposeall();
 		super.dispose();
 	}
 
-	public void disposeall() {
-		VariablePoJo.getInstance().getCompositeList()
-				.removeAll(VariablePoJo.getInstance().getCompositeList());
-		VariablePoJo.getInstance().getConnectorList()
-				.removeAll(VariablePoJo.getInstance().getConnectorList());
-		VariablePoJo
-				.getInstance()
-				.getConnectorDetectableList()
-				.removeAll(
-						VariablePoJo.getInstance().getConnectorDetectableList());
-		DataPOJO.getInstance().getPrograms_data()
-				.removeAll(DataPOJO.getInstance().getPrograms_data());
-	}
+//	public void disposeall() {
+//		
+//		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+//		CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+//		
+//		dataobj.getCompositeList()
+//				.removeAll(dataobj.getCompositeList());
+//		dataobj.getConnectorList()
+//				.removeAll(dataobj.getConnectorList());
+//		dataobj
+//				.getConnectorDetectableList()
+//				.removeAll(
+//						dataobj.getConnectorDetectableList());
+//		DataPOJO.getInstance().getPrograms_data()
+//				.removeAll(DataPOJO.getInstance().getPrograms_data());
+//	}
 
 	/**
-	 * Saves the PI Work Flow's document.
+	 * Saves the workflow editor and set the dirty state to false
 	 */
 	public void doSave(IProgressMonitor monitor) {
-		System.out.println("editor is " + getEditor(0));
-		getEditor(0).doSave(monitor);
+		// System.out.println("editor is " + getEditor(0));
+		// getEditor(0).doSave(monitor);
+
+		/**
+		 * call save & set isDirty to false
+		 */
+		new WorkFlowSave().save();
+		setDirty(false);
 	}
 
 	/**
-	 * Saves the PI Work Flow's document as another file.
+	 * Saves the PI Work Flow's document as another file. See if you need this
 	 */
 	public void doSaveAs() {
-		IEditorPart editor = getEditor(0);
-		editor.doSaveAs();
-		setPageText(0, editor.getTitle());
-		setInput(editor.getEditorInput());
+//		IEditorPart editor = getEditor(0);
+//		editor.doSaveAs();
+//		setPageText(0, editor.getTitle());
+//		setInput(editor.getEditorInput());
+		setDirty(true);
 	}
 
 	/*

@@ -1,32 +1,23 @@
 package jsonForSave;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.refresh.IRefreshMonitor;
 import org.eclipse.core.resources.refresh.IRefreshResult;
 import org.eclipse.core.resources.refresh.RefreshProvider;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 
 /**
@@ -42,25 +33,31 @@ public class JSONWrite extends RefreshProvider {
 	/**
 	 * This method is responsible for creating the JSON file
 	 * 
-	 * @param name
+	 * @param filepath
 	 *            is the name of the file
 	 */
 	@SuppressWarnings("unchecked")
-	public void createJSONFile(String name) {
+	public void createJSONFile(String filepath, String filename) {
 
 		// parent JSONObject this will have 2 keys the first key is a programs
 		// list and the second key is an object which will hold all the data in
 		// VariablePOJO class
 		JSONObject obj = new JSONObject();
 
-		VariablePoJo instance = VariablePoJo.getInstance();
+		String editorName = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage().getActiveEditor()
+				.getTitle();
+		CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap()
+				.get(editorName));
+
+		// VariablePoJo instance = VariablePoJo.getInstance();
 		// -----------------------------------------------------------
 
 		// Composites List
 		// programs list is composites list
 		// need bounds
 		JSONArray programsList = new JSONArray();
-		List<CompositeWrapper> compositeList = instance.getCompositeList();
+		List<CompositeWrapper> compositeList = dataobj.getCompositeList();
 
 		for (int i = 0; i < compositeList.size(); i++) {
 
@@ -166,7 +163,7 @@ public class JSONWrite extends RefreshProvider {
 
 		JSONObject methodId = new JSONObject();
 		// Variables for composite ID's
-		int method1_IDCounter = instance.getMethod1_IDCounter();
+		int method1_IDCounter = dataobj.getMethod1_IDCounter();
 		methodId.put("MethodID", method1_IDCounter);
 		// ---------------------------------------------------------------------
 		// // connector list
@@ -183,7 +180,7 @@ public class JSONWrite extends RefreshProvider {
 		// //---------------------------------------------------------------------
 		// connector detectable
 		JSONArray cdList = new JSONArray();
-		List<ConnectorDetectable> connectorDetectableList = instance
+		List<ConnectorDetectable> connectorDetectableList = dataobj
 				.getConnectorDetectableList();
 		for (int i = 0; i < connectorDetectableList.size(); i++) {
 			JSONObject newCD = new JSONObject();
@@ -202,7 +199,7 @@ public class JSONWrite extends RefreshProvider {
 		}
 		// ----------------------------------------------------------------------
 		// inputs hooked
-		List<String> inputsHooked = instance.getInputsHooked();
+		List<String> inputsHooked = dataobj.getInputsHooked();
 		JSONArray inputs_hooked = new JSONArray();
 		for (int j = 0; j < inputsHooked.size(); j++) {
 			inputs_hooked.add(inputsHooked.get(j));
@@ -216,13 +213,16 @@ public class JSONWrite extends RefreshProvider {
 
 		try {
 
-			String path = name;
+			String path = filepath;
 			FileWriter file = new FileWriter(path);
 			file.write(obj.toJSONString());
 			file.flush();
 			file.close();
 
-			wf_fileCreator(path);
+			/*
+			 * uncomment to create .wf files
+			 */
+			// wf_fileCreator(path);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -237,27 +237,28 @@ public class JSONWrite extends RefreshProvider {
 	 * 
 	 * @param path
 	 */
-	private void wf_fileCreator(String path) {
-		// try {
-		//
-		// String key = StringFormatter(path);
-		//
-		// File file = new File(key + ".wf");
-		//
-		// if (file.createNewFile()) {
-		// System.out.println("File is created!");
-		// } else {
-		// System.out.println("File already exists.");
-		// }
-		//
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
+	private void wf_fileCreator(String filename) {
 
-		IWorkspaceRoot myWorkspaceRoot = ResourcesPlugin.getWorkspace()
-				.getRoot();
+		try {
 
-		IProject myWebProject = myWorkspaceRoot.getProject();
+			String key = StringFormatter(filename);
+
+			File file = new File(key + ".wf");
+
+			System.out.println("file is " + file);
+
+			if (file.createNewFile()) {
+				System.out.println("File is created!");
+			} else {
+				System.out.println("File already exists.");
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// CreateWFfile cwff = new CreateWFfile();
+		// cwff.createfile(filename);
 
 	}
 

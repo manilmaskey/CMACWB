@@ -35,6 +35,8 @@ public class ReadProgramsThread extends Thread {
 			
 			Display display = new Display();
 			Shell shell = new Shell(display);
+			
+			System.out.println("\n The programs are read -----");
 
 		} catch (Exception e) {
 			e.printStackTrace();

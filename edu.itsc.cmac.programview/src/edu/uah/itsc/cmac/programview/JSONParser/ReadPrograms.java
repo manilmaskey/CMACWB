@@ -30,7 +30,7 @@ public class ReadPrograms {
 	 */
 	public void read_Programs(List<Program> prog) throws Exception {
 
-		List<ProgramPOJO> program_List = new ArrayList<>();
+		List<ProgramPOJO> program_List = new ArrayList<ProgramPOJO>();
 		for (int i = 0; i < prog.size(); i++) {
 			// get the uri of the program
 			String uri = prog.get(i).getUri();

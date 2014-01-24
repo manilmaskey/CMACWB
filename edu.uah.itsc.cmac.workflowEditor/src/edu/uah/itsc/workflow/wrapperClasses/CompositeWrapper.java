@@ -31,6 +31,7 @@ public class CompositeWrapper extends Composite /*
 	String compositeID;
 	String type;
 	String methodName;
+	String filename;
 
 	// Number of Inputs and Outputs in the Method
 	int numberOfInputs;
@@ -46,6 +47,14 @@ public class CompositeWrapper extends Composite /*
 
 	public void setLoInputNames(List<String> loInputNames) {
 		this.loInputNames = loInputNames;
+	}
+
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
 	}
 
 	Map<String, String> composite_InputsMap = new HashMap<String, String>();

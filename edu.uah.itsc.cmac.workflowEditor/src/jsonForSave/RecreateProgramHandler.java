@@ -1,4 +1,4 @@
-package edu.uah.itsc.workflow.programDropHandler;
+package jsonForSave;
 
 import java.util.List;
 
@@ -15,6 +15,8 @@ import org.eclipse.ui.PlatformUI;
 import edu.uah.itsc.uah.programview.programObjects.ProgramPOJO;
 import edu.uah.itsc.workflow.actionHandler.CompositeClickHandler;
 import edu.uah.itsc.workflow.movementTrackers.MethodCompositeTracker;
+import edu.uah.itsc.workflow.programDropHandler.CreateProgram;
+import edu.uah.itsc.workflow.programDropHandler.DeleteProgram;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
 import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
 import edu.uah.itsc.workflow.variableHolder.POJOHolder;
@@ -25,7 +27,7 @@ import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
  * @author Rohith Samudrala
  * 
  */
-public class ProgramDropHandler {
+public class RecreateProgramHandler {
 
 	CompositeWrapper method;
 	Label in;
@@ -55,11 +57,11 @@ public class ProgramDropHandler {
 		this.method = method;
 	}
 
-	public void handleDrop(int x, int y, Object obj) throws Exception {
+	public void handleDrop(int x, int y, Object obj, final String filename) throws Exception {
 		
 		
-		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
-		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+//		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(filename));
 		
 //		VariablePoJo instance = VariablePoJo.getInstance();
 		List<ProgramPOJO> programsList = dataobj.getProgram_List();
@@ -69,7 +71,7 @@ public class ProgramDropHandler {
 					"[" + programsList.get(i).getTitle() + "]")) {
 				System.out.println("Program Found ...");
 
-				CreateProgram creatorObject = new CreateProgram();
+				CreateProgram creatorObject = new CreateProgram(filename);
 				creatorObject.createMethod(x, y, obj);
 
 				// Add tracker to the method
@@ -94,7 +96,7 @@ public class ProgramDropHandler {
 				method.addKeyListener(new KeyAdapter() {
 					public void keyPressed(KeyEvent e) {
 						if (e.keyCode == SWT.DEL) {
-							DeleteProgram dpObj = new DeleteProgram();
+							DeleteProgram dpObj = new DeleteProgram(filename);
 							dpObj.delete_selected_program(method);
 						}
 					}

@@ -1,7 +1,5 @@
 package edu.uah.itsc.workflow.connectorPropertyWindow;
 
-import javax.lang.model.element.VariableElement;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -11,9 +9,11 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
 
 /**
  * 
@@ -32,6 +32,17 @@ public class ConnectorPropertyWindow {
 	 */
 	public void openConnectorPropertyWindow(final ConnectorDetectable cd)
 			throws Exception {
+		
+		try{
+			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().doSaveAs();
+			}
+			catch (Exception e){
+				System.out.println("No active page ...open connector property window");
+			}
+		
+		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+		
 
 		final Shell shell = new Shell();
 		
@@ -52,7 +63,7 @@ public class ConnectorPropertyWindow {
 		shell.setBounds(x + 500, y + 200, 500, shellHeight);
 		
 		
-		VariablePoJo.getInstance().getChildCreatorObject().getChildComposite_WorkSpace().addListener(SWT.MouseDown, new Listener() {
+		dataobj.getChildCreatorObject().getChildComposite_WorkSpace().addListener(SWT.MouseDown, new Listener() {
 			
 			@Override
 			public void handleEvent(Event event) {

@@ -14,12 +14,14 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.uah.programview.programObjects.ProgramPOJO;
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
 import edu.uah.itsc.workflow.connectors.Connectors;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 
 
@@ -59,14 +61,19 @@ public class MethodHandlerUpdated {
 	 *            - The object that was dropped onto the workspace
 	 */
 	public void createMethod(int x, int y, Object obj) {
+		
+		
+		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+		
+		
 
 		/**
 		 * Identify the object that was dropped onto the work space
 		 */
-		List<ProgramPOJO> methodsList = VariablePoJo.getInstance().getProgram_List();
+		List<ProgramPOJO> methodsList = dataobj.getProgram_List();
 
-		List<CompositeWrapper> compositesList = VariablePoJo.getInstance()
-				.getCompositeList();	// List of composites
+		List<CompositeWrapper> compositesList = dataobj.getCompositeList();	// List of composites
 
 		ProgramPOJO methodObject = null;
 
@@ -82,8 +89,7 @@ public class MethodHandlerUpdated {
 		 * Create the method composite
 		 */
 		// Get the workspace where the method composite is to be created
-		CompositeWrapper ChildComposite_WorkSpace = VariablePoJo.getInstance()
-				.getChildCreatorObject().getChildComposite_WorkSpace();
+		CompositeWrapper ChildComposite_WorkSpace = dataobj.getChildCreatorObject().getChildComposite_WorkSpace();
 
 		// Create a new method Composite
 		methodComposite = new CompositeWrapper(
@@ -91,8 +97,8 @@ public class MethodHandlerUpdated {
 		
 		// Height/Width of the parent composite - Height/Width of the
 		// Child Work Space Composite
-		int widthLeft = VariablePoJo.getInstance().getDisplayX() - 1300;
-		int heightLeft = VariablePoJo.getInstance().getDisplayY() - 550;
+		int widthLeft = dataobj.getDisplayX() - 1300;
+		int heightLeft = dataobj.getDisplayY() - 550;
 		int ycoord = y - heightLeft;
 		int xcoord = x - widthLeft;
 
@@ -101,13 +107,12 @@ public class MethodHandlerUpdated {
 				.getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND));
 
 		// setting the composite id
-		int method1_IDCounter = VariablePoJo.getInstance()
-				.getMethod1_IDCounter();
+		int method1_IDCounter = dataobj.getMethod1_IDCounter();
 		String methodID = "Method1 " + method1_IDCounter; // method1 id
 		method1_IDCounter++; // increment the id counter
 
 		// setting back the ID counter
-		VariablePoJo.getInstance().setMethod1_IDCounter(method1_IDCounter);
+		dataobj.setMethod1_IDCounter(method1_IDCounter);
 		methodComposite.setCompositeID(methodID); // setting the method id
 
 		// Set the name of method as method type
@@ -156,8 +161,7 @@ public class MethodHandlerUpdated {
 				event.data =outGoing.getText();
 				
 				// Create a new connector object
-				Connectors connectorObj = VariablePoJo
-						.getInstance().getConnectorObj();
+				Connectors connectorObj = dataobj.getConnectorObj();
 				connectorObj = new Connectors();
 
 				// Set the starting composite into the connector
@@ -173,7 +177,7 @@ public class MethodHandlerUpdated {
 						.getCompositeID());
 				
 				//Set the connector object into a list of connectors
-				VariablePoJo.getInstance().setConnectorObj(connectorObj);
+				dataobj.setConnectorObj(connectorObj);
 				
 				
 			}
@@ -186,8 +190,7 @@ public class MethodHandlerUpdated {
 			public void drop(DropTargetEvent event) {
 				// Get the connector object initiated
 				// by the drag source
-				Connectors connectorObj = VariablePoJo
-						.getInstance().getConnectorObj();
+				Connectors connectorObj = dataobj.getConnectorObj();
 
 				// Set the ending composite in to the connector
 				CompositeWrapper endingComposite = methodComposite;
@@ -201,13 +204,12 @@ public class MethodHandlerUpdated {
 						.getCompositeID());
 
 				// add the connector object to the connector list
-				VariablePoJo.getInstance().getConnectorList()
+				dataobj.getConnectorList()
 						.add(connectorObj);
 				
 				// Save the connector object in a Connector Detectable
 				// object
-				CompositeWrapper childCompositeWorkSpace = VariablePoJo
-						.getInstance().getChildCreatorObject()
+				CompositeWrapper childCompositeWorkSpace = dataobj.getChildCreatorObject()
 						.getChildComposite_WorkSpace();
 			
 				/**
@@ -218,7 +220,7 @@ public class MethodHandlerUpdated {
 						childCompositeWorkSpace, SWT.NONE);
 				cd.setConnector(connectorObj);
 				// 2nd instance of adding cd
-				VariablePoJo.getInstance().getConnectorDetectableList().add(cd);
+				dataobj.getConnectorDetectableList().add(cd);
 				
 				// Add handlers for composite detectable 
 				ConnectorClickHandler handlerObject = new ConnectorClickHandler();
@@ -228,23 +230,23 @@ public class MethodHandlerUpdated {
 				 * Redraw everything
 				 */
 				RelayComposites relayCompositesObject = new RelayComposites();
-				VariablePoJo variablePoJoInstance = VariablePoJo
-						.getInstance();
+//				VariablePoJo variablePoJoInstance = VariablePoJo
+//						.getInstance();
 				
 				/**
 				 * Set all the required data
 				 */
 				relayCompositesObject
-						.setChildComposite_WorkSpace(variablePoJoInstance
+						.setChildComposite_WorkSpace(dataobj
 								.getChildCreatorObject()
 								.getChildComposite_WorkSpace());
-				relayCompositesObject.setCompositeList(variablePoJoInstance
+				relayCompositesObject.setCompositeList(dataobj
 						.getCompositeList());
 				relayCompositesObject
-						.setConnectorList(variablePoJoInstance
+						.setConnectorList(dataobj
 								.getConnectorList());
 				relayCompositesObject
-						.setParentComposite(variablePoJoInstance
+						.setParentComposite(dataobj
 								.getParentComposite());
 				relayCompositesObject.reDraw();
 				

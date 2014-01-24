@@ -4,10 +4,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.workflow.compositePropertyWindowHandlers.CompositePropertyShellHeight;
 import edu.uah.itsc.workflow.compositePropertyWindowHandlers.PopulateCompositePropertyWindow;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
+//import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 
 /**
@@ -20,13 +22,33 @@ import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 public class CompositeClickHandler {
 
 	public void handleCompositeClick(int i) throws Exception {
+		
+		
+		try{
+			PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().doSaveAs();
+			}
+			catch (Exception e){
+				System.out.println("No active page ...(in CompositeClickHandler)");
+			}
 
-		CompositeWrapper methodComposite = VariablePoJo.getInstance()
-				.getCompositeList().get(i);
-		// create shell
-		Shell shell = new Shell(VariablePoJo.getInstance()
-				.getChildCreatorObject().getChildComposite_WorkSpace()
-				.getDisplay());
+		//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+//		CompositeWrapper methodComposite = VariablePoJo.getInstance()
+//				.getCompositeList().get(i);
+//		// create shell
+//		Shell shell = new Shell(VariablePoJo.getInstance()
+//				.getChildCreatorObject().getChildComposite_WorkSpace()
+//				.getDisplay());
+		
+		
+		
+		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		
+		CompositeWrapper methodComposite = (POJOHolder.getInstance().getEditorsmap().get(editorName)).getCompositeList().get(i);
+		
+		Shell shell = new Shell((POJOHolder.getInstance().getEditorsmap().get(editorName)).getChildCreatorObject().getChildComposite_WorkSpace().getDisplay());
+		
+		
+		//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 		// call method to calculate the height of the shell
 		CompositePropertyShellHeight calculatorObject = new CompositePropertyShellHeight();

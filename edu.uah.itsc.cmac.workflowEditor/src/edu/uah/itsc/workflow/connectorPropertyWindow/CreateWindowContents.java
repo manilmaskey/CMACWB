@@ -11,10 +11,12 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.PlatformUI;
 import org.json.JSONException;
 
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
 
 /**
  * 
@@ -42,6 +44,12 @@ public class CreateWindowContents {
 	public void createContents(Composite leftComposite,
 			Composite rightComposite, final ConnectorDetectable cd)
 			throws Exception {
+		
+		
+		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+		
+		
 
 		// this will check if any output is already
 		// linked to any input
@@ -93,7 +101,7 @@ public class CreateWindowContents {
 				// if the label is not linked
 				if (!(IOConnections.containsKey(lblNewLabel))) {
 					IOConnections.put(lblNewLabel, null);
-					VariablePoJo.getInstance().getIOConnections()
+					dataobj.getIOConnections()
 							.put(lblNewLabel, comboBox.getText());
 
 				}
@@ -158,7 +166,7 @@ public class CreateWindowContents {
 				// if the label is not linked
 				if (!(IOConnections.containsKey(lblNewLabel))) {
 					IOConnections.put(lblNewLabel, null);
-					VariablePoJo.getInstance().getIOConnections()
+					dataobj.getIOConnections()
 							.put(lblNewLabel, comboBox.getText());
 				}
 

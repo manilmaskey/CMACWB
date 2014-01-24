@@ -4,10 +4,12 @@ import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
-import edu.uah.itsc.workflow.variableHolder.VariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 
 /**
@@ -16,8 +18,35 @@ import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
  * 
  */
 public class DeleteProgram {
+	
+	String filename = "";
+	
+
+	public DeleteProgram() {
+		super();
+	}
+
+	public DeleteProgram(String filename) {
+		super();
+		this.filename = filename;
+	}
+
+
+
 
 	public void delete_selected_program(CompositeWrapper method) {
+		
+		final CopyOfVariablePoJo dataobj;
+		
+		if (filename.equals("")){
+		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+		}else {
+			dataobj = (POJOHolder.getInstance().getEditorsmap().get(filename));
+		}
+		
+		
+		
 		// There are connectors attached, get user confirmation to delete
 		MessageBox dialog = new MessageBox(method.getShell(), SWT.ICON_QUESTION
 				| SWT.OK | SWT.CANCEL);
@@ -30,12 +59,19 @@ public class DeleteProgram {
 			// the user decides to canel do not remove the program
 		} else {
 
+			
+			try{
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().doSaveAs();
+				}
+				catch (Exception e){
+					System.out.println("No active page ... delete program");
+				}
+			
 			System.out.println("connector detectable list "
-					+ VariablePoJo.getInstance().getConnectorDetectableList()
+					+ dataobj.getConnectorDetectableList()
 							.size());
 
-			List<ConnectorDetectable> cdlist = VariablePoJo.getInstance()
-					.getConnectorDetectableList();
+			List<ConnectorDetectable> cdlist = dataobj.getConnectorDetectableList();
 
 			for (int i = 0; i < cdlist.size(); i++) {
 				System.out.println("cd is "
@@ -47,7 +83,7 @@ public class DeleteProgram {
 						+ method.getMethodName());
 
 				if (cdlist.get(i).getConnector().getStartingComposite()
-						.getMethodName().equals(method.getMethodName())) {
+						.getCompositeID().equals(method.getCompositeID())) {
 					cdlist.get(i).setVisible(false);
 					cdlist.get(i).getConnector().getStartingComposite()
 							.getConnectionsMap().clear();
@@ -56,7 +92,7 @@ public class DeleteProgram {
 					cdlist.remove(i);
 					i = -1;
 				} else if (cdlist.get(i).getConnector().getEndingComposite()
-						.getMethodName().equals(method.getMethodName())) {
+						.getCompositeID().equals(method.getCompositeID())) {
 					cdlist.get(i).setVisible(false);
 					cdlist.get(i).getConnector().getStartingComposite()
 							.getConnectionsMap().clear();
@@ -65,19 +101,19 @@ public class DeleteProgram {
 					cdlist.remove(i);
 					i = -1;
 				}
-				VariablePoJo.getInstance().setConnectorDetectableList(cdlist);
+				dataobj.setConnectorDetectableList(cdlist);
 			}
 			/**
 			 * Now when all the connections are removed .. remove the composite
 			 */
-			for (int j = 0; j < VariablePoJo.getInstance().getCompositeList()
+			for (int j = 0; j < dataobj.getCompositeList()
 					.size(); j++) {
 				if (method.getCompositeID().equals(
-						VariablePoJo.getInstance().getCompositeList().get(j)
+						dataobj.getCompositeList().get(j)
 								.getCompositeID())) {
-					VariablePoJo.getInstance().getCompositeList().get(j)
+					dataobj.getCompositeList().get(j)
 							.setVisible(false);
-					VariablePoJo.getInstance().getCompositeList().remove(j);
+					dataobj.getCompositeList().remove(j);
 				}
 			}
 

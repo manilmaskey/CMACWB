@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.eclipse.swt.widgets.Label;
 
+import piworkflow.editors.MultiPageEditor;
 import edu.uah.itsc.cmac.programview.programsHolder.ProgramsHolder;
 import edu.uah.itsc.uah.programview.programObjects.ProgramPOJO;
 import edu.uah.itsc.workflow.childComposites.ChildCompositeCreator;
@@ -21,17 +22,17 @@ import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
  * @author Rohith Samudrala
  * 
  */
-public class VariablePoJo /* implements SerializableCompatibility */{
-	private static VariablePoJo instance = null;
+public class t_VariablePoJo{
+	private static t_VariablePoJo instance = null;
 
 	// Protected constructor
-	protected VariablePoJo() {
+	protected t_VariablePoJo() {
 		// Exists only to defeat instantiation.
 	}
 
-	public static VariablePoJo getInstance() {
+	public static t_VariablePoJo getInstance() {
 		if (instance == null) {
-			instance = new VariablePoJo();
+			instance = new t_VariablePoJo();
 		}
 		return instance;
 	}
@@ -73,7 +74,10 @@ public class VariablePoJo /* implements SerializableCompatibility */{
 
 	// List containing objects of all the programs.
 	List<ProgramPOJO> program_List;
+
+//	MultiPageEditor editor;
 	
+	ArrayList<CompositeWrapper> childcompositewrappers = new ArrayList<CompositeWrapper>();
 
 	// -------------------------------------------------
 
@@ -81,6 +85,25 @@ public class VariablePoJo /* implements SerializableCompatibility */{
 
 	public CompositeWrapper getSelected_composite() {
 		return selected_composite;
+	}
+	
+	
+
+//	public MultiPageEditor getEditor() {
+//		return editor;
+//	}
+//
+//	public void setEditor(MultiPageEditor editor) {
+//		this.editor = editor;
+//	}
+
+	public ArrayList<CompositeWrapper> getChildcompositewrappers() {
+		return childcompositewrappers;
+	}
+
+	public void setChildcompositewrappers(
+			ArrayList<CompositeWrapper> childcompositewrappers) {
+		this.childcompositewrappers = childcompositewrappers;
 	}
 
 	public void setSelected_composite(CompositeWrapper selected_composite) {
@@ -232,6 +255,5 @@ public class VariablePoJo /* implements SerializableCompatibility */{
 	public void setCreated(boolean isCreated) {
 		this.isCreated = isCreated;
 	}
-	
-	
+
 }

@@ -6,6 +6,9 @@ import java.io.IOException;
 import jsonForSave.JSONWrite;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
@@ -24,11 +27,18 @@ public class WorkFlowSave implements IWorkbenchWindowActionDelegate {
 
 	@Override
 	public void run(IAction action) {
+
+		save();
+
+	}
+
+	public void save() {
 		MultiPageEditor mpe = new MultiPageEditor();
 		String fileName = null;
-		String path = null; 
+		String path = null;
+
 		try {
-			
+
 			IWorkbenchPart workbenchPart = PlatformUI.getWorkbench()
 					.getActiveWorkbenchWindow().getActivePage().getActivePart();
 			IFile file = (IFile) workbenchPart.getSite().getPage()
@@ -37,14 +47,14 @@ public class WorkFlowSave implements IWorkbenchWindowActionDelegate {
 				throw new FileNotFoundException();
 			path = file.getRawLocation().toOSString();
 			System.out.println("path: " + path);
-			
+
 			fileName = mpe.getFileName();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		JSONWrite writerObject = new JSONWrite();
-		writerObject.createJSONFile(path);
+		writerObject.createJSONFile(path, fileName);
 	}
 
 	@Override
