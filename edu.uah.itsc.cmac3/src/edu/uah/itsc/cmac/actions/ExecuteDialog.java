@@ -145,7 +145,7 @@ public class ExecuteDialog {
 
 	private String[] getInstanceList() {
 		EC2 amazonEC2 = new EC2();
-		ArrayList<Instance> instances = amazonEC2.getInstances();
+		ArrayList<Instance> instances = amazonEC2.getInstances("running");
 		String[] instanceString = new String[instances.size()];
 		int count = 0;
 		for (Instance instance: instances){

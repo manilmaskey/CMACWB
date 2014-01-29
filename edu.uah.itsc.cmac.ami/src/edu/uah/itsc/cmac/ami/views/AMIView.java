@@ -82,27 +82,37 @@ public class AMIView extends ViewPart {
 		final Text instanceText = new Text(addComposite, SWT.BORDER);
 		Button submitButton = new Button(addComposite, SWT.PUSH);
 		submitButton.setText("Submit AMI");
+		org.eclipse.swt.graphics.Image image = new org.eclipse.swt.graphics.Image(
+				parent.getDisplay(), getClass().getClassLoader()
+						.getResourceAsStream("icons/submit.gif"));
+		submitButton.setImage(image);
 		submitButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				super.widgetSelected(e);
-				try {
-					createAMI(amazonEC2, nameText.getText(),
-							instanceText.getText());
-					MessageBox message = new MessageBox(parent.getShell(),
-							SWT.ICON_INFORMATION);
-					message.setMessage("Added new AMI successfully");
-					message.setText("Success");
-					message.open();
-					nameText.setText("");
-					instanceText.setText("");
-				} catch (AmazonServiceException exception) {
-					MessageBox message = new MessageBox(parent.getShell(),
-							SWT.ERROR);
-					message.setText("Error");
-					message.setMessage("Unable to create new AMI.\n"
-							+ exception.getMessage());
-					message.open();
+				boolean userConfirmation = MessageDialog.openConfirm(
+						parent.getShell(),
+						"Warning! Create new Amazon Machine Image in Amazon cloud!!",
+						"Are you sure you want to create a new AMI in the cloud?");
+				if (userConfirmation){
+					try {
+						createAMI(amazonEC2, nameText.getText(),
+								instanceText.getText());
+						MessageBox message = new MessageBox(parent.getShell(),
+								SWT.ICON_INFORMATION);
+						message.setMessage("Added new AMI successfully");
+						message.setText("Success");
+						message.open();
+						nameText.setText("");
+						instanceText.setText("");
+					} catch (Exception exception) {
+						MessageBox message = new MessageBox(parent.getShell(),
+								SWT.ERROR);
+						message.setText("Error");
+						message.setMessage("Unable to create new AMI.\n"
+								+ exception.getMessage());
+						message.open();
+					}
 				}
 			}
 		});
@@ -111,13 +121,61 @@ public class AMIView extends ViewPart {
 		addComposite.setLayoutData(layoutData);
 
 		Composite buttonComposite = new Composite(parent, SWT.NONE);
-		buttonComposite.setLayout(new GridLayout(3, false));
+		buttonComposite.setLayout(new GridLayout(5, false));
+		
+		
+		Label runInstanceLabel = new Label(buttonComposite, SWT.NONE);
+		runInstanceLabel.setText("Instance name");
+		final Text runInstanceText = new Text(buttonComposite, SWT.BORDER);
+
 		runButton = new Button(buttonComposite, SWT.PUSH);
 		runButton.setText("Run instance using AMI");
+		image = new org.eclipse.swt.graphics.Image(parent.getDisplay(),
+				getClass().getClassLoader().getResourceAsStream(
+						"icons/start.png"));
+		runButton.setImage(image);
 		runButton.setEnabled(false);
+		runButton.addSelectionListener(new SelectionAdapter(){
+			@Override
+			public void widgetSelected(SelectionEvent e){
+				super.widgetSelected(e);
+				boolean userConfirmation = MessageDialog.openConfirm(
+						parent.getShell(),
+						"Warning! Run a new instance using Amazon Machine Image in Amazon cloud!!",
+						"Are you sure you want to run a new instance using selected AMI?");
+				if (userConfirmation){
+					try {
+						Table table = viewer.getTable();
+						Image ami = (Image) table.getSelection()[0].getData();
+						runInstanceUsingAMI(amazonEC2, ami.getImageId(),
+								runInstanceText.getText());
+						MessageBox message = new MessageBox(parent.getShell(),
+								SWT.ICON_INFORMATION);
+						message.setMessage("A new instance is run successfully");
+						message.setText("Success");
+						message.open();
+						runInstanceText.setText("");
+					} catch(Exception exception){
+						MessageBox message = new MessageBox(parent.getShell(),
+								SWT.ERROR);
+						message.setText("Error");
+						message.setMessage("Unable to run new instance.\n"
+								+ exception.getMessage());
+						message.open();
+					}
+					
+				}
+				
+			}
+
+		});
 
 		deleteButton = new Button(buttonComposite, SWT.PUSH);
 		deleteButton.setText("Delete AMI");
+		image = new org.eclipse.swt.graphics.Image(parent.getDisplay(),
+				getClass().getClassLoader().getResourceAsStream(
+						"icons/delete.png"));
+		deleteButton.setImage(image);
 		deleteButton.setEnabled(false);
 		deleteButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -129,17 +187,22 @@ public class AMIView extends ViewPart {
 						parent.getShell(),
 						"Warning! Delete Amazon Machine Images from Amazon cloud!!",
 						"Are you sure you want to delete the selected AMI(s) from the cloud?");
-				if (userConfirmation)
+				if (userConfirmation){
 					for (TableItem tableItem : selectedItems) {
 						Image image = (Image) tableItem.getData();
 						System.out.println(image.getImageId());
 						degregisterAMI(amazonEC2, image.getImageId());
 					}
+				}
 			}
 		});
 
 		Button refreshButton = new Button(buttonComposite, SWT.PUSH);
 		refreshButton.setText("Refresh");
+		image = new org.eclipse.swt.graphics.Image(parent.getDisplay(),
+				getClass().getClassLoader().getResourceAsStream(
+						"icons/refresh.png"));
+		refreshButton.setImage(image);
 		refreshButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -156,8 +219,9 @@ public class AMIView extends ViewPart {
 	 */
 	private void createTable(Composite parent, EC2 amazonEC2) {
 		GridData layoutData = new GridData();
-		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL
+		viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL
 				| SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		
 		createColumns(viewer);
 		Table table = viewer.getTable();
 		table.setHeaderVisible(true);
@@ -327,9 +391,11 @@ public class AMIView extends ViewPart {
 		runButton.setEnabled(false);
 		deleteButton.setEnabled(false);
 	}
-	
-	private void runInstances(EC2 amazonEC2, String imageID, String instanceName){
-		RunInstancesRequest runInstancesRequest = new RunInstancesRequest(imageID, 1, 1);
-		runInstancesRequest.withKeyName("Name");
+
+	private void runInstanceUsingAMI(EC2 amazonEC2, String imageId,
+			String instanceName) {
+		RunInstancesRequest runInstancesRequest = new RunInstancesRequest(
+				imageId, 1, 1);
+		amazonEC2.runInstances(runInstancesRequest, instanceName);
 	}
 }
