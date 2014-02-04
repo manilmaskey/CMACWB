@@ -50,6 +50,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.DeleteBucketRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
@@ -346,7 +347,7 @@ public class S3 {
 
 
 		CopyObjectRequest copyObjRequest = new CopyObjectRequest(
-				bucketName, folderKey, communityBucketName, folderKey);
+				bucketName, folderKey, communityBucketName, folder.getProject().getName() + "/" + folderKey);
 		
 		//copyObjRequest.setCannedAccessControlList(CannedAccessControlList.PublicRead);
 		try{
@@ -392,7 +393,7 @@ public class S3 {
 		key = key.replace('\\', '/');
 		System.out.println("Key:"+key);
 		CopyObjectRequest copyObjRequest = new CopyObjectRequest(
-				bucketName, key, communityBucketName, key);
+				bucketName, key, communityBucketName, bucketName + "/" + key);
 
 		//copyObjRequest.setCannedAccessControlList(CannedAccessControlList.PublicRead);
 
@@ -461,6 +462,11 @@ public class S3 {
 				return true;
 		}
 		return false;
+	}
+	
+	public void deleteBucket(String bucketName){
+		DeleteBucketRequest deleteRequest = new DeleteBucketRequest(bucketName);
+		amazonS3Service.deleteBucket(deleteRequest);
 	}
 	
 }

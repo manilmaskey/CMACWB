@@ -1,15 +1,11 @@
 package edu.uah.itsc.cmac.actions;
 
-import java.util.HashMap;
-
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
-import edu.uah.itsc.cmac.portal.PortalUtilities;
 
 public class CMACArtifactPropertyTester extends PropertyTester {
 
@@ -30,7 +26,8 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 								.equals(S3.communityBucketName))
 					return false;
 
-				else if (folder.getProject().getName().equals(S3.bucketName)) {
+				else if (!folder.getProject().getName()
+						.equals(S3.communityBucketName)) {
 					if (folder.getParent() instanceof IFolder) {
 						IFolder maybeUserFolder = (IFolder) folder.getParent();
 						if (maybeUserFolder.getName().equals(User.username)
@@ -47,7 +44,8 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 				IFile file = (IFile) receiver;
 				if (file.getProject().getName().equals(S3.communityBucketName))
 					return false;
-				else if (file.getProject().getName().equals(S3.bucketName)) {
+				else if (!file.getProject().getName()
+						.equals(S3.communityBucketName)) {
 					if (!file.getParent().getName().equals(User.username)) {
 						String ext = file.getFileExtension();
 						return (ext.equals("py") || ext.equals("pro") || expectedValue
@@ -88,6 +86,10 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 		}
 
 		else if (expectedValue.equals("delete")) {
+			// Disable deleting project/bucket/experiment for now
+			/*
+			 * if (receiver instanceof IProject) { return true; } else
+			 */
 			if (receiver instanceof IFolder) {
 				IFolder folder = (IFolder) receiver;
 				if (folder.getProject().getName().equals(S3.bucketName)

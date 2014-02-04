@@ -41,7 +41,7 @@ import edu.uah.itsc.cmac.ui.NavigatorView;
  */
 public class SearchResultView extends ViewPart implements SearchResultInterface {
 
-	private ExpandBar bar;
+	private ExpandBar	bar;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -62,12 +62,10 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 
 	@Override
 	public void accept(ArrayList<SearchResult> searchResults) {
-		System.out.println("Total no. of search results is : "
-				+ searchResults.size());
+		System.out.println("Total no. of search results is : " + searchResults.size());
 		/*
-		 * Get all expand items currently in the bar. Dispose all the items.
-		 * Note that the item should set expanded value to false, otherwise you
-		 * will notice weird problems when the items are disposed
+		 * Get all expand items currently in the bar. Dispose all the items. Note that the item should set expanded
+		 * value to false, otherwise you will notice weird problems when the items are disposed
 		 */
 
 		ExpandItem[] items = bar.getItems();
@@ -76,8 +74,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 			item.dispose();
 		}
 		/*
-		 * Create an ExpandItem for each of the searchresult and create the ui
-		 * as required.
+		 * Create an ExpandItem for each of the searchresult and create the ui as required.
 		 */
 		for (final SearchResult searchResult : searchResults) {
 			Composite composite = new Composite(bar, SWT.NONE);
@@ -95,12 +92,10 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 			button.setText("Import Workflow");
 
 			button.addSelectionListener(new SelectionAdapter() {
-				private void buildTree(String copyFromFolderPath,
-						String folderToCopy, IResource resource) {
+				private void buildTree(String copyFromFolderPath, String folderToCopy, IResource resource) {
 					System.out.println(copyFromFolderPath);
 					System.out.println(folderToCopy);
-					IFolder userFolder = ((IProject) resource)
-							.getFolder(User.username);
+					IFolder userFolder = ((IProject) resource).getFolder(User.username);
 					IFolder folderToCreate = userFolder.getFolder(folderToCopy);
 					if (!folderToCreate.exists()) {
 						createFolderPath(userFolder, folderToCopy);
@@ -111,55 +106,42 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 
 				}
 
-				private void downloadFolder(String copyFromFolderPath,
-						IFolder copyToFolder) {
-					IWorkbenchPage page = PlatformUI.getWorkbench()
-							.getActiveWorkbenchWindow().getActivePage();
-					NavigatorView view = (NavigatorView) page
-							.findView("edu.uah.itsc.cmac.NavigatorView");
+				private void downloadFolder(String copyFromFolderPath, IFolder copyToFolder) {
+					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+					NavigatorView view = (NavigatorView) page.findView("edu.uah.itsc.cmac.NavigatorView");
 					S3 s3 = view.getS3();
 					AmazonS3 amazonS3Service = s3.getAmazonS3Service();
 
 					ListObjectsRequest lor = new ListObjectsRequest();
 					lor.setBucketName(s3.getCommunityBucketName());
 					lor.setDelimiter(s3.getDelimiter());
-					lor.setPrefix(copyFromFolderPath.replaceAll("$/+", "")
-							+ "/");
+					lor.setPrefix(copyFromFolderPath.replaceAll("$/+", "") + "/");
 
-					ObjectListing filteredObjects = amazonS3Service
-							.listObjects(lor);
+					ObjectListing filteredObjects = amazonS3Service.listObjects(lor);
 
-					for (S3ObjectSummary objectSummary : filteredObjects
-							.getObjectSummaries()) {
+					for (S3ObjectSummary objectSummary : filteredObjects.getObjectSummaries()) {
 						String currentResource = objectSummary.getKey();
 						String[] fileNameArray = currentResource.split("/");
 						String fileName = fileNameArray[fileNameArray.length - 1];
 						if (currentResource.indexOf("_$folder$") > 0) {
 
-						} else {
-							String fullFilePath = ResourcesPlugin
-									.getWorkspace().getRoot().getLocation()
-									.toOSString()
-									+ java.io.File.separator
-									+ s3.getBucketName()
-									+ java.io.File.separator
-									+ User.username
-									+ java.io.File.separator
-									+ copyToFolder.getName()
-									+ java.io.File.separator + fileName;
-							System.out.println("Downloading file "
-									+ currentResource);
+						}
+						else {
+							String fullFilePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()
+								+ java.io.File.separator + s3.getBucketName() + java.io.File.separator + User.username
+								+ java.io.File.separator + copyToFolder.getName() + java.io.File.separator + fileName;
+							System.out.println("Downloading file " + currentResource);
 							System.out.println("fullFilePath: " + fullFilePath);
 
-							s3.downloadFile(s3.getCommunityBucketName(),
-									currentResource, fullFilePath);
+							s3.downloadFile(s3.getCommunityBucketName(), currentResource, fullFilePath);
 
 						}
 
 					}
 					try {
 						copyToFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
-					} catch (CoreException e) {
+					}
+					catch (CoreException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -172,54 +154,49 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 						if (!newFolder.exists()) {
 							try {
 								newFolder.create(true, true, null);
-							} catch (CoreException e) {
+							}
+							catch (CoreException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
-					} else
+					}
+					else
 						while (folderToAdd.indexOf("/") > 0) {
-							folderPart = folderToAdd.substring(0,
-									folderToAdd.indexOf("/"));
-							folderToAdd = folderToAdd.substring(folderToAdd
-									.indexOf("/") + 1);
+							folderPart = folderToAdd.substring(0, folderToAdd.indexOf("/"));
+							folderToAdd = folderToAdd.substring(folderToAdd.indexOf("/") + 1);
 
 						}
 				}
 
 				public void widgetSelected(SelectionEvent event) {
 					try {
-						IWorkbenchPage page = PlatformUI.getWorkbench()
-								.getActiveWorkbenchWindow().getActivePage();
-						NavigatorView view = (NavigatorView) page
-								.findView("edu.uah.itsc.cmac.NavigatorView");
+						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+						NavigatorView view = (NavigatorView) page.findView("edu.uah.itsc.cmac.NavigatorView");
 						S3 s3 = view.getS3();
 
-						String copyFromFolderPath = searchResult
-								.getFolderPath();
+						String copyFromFolderPath = searchResult.getFolderPath();
 						String folderToCopy = "";
 
 						String origUsername = searchResult.getUser();
 						folderToCopy = copyFromFolderPath;
+						int fromIndex = 0;
 
-						// Replace the bucket name with ""
-						folderToCopy = folderToCopy.replaceFirst(
-								s3.getBucketName(), "");
-						// Replace the original username with ""
-						folderToCopy = folderToCopy.replaceFirst(origUsername,
-								"");
+						// Remove first two elements separated by '/'
+						// We assume that the first element is the bucket name and the second element is the user name.
+						folderToCopy = folderToCopy.replaceFirst("^/+", "");
+						fromIndex = folderToCopy.indexOf('/');
+						fromIndex = folderToCopy.indexOf('/', fromIndex + 1);
+						folderToCopy = folderToCopy.substring(fromIndex);
 						// Remove all the / character in the beginning
 						folderToCopy = folderToCopy.replaceFirst("^/+", "");
 
-						copyFromFolderPath = copyFromFolderPath.replaceFirst(
-								s3.getBucketName(), "");
-						copyFromFolderPath = copyFromFolderPath.replaceAll(
-								"^/+", "");
+						copyFromFolderPath = copyFromFolderPath.replaceAll("^/+", "");
 						System.out.println("folderpath: " + copyFromFolderPath);
-						buildTree(copyFromFolderPath, folderToCopy,
-								ResourcesPlugin.getWorkspace().getRoot()
-										.getProject(s3.getBucketName()));
-					} catch (Exception e) {
+						buildTree(copyFromFolderPath, folderToCopy, ResourcesPlugin.getWorkspace().getRoot()
+							.getProject(s3.getBucketName()));
+					}
+					catch (Exception e) {
 						e.printStackTrace();
 					}
 				}

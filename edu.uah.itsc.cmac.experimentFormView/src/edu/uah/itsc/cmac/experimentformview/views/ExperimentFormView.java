@@ -53,9 +53,9 @@ import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 
 public class ExperimentFormView extends ViewPart {
-	private FormToolkit toolkit;
-	private Form form;
-	private S3 s3;
+	private FormToolkit	toolkit;
+	private Form		form;
+	private S3			s3;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -71,19 +71,13 @@ public class ExperimentFormView extends ViewPart {
 		Dialog.applyDialogFont(form.getBody());
 	}
 
-	private Section createTableSection(final Form form2, FormToolkit toolkit,
-			String title) {
+	private Section createTableSection(final Form form2, FormToolkit toolkit, String title) {
 		GridData gd;
-		Section section = toolkit.createSection(form2.getBody(),
-				Section.TWISTIE | Section.TITLE_BAR);
-		section.setActiveToggleColor(toolkit.getHyperlinkGroup()
-				.getActiveForeground());
-		section.setToggleColor(toolkit.getColors().getColor(
-				IFormColors.SEPARATOR));
+		Section section = toolkit.createSection(form2.getBody(), Section.TWISTIE | Section.TITLE_BAR);
+		section.setActiveToggleColor(toolkit.getHyperlinkGroup().getActiveForeground());
+		section.setToggleColor(toolkit.getColors().getColor(IFormColors.SEPARATOR));
 		FormText description = toolkit.createFormText(section, false);
-		description.setText(
-				"<form><p>Create a new <b>experiment</b></p></form>", true,
-				false);
+		description.setText("<form><p>Create a new <b>experiment</b></p></form>", true, false);
 		section.setDescriptionControl(description);
 
 		Composite client = toolkit.createComposite(section, SWT.WRAP);
@@ -109,119 +103,114 @@ public class ExperimentFormView extends ViewPart {
 		// workflowsText.setLayoutData(new GridData(200, 15));
 
 		gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-		Button submitButton = toolkit.createButton(client, "Submit Experiment",
-				SWT.PUSH);
+		Button submitButton = toolkit.createButton(client, "Submit Experiment", SWT.PUSH);
 		submitButton.setLayoutData(gd);
 		submitButton.addSelectionListener(new SelectionListener() {
-			HttpResponse response;
-			PortalPost portalPost = new PortalPost();
-			Experiment experiment = new Experiment();
+			HttpResponse	response;
+			PortalPost		portalPost	= new PortalPost();
+			Experiment		experiment	= new Experiment();
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				try{
-					
-				final MessageBox message = new MessageBox(form2.getShell());
 				try {
-					experiment.setTitle(titleText.getText());
-					experiment.setDescription(descriptionText.getText());
-					experiment.setCreator(User.portalUserID);
-					// experiment.setWorkflows(workflowsText.getText());
-					Job job = new Job("Creating experiment..") {
 
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							try {
-								final JSONObject jsonExperiment = experiment
-										.getJSON();
-								s3 = new S3();
-								if (s3.doesBucketExist(experiment.getTitle())) {
-									message.setMessage("This bucket is already created under your AWS ID");
-									message.setText("Error");
-									return Status.CANCEL_STATUS;
-								}
-								AmazonS3 amazonS3Service = s3
-										.getAmazonS3Service();
-								String bucketName = jsonExperiment.get("title")
-										.toString();
-								Bucket newBucket = amazonS3Service
-										.createBucket(bucketName);
-								s3.addGroupPolicy("cmac_collaborators",
-										"policy_cmac_collaborators",
+					final MessageBox message = new MessageBox(form2.getShell());
+					try {
+						experiment.setTitle(titleText.getText());
+						experiment.setDescription(descriptionText.getText());
+						experiment.setCreator(User.portalUserID);
+						// experiment.setWorkflows(workflowsText.getText());
+						Job job = new Job("Creating experiment..") {
+
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								try {
+									final JSONObject jsonExperiment = experiment.getJSON();
+									s3 = new S3();
+									if (s3.doesBucketExist(experiment.getTitle())) {
+										message.setMessage("This bucket is already created under your AWS ID");
+										message.setText("Error");
+										return Status.CANCEL_STATUS;
+									}
+									AmazonS3 amazonS3Service = s3.getAmazonS3Service();
+									String bucketName = jsonExperiment.get("title").toString();
+									Bucket newBucket = amazonS3Service.createBucket(bucketName);
+									s3.addGroupPolicy("cmac_collaborators", "policy_cmac_collaborators",
 										getPolicyToAdd(bucketName));
-								response = portalPost.post(
-										PortalUtilities.getNodeRestPoint(),
-										jsonExperiment);
-								if (response == null
-										|| response.getStatusLine()
-												.getStatusCode() != 200) {
-									message.setMessage("Invalid Status Code");
+									response = portalPost.post(PortalUtilities.getNodeRestPoint(), jsonExperiment);
+									if (response == null || response.getStatusLine().getStatusCode() != 200) {
+										message.setMessage("Invalid Status Code");
+										return Status.CANCEL_STATUS;
+									}
+									monitor.worked(50);
+									S3 adminS3 = new S3();
+									createFolderInCommunity(experiment.getTitle(), adminS3);
+									monitor.worked(75);
+									Thread.sleep(5000);
+									if (!adminS3.userFolderExists(User.username, experiment.getTitle())) {
+										adminS3.uploadUserFolder(User.username, experiment.getTitle());
+									}
+									buildBucketAsProject(experiment.getTitle(), new NullProgressMonitor());
+									monitor.done();
+									message.setMessage("Added Experiment Successfully");
+									Display.getDefault().asyncExec(new Runnable() {
+										public void run() {
+											message.open();
+										}
+									});
+									return Status.OK_STATUS;
+								}
+								catch (JSONException e) {
+									e.printStackTrace();
+									message.setMessage("Could not add the experiment in JSONException.\n"
+										+ e.getMessage());
+									message.setText("Error");
+									Display.getDefault().syncExec(new Runnable() {
+										public void run() {
+											message.open();
+										}
+									});
 									return Status.CANCEL_STATUS;
 								}
-								monitor.worked(50);
-								S3 adminS3 = new S3();
-								Thread.sleep(5000);
-								if (!adminS3.userFolderExists(User.username,
-										experiment.getTitle())) {
-									adminS3.uploadUserFolder(User.username,
-											experiment.getTitle());
+								catch (InterruptedException e) {
+									e.printStackTrace();
+									message.setMessage("Could not add the experiment in InterruptedException\n"
+										+ e.getMessage());
+									message.setText("Error");
+									Display.getDefault().syncExec(new Runnable() {
+										public void run() {
+											message.open();
+										}
+									});
+									return Status.CANCEL_STATUS;
 								}
-								buildBucketAsProject(experiment.getTitle(),
-										new NullProgressMonitor());
-								monitor.done();
-								message.setMessage("Added Experiment Successfully");
-								Display.getDefault().asyncExec(new Runnable() {
-									  public void run() {
-									  message.open();
-									  }
-								});
-								return Status.OK_STATUS;
-							} catch (JSONException e) {
-								e.printStackTrace();
-								message.setMessage("Could not add the experiment in JSONException.\n"
-										+ e.getMessage());
-								message.setText("Error");
-								Display.getDefault().syncExec(new Runnable() {
-									  public void run() {
-									  message.open();
-									  }
-								});
-								return Status.CANCEL_STATUS;
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-								message.setMessage("Could not add the experiment in InterruptedException\n"
-										+ e.getMessage());
-								message.setText("Error");
-								Display.getDefault().syncExec(new Runnable() {
-									  public void run() {
-									  message.open();
-									  }
-								});
-								return Status.CANCEL_STATUS;
 							}
-						}
-					};
-					job.setUser(true);
-					job.schedule();
-					job.join();
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-					message.setMessage("Could not add the experiment in InterruptedException during join\n"
+
+						};
+						job.setUser(true);
+						job.schedule();
+						job.join();
+					}
+					catch (InterruptedException e1) {
+						e1.printStackTrace();
+						message.setMessage("Could not add the experiment in InterruptedException during join\n"
 							+ e1.getMessage());
-					message.setText("Error");
-					message.open();
-				} catch (Exception e2){
-					message.setText("Error, the last resort");
-					message.open();
-				}
+						message.setText("Error");
+						message.open();
+					}
+					catch (Exception e2) {
+						message.setText("Error, the last resort");
+						message.open();
+					}
 
-				descriptionText.setText("");
-				titleText.setText("");
-				if (message.getText().length() > 0) {
-					message.open();
+					descriptionText.setText("");
+					titleText.setText("");
+					if (message.getText().length() > 0) {
+						message.open();
 
+					}
 				}
-				} catch (Exception e3){
+				catch (Exception e3) {
 					MessageBox message = new MessageBox(Display.getDefault().getActiveShell().getShell());
 					message.setMessage("THE ULTIMATE ERROR");
 					message.open();
@@ -258,19 +247,35 @@ public class ExperimentFormView extends ViewPart {
 
 	}
 
+	private void createFolderInCommunity(String title, S3 adminS3) {
+		IProject cmacCommnunity = ResourcesPlugin.getWorkspace().getRoot().getProject(adminS3.communityBucketName);
+		try {
+			if (!cmacCommnunity.exists())
+				cmacCommnunity.create(null);
+			IFolder experimentFolder = cmacCommnunity.getFolder(title);
+			if (!experimentFolder.exists())
+				experimentFolder.create(true, true, null);
+			adminS3.uploadFolderName(experimentFolder);
+		}
+		catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	private String getPolicyToAdd(String bucketName) {
 		BufferedReader bufferedReader = null;
 		String fileContent = "";
 		String line = "";
 		try {
-			InputStream stream = this.getClass().getClassLoader()
-					.getResourceAsStream("policy.template");
+			InputStream stream = this.getClass().getClassLoader().getResourceAsStream("policy.template");
 			bufferedReader = new BufferedReader(new InputStreamReader(stream));
 			while ((line = bufferedReader.readLine()) != null) {
 				fileContent = fileContent + "\n" + line;
 			}
 			bufferedReader.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 
@@ -279,14 +284,14 @@ public class ExperimentFormView extends ViewPart {
 	}
 
 	public void buildBucketAsProject(String bucket, IProgressMonitor monitor) {
-		IProject project = ResourcesPlugin.getWorkspace().getRoot()
-				.getProject(bucket);
+		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(bucket);
 		try {
 			if (!project.exists())
 				project.create(monitor);
 			buildTree(User.username + "_$folder$", project, bucket);
 			project.refreshLocal(0, monitor);
-		} catch (CoreException e) {
+		}
+		catch (CoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -298,8 +303,8 @@ public class ExperimentFormView extends ViewPart {
 		lor.setDelimiter(s3.getDelimiter());
 		lor.setPrefix(prefix);
 
-		System.out.println("Building tree.............." + bucket
-				+ " delimiter=" + s3.getDelimiter() + " prefix=" + prefix);
+		System.out.println("Building tree.............." + bucket + " delimiter=" + s3.getDelimiter() + " prefix="
+			+ prefix);
 
 		// Just listing the buckets here
 		// List<Bucket> bu = s3.getService().listBuckets();
@@ -312,10 +317,10 @@ public class ExperimentFormView extends ViewPart {
 		ObjectListing filteredObjects = null;
 		try {
 			filteredObjects = s3.getService().listObjects(lor);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// e.printStackTrace();
-			System.out.println("Cannot build tree for " + bucket + "\n"
-					+ e.getMessage());
+			System.out.println("Cannot build tree for " + bucket + "\n" + e.getMessage());
 			return;
 		}
 		// if (filteredObjects.getObjectSummaries().isEmpty()){
@@ -324,8 +329,7 @@ public class ExperimentFormView extends ViewPart {
 		// tp1.create(false, true, null);
 		// }
 		//
-		for (S3ObjectSummary objectSummary : filteredObjects
-				.getObjectSummaries()) {
+		for (S3ObjectSummary objectSummary : filteredObjects.getObjectSummaries()) {
 			String currentResource = objectSummary.getKey();
 			System.out.println("Prefix=" + prefix);
 			System.out.println("buildTree currentResource=" + currentResource);
@@ -334,85 +338,68 @@ public class ExperimentFormView extends ViewPart {
 			if (currentResource.indexOf("_$folder$") > 0) {
 				IFolder tp1;
 
-				System.out.println("Folder="
-						+ currentResource.substring(0,
-								currentResource.indexOf("_$folder$")));
+				System.out.println("Folder=" + currentResource.substring(0, currentResource.indexOf("_$folder$")));
 
 				if (tp instanceof IFolder) {
-					System.out.println("IFolder="
-							+ currentResource.substring(0,
-									currentResource.indexOf("_$folder$")));
-					System.out
-							.println("Current Foldername tp= " + tp.getName());
-					tp1 = ((IFolder) tp).getFolder(currentResource.substring(0,
-							currentResource.indexOf("_$folder$")).replaceAll(
-							prefix, ""));
-					System.out.println("Current Foldername tp1= "
-							+ tp1.getName());
+					System.out.println("IFolder=" + currentResource.substring(0, currentResource.indexOf("_$folder$")));
+					System.out.println("Current Foldername tp= " + tp.getName());
+					tp1 = ((IFolder) tp).getFolder(currentResource.substring(0, currentResource.indexOf("_$folder$"))
+						.replaceAll(prefix, ""));
+					System.out.println("Current Foldername tp1= " + tp1.getName());
 					if (!tp1.exists())
 						try {
 							tp1.create(false, true, null);
-						} catch (CoreException e) {
-							// TODO Auto-generated catch block
-							System.err
-									.println("buildTree method tp1.create for IFolder ->"
-											+ e.toString());
 						}
-				} else {
-					tp1 = ((IProject) tp).getFolder(currentResource.substring(
-							0, currentResource.indexOf("_$folder$"))
-							.replaceAll(prefix, ""));
+						catch (CoreException e) {
+							// TODO Auto-generated catch block
+							System.err.println("buildTree method tp1.create for IFolder ->" + e.toString());
+						}
+				}
+				else {
+					tp1 = ((IProject) tp).getFolder(currentResource.substring(0, currentResource.indexOf("_$folder$"))
+						.replaceAll(prefix, ""));
 					if (!tp1.exists()) {
 						try {
 							if (!((IProject) tp).isOpen())
 								((IProject) tp).open(null);
 							tp1.create(false, true, null);
-						} catch (CoreException e) {
+						}
+						catch (CoreException e) {
 							// TODO Auto-generated catch block
-							System.err
-									.println("buildTree method tp1.create for IProject ->"
-											+ e.toString());
+							System.err.println("buildTree method tp1.create for IProject ->" + e.toString());
 						}
 					}
 				}
-				buildTree(
-						currentResource.substring(0,
-								currentResource.indexOf("_$folder$"))
-								+ "/", tp1, bucket);
-			} else { // not a folder, must be a file
+				buildTree(currentResource.substring(0, currentResource.indexOf("_$folder$")) + "/", tp1, bucket);
+			}
+			else { // not a folder, must be a file
 				System.out.println("Not a folder prefix: " + prefix);
 				IFile f;
-				String fullFilePath = ResourcesPlugin.getWorkspace().getRoot()
-						.getLocation().toOSString()
-						+ java.io.File.separator
-						+ bucket
-						+ java.io.File.separator + currentResource;
+				String fullFilePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()
+					+ java.io.File.separator + bucket + java.io.File.separator + currentResource;
 				System.out.println("full path: " + fullFilePath);
 				IPath location = new Path(fullFilePath);
 
 				java.io.File file = new java.io.File(fullFilePath);
 				try {
 					file.createNewFile();
-				} catch (IOException e) {
+				}
+				catch (IOException e) {
 					// TODO Auto-generated catch block
-					System.err
-							.println("buildTree method file.createNewFile() ->"
-									+ e.toString());
+					System.err.println("buildTree method file.createNewFile() ->" + e.toString());
 				}
 				if (tp instanceof IFolder)
-					f = ((IFolder) tp).getFile(currentResource.replaceAll(
-							prefix, ""));
+					f = ((IFolder) tp).getFile(currentResource.replaceAll(prefix, ""));
 				else
-					f = ((IProject) tp).getFile(currentResource.replaceAll(
-							prefix, ""));
+					f = ((IProject) tp).getFile(currentResource.replaceAll(prefix, ""));
 				if (!f.exists())
 					try {
 						f.createLink(location, IResource.NONE, null);
-					} catch (CoreException e) {
+					}
+					catch (CoreException e) {
 						// TODO Auto-generated catch block
-						System.err
-								.println("buildTree method f.createLink(location, IResource.NONE, null) ->"
-										+ e.toString());
+						System.err.println("buildTree method f.createLink(location, IResource.NONE, null) ->"
+							+ e.toString());
 					}
 				// tp.addChild(new TreeObject(currentResource.replaceAll(prefix,
 				// ""),currentResource));

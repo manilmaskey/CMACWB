@@ -115,6 +115,10 @@ public class PortalUtilities {
 
 	}
 
+	public static String getExperimentFeedURL() {
+		return getKeyValueFromProperties("experiment_url");
+	}
+	
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
 		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities
 				.getWorkflowFeedURL() + "?field_could_path_value=" + path);
@@ -140,7 +144,38 @@ public class PortalUtilities {
 			return map;
 		} catch (ParseException e) {
 			e.printStackTrace();
+			System.out.println("Unable to parse json object");
+			return null;
 		}
-		return null;
 	}
+	
+	public static HashMap<String, String> getPortalExperimentDetails(String bucketName){
+		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getExperimentFeedURL() + "?title=" + bucketName);
+		JSONParser parser = new JSONParser();
+		Object obj;
+		try{
+			obj = parser.parse(jsonText);
+			JSONObject experiments = (JSONObject) obj;
+			
+			if (experiments == null)
+				return null;
+			JSONArray experimentArray = (JSONArray) experiments.get("experiments");
+			if (experimentArray == null || experimentArray.size() == 0)
+				return null;
+			JSONObject experiment = (JSONObject) experimentArray.get(0);
+			experiment = (JSONObject) experiment.get("experiment");
+			HashMap<String, String> map = new HashMap<String, String>();
+			map.put("nid", experiment.get("nid").toString());
+			map.put("title", experiment.get("title").toString());
+			map.put("creator", experiment.get("creator").toString());
+			map.put("creatorID", experiment.get("creatorID").toString());
+			map.put("description", experiment.get("description").toString());
+			return map;
+		} catch (ParseException e){
+			e.printStackTrace();
+			System.out.println("Unable to parse json object");
+			return null;
+		}
+	}
+	
 }
