@@ -36,23 +36,19 @@ import edu.uah.itsc.cmac.portal.PortalUtilities;
  * 
  */
 public class DeleteCommandHandler extends AbstractHandler {
-	private S3 s3;
-	private AmazonS3 amazonS3Service;
+	private S3			s3;
+	private AmazonS3	amazonS3Service;
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
-	 * ExecutionEvent)
+	 * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands. ExecutionEvent)
 	 */
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		boolean userConfirmation = MessageDialog
-				.openConfirm(
-						Display.getDefault().getActiveShell(),
-						"Warning! Delete resources from cloud!!",
-						"Are you sure you want to delete this resource from cloud?\nNote that this will also delete the shared resource.");
+			.openConfirm(Display.getDefault().getActiveShell(), "Warning! Delete resources from cloud!!",
+				"Are you sure you want to delete this resource from cloud?\nNote that this will also delete the shared resource.");
 		if (!userConfirmation)
 			return null;
 		else {
@@ -60,7 +56,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 				s3 = new S3();
 				amazonS3Service = s3.getAmazonS3Service();
 				final IStructuredSelection selection = (IStructuredSelection) HandlerUtil
-						.getCurrentSelectionChecked(event);
+					.getCurrentSelectionChecked(event);
 				ArrayList<String> allFiles = getAllFiles(selection);
 				System.out.println(allFiles);
 				String bucketName = getBucketName(selection);
@@ -69,15 +65,23 @@ public class DeleteCommandHandler extends AbstractHandler {
 
 				for (Object selectedObject : selectedObjects) {
 					if (selectedObject instanceof IFolder) {
-						String path = ((IFolder) selectedObject).getFullPath()
-								.toString();
+						String path = ((IFolder) selectedObject).getFullPath().toString();
 						deleteWorkflowFromPortal(path);
-					} else if (selectedObject instanceof IProject) {
+						((IFolder) selectedObject).delete(true, null);
+						((IFolder) selectedObject).getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
+					}
+					else if (selectedObject instanceof IProject) {
 						deleteBucketFromCloud(bucketName);
 						deleteBucketFromPortal(bucketName);
+						((IProject) selectedObject).delete(true, null);
 					}
+					else if (selectedObject instanceof IFile) {
+						((IFile) selectedObject).delete(true, null);
+					}
+
 				}
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 			}
 			return null;
@@ -85,8 +89,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 	}
 
 	private void deleteBucketFromPortal(String bucketName) {
-		HashMap<String, String> nodeMap = PortalUtilities
-				.getPortalExperimentDetails(bucketName);
+		HashMap<String, String> nodeMap = PortalUtilities.getPortalExperimentDetails(bucketName);
 		String nodeID;
 		if (nodeMap != null)
 			nodeID = nodeMap.get("nid");
@@ -94,8 +97,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 			nodeID = null;
 		if (nodeID != null && nodeID.length() > 0) {
 			PortalPost portalPost = new PortalPost();
-			HttpResponse response = portalPost.delete(PortalUtilities
-					.getNodeRestPoint() + "/" + nodeID);
+			HttpResponse response = portalPost.delete(PortalUtilities.getNodeRestPoint() + "/" + nodeID);
 			if (response.getStatusLine().getStatusCode() != 200)
 				System.out.println("Error deleting experiment from Portal");
 			System.out.println(response);
@@ -112,18 +114,17 @@ public class DeleteCommandHandler extends AbstractHandler {
 	}
 
 	private void deleteWorkflowFromPortal(String path) {
-		HashMap<String, String> nodeMap = PortalUtilities
-				.getPortalWorkflowDetails(path);
+		HashMap<String, String> nodeMap = PortalUtilities.getPortalWorkflowDetails(path);
 
 		String nodeID;
 		if (nodeMap != null) {
 			nodeID = nodeMap.get("nid");
-		} else
+		}
+		else
 			nodeID = null;
 		if (nodeID != null && nodeID.length() > 0) {
 			PortalPost portalPost = new PortalPost();
-			HttpResponse response = portalPost.delete(PortalUtilities
-					.getNodeRestPoint() + "/" + nodeID);
+			HttpResponse response = portalPost.delete(PortalUtilities.getNodeRestPoint() + "/" + nodeID);
 			System.out.println(response);
 		}
 	}
@@ -147,25 +148,32 @@ public class DeleteCommandHandler extends AbstractHandler {
 	}
 
 	private void deleteFiles(ArrayList<String> selectedFiles, String bucketName) {
-		DeleteObjectsRequest deleteRequest = new DeleteObjectsRequest(
-				bucketName);
+		DeleteObjectsRequest deleteRequest = new DeleteObjectsRequest(bucketName);
+		DeleteObjectsRequest deleteCommunityRequest = new DeleteObjectsRequest(s3.getCommunityBucketName());
 		ArrayList<KeyVersion> keys = new ArrayList<KeyVersion>();
+		ArrayList<KeyVersion> communityKeys = new ArrayList<KeyVersion>();
 		for (String selectedFile : selectedFiles) {
-			KeyVersion keyversion = new KeyVersion(selectedFile);
-			keys.add(keyversion);
+			KeyVersion keyVersion = new KeyVersion(selectedFile);
+			keys.add(keyVersion);
 		}
 		deleteRequest.setKeys(keys);
+		for (String selectedFile : selectedFiles) {
+			KeyVersion keyVersion = new KeyVersion(bucketName + "/" + selectedFile);
+			communityKeys.add(keyVersion);
+		}
+		deleteCommunityRequest.setKeys(communityKeys);
 		try {
-			DeleteObjectsResult deleteResult = amazonS3Service
-					.deleteObjects(deleteRequest);
-			System.out.format("Successfully deleted %s items", deleteResult
-					.getDeletedObjects().size());
-		} catch (MultiObjectDeleteException e) {
+			DeleteObjectsResult deleteResult = amazonS3Service.deleteObjects(deleteRequest);
+			System.out.format("Successfully deleted %s items\n", deleteResult.getDeletedObjects().size());
+			DeleteObjectsResult deleteCommunityResult = amazonS3Service.deleteObjects(deleteCommunityRequest);
+			System.out.format("Successfully deleted %s items from cmac community\n", deleteCommunityResult
+				.getDeletedObjects().size());
+		}
+		catch (MultiObjectDeleteException e) {
 			e.printStackTrace();
 			for (DeleteError deleteError : e.getErrors()) {
-				System.out.format("Object Key: %s\t%s\t%s\n",
-						deleteError.getKey(), deleteError.getCode(),
-						deleteError.getMessage());
+				System.out.format("Object Key: %s\t%s\t%s\n", deleteError.getKey(), deleteError.getCode(),
+					deleteError.getMessage());
 			}
 		}
 	}
@@ -175,7 +183,8 @@ public class DeleteCommandHandler extends AbstractHandler {
 		if (resource instanceof IFile) {
 			IFile file = (IFile) resource;
 			files.add(getS3File(file, file.getProject()));
-		} else {
+		}
+		else {
 			IResource[] members = null;
 			try {
 				if (resource instanceof IProject)
@@ -183,10 +192,10 @@ public class DeleteCommandHandler extends AbstractHandler {
 				else if (resource instanceof IFolder) {
 					IFolder folder = (IFolder) resource;
 					members = folder.members();
-					files.add(getS3Folder(folder, folder.getProject())
-							+ "_$folder$");
+					files.add(getS3Folder(folder, folder.getProject()) + "_$folder$");
 				}
-			} catch (CoreException e) {
+			}
+			catch (CoreException e) {
 				e.printStackTrace();
 			}
 			for (IResource member : members) {

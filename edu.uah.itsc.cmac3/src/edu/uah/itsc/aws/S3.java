@@ -24,13 +24,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -344,14 +344,17 @@ public class S3 {
 		String folderKey = path.substring(startPosition, endPosition)+ "_$folder$";
 		folderKey = folderKey.replaceAll("\\\\", "/");
 		System.out.println("shareFolderName folderKey="+folderKey);
-
+		
 
 		CopyObjectRequest copyObjRequest = new CopyObjectRequest(
 				bucketName, folderKey, communityBucketName, folder.getProject().getName() + "/" + folderKey);
-		
+		IProject communityProject = ResourcesPlugin.getWorkspace().getRoot().getProject(communityBucketName);
+		IFolder userFolder = communityProject.getFolder(bucketName).getFolder(User.username);
+		String userFolderString = userFolder.toString() + "_$folder$";
 		//copyObjRequest.setCannedAccessControlList(CannedAccessControlList.PublicRead);
 		try{
 			amazonS3Service.copyObject(copyObjRequest);
+			uploadFolderName(userFolder);
 			System.out.println("----------------------shareFolderName folderKey="+folderKey);    
 		}
 		catch (AmazonClientException ace){

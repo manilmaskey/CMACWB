@@ -1,10 +1,6 @@
 package edu.uah.itsc.cmac.actions;
 
-import java.io.ByteArrayInputStream;
 import java.util.HashMap;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -37,12 +33,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import edu.uah.itsc.aws.S3;
-import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
@@ -140,8 +132,9 @@ public class ShareCommandHandler extends AbstractHandler {
 											S3 s3 = new S3();
 
 											s3.uploadFolder((IFolder) firstElement);
-											if (!s3.userFolderExists(User.username, S3.communityBucketName))
-												s3.uploadUserFolder(User.username, S3.communityBucketName);
+											// We do not create a userfolder under community bucket directly
+//											if (!s3.userFolderExists(User.username, S3.communityBucketName))
+//												s3.uploadUserFolder(User.username, S3.communityBucketName);
 											s3.shareFolder((IFolder) firstElement);
 											try {
 												NavigatorView view = (NavigatorView) getPage().findView(

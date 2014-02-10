@@ -76,6 +76,7 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 			if (receiver instanceof IFolder) {
 				IFolder folder = (IFolder) receiver;
 				if (folder.getParent() instanceof IFolder
+						&& folder.getParent().getParent().getParent() instanceof IProject
 						&& folder.getProject().getName()
 								.equals(S3.communityBucketName))
 					return true;
@@ -92,7 +93,8 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 			 */
 			if (receiver instanceof IFolder) {
 				IFolder folder = (IFolder) receiver;
-				if (folder.getProject().getName().equals(S3.bucketName)
+				// Enable "Delete from cloud" only if this folder is not community bucket and is an immediate child of userfolder
+				if ((!folder.getProject().getName().equals(S3.communityBucketName))
 						&& folder.getParent().getName()
 								.equalsIgnoreCase(User.username)) {
 					// HashMap<String, String> nodeMap = PortalUtilities

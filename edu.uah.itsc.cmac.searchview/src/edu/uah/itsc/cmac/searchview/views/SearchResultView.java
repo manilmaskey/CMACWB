@@ -20,8 +20,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -33,7 +31,6 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.searchview.models.SearchResult;
 import edu.uah.itsc.cmac.searchview.models.SearchResultInterface;
-import edu.uah.itsc.cmac.ui.NavigatorView;
 
 /**
  * @author sshrestha
@@ -107,9 +104,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 				}
 
 				private void downloadFolder(String copyFromFolderPath, IFolder copyToFolder) {
-					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-					NavigatorView view = (NavigatorView) page.findView("edu.uah.itsc.cmac.NavigatorView");
-					S3 s3 = view.getS3();
+					S3 s3 = new S3();
 					AmazonS3 amazonS3Service = s3.getAmazonS3Service();
 
 					ListObjectsRequest lor = new ListObjectsRequest();
@@ -128,7 +123,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 						}
 						else {
 							String fullFilePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()
-								+ java.io.File.separator + s3.getBucketName() + java.io.File.separator + User.username
+								+ java.io.File.separator + copyToFolder.getProject().getName() + java.io.File.separator + User.username
 								+ java.io.File.separator + copyToFolder.getName() + java.io.File.separator + fileName;
 							System.out.println("Downloading file " + currentResource);
 							System.out.println("fullFilePath: " + fullFilePath);
@@ -148,7 +143,6 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 				}
 
 				private void createFolderPath(IFolder folder, String folderToAdd) {
-					String folderPart = "";
 					if (folderToAdd.indexOf("/") <= 0) {
 						IFolder newFolder = folder.getFolder(folderToAdd);
 						if (!newFolder.exists()) {
@@ -163,7 +157,6 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 					}
 					else
 						while (folderToAdd.indexOf("/") > 0) {
-							folderPart = folderToAdd.substring(0, folderToAdd.indexOf("/"));
 							folderToAdd = folderToAdd.substring(folderToAdd.indexOf("/") + 1);
 
 						}
@@ -171,14 +164,9 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 
 				public void widgetSelected(SelectionEvent event) {
 					try {
-						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-						NavigatorView view = (NavigatorView) page.findView("edu.uah.itsc.cmac.NavigatorView");
-						S3 s3 = view.getS3();
-
 						String copyFromFolderPath = searchResult.getFolderPath();
 						String folderToCopy = "";
 
-						String origUsername = searchResult.getUser();
 						folderToCopy = copyFromFolderPath;
 						int fromIndex = 0;
 
@@ -190,11 +178,14 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 						folderToCopy = folderToCopy.substring(fromIndex);
 						// Remove all the / character in the beginning
 						folderToCopy = folderToCopy.replaceFirst("^/+", "");
-
+						
+						String bucketName = null;
 						copyFromFolderPath = copyFromFolderPath.replaceAll("^/+", "");
+						fromIndex = copyFromFolderPath.indexOf('/');
+						bucketName = copyFromFolderPath.substring(0, fromIndex);
 						System.out.println("folderpath: " + copyFromFolderPath);
 						buildTree(copyFromFolderPath, folderToCopy, ResourcesPlugin.getWorkspace().getRoot()
-							.getProject(s3.getBucketName()));
+							.getProject(bucketName));
 					}
 					catch (Exception e) {
 						e.printStackTrace();
