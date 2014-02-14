@@ -35,8 +35,8 @@ public class CMACNewActionProvider extends NewActionProvider {
 	   }
 	   else if (selection.getFirstElement() instanceof IFolder ){
 		   IFolder selectedFolder = (IFolder)selection.getFirstElement();
-
-		   if (selectedFolder.getProject().getName().equals(S3.communityBucketName)) 
+		   S3 s3 = new S3();
+		   if (selectedFolder.getProject().getName().equals(s3.getCommunityBucketName())) 
 		       menu.remove("group.new");
 		   
 		   

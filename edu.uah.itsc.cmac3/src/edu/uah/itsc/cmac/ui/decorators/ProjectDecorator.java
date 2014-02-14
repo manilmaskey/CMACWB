@@ -19,8 +19,8 @@ public class ProjectDecorator extends LabelProvider implements ILabelDecorator {
 //return the image
     	IProject project = (IProject)element;
     	String icon;
-    	
-    	if (project.getName().equals(S3.communityBucketName))
+    	S3 s3 = new S3();
+    	if (project.getName().equals(s3.getCommunityBucketName()))
     		icon = "icons/cloud-16x16.png";
     	else
     		icon = "icons/lock-16x16.png";	
@@ -33,8 +33,8 @@ public class ProjectDecorator extends LabelProvider implements ILabelDecorator {
       // return null to specify no decoration 
     	IProject project = (IProject)object;
     	String text;
-    	
-    	if (project.getName().equals(S3.communityBucketName))
+    	S3 s3 = new S3();
+    	if (project.getName().equals(s3.getCommunityBucketName()))
     		text = " - Publicly Shared";
     	else
     		text = " - Personal Sandbox";	   	

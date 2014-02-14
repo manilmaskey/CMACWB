@@ -248,7 +248,7 @@ public class ExperimentFormView extends ViewPart {
 	}
 
 	private void createFolderInCommunity(String title, S3 adminS3) {
-		IProject cmacCommnunity = ResourcesPlugin.getWorkspace().getRoot().getProject(adminS3.communityBucketName);
+		IProject cmacCommnunity = ResourcesPlugin.getWorkspace().getRoot().getProject(adminS3.getCommunityBucketName());
 		try {
 			if (!cmacCommnunity.exists())
 				cmacCommnunity.create(null);

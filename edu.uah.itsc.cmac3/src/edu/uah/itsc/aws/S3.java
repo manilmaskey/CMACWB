@@ -58,7 +58,7 @@ public class S3 {
 	private String prefix = "";
 	private AmazonS3 amazonS3Service;
 	public static String delimiter = "/";
-	public static String communityBucketName = "cmac-community";
+	private String communityBucketName = "cmac-community";
 //	public static String bucketName = "scattering";
 	private String awsAdminAccessKey = "AKIAIKX2MDKF6M6GXD7Q";	
 	private String awsAdminSecretKey = "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";
