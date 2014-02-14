@@ -59,7 +59,7 @@ public class S3 {
 	private AmazonS3 amazonS3Service;
 	public static String delimiter = "/";
 	public static String communityBucketName = "cmac-community";
-	public static String bucketName = "scattering";
+//	public static String bucketName = "scattering";
 	private String awsAdminAccessKey = "AKIAIKX2MDKF6M6GXD7Q";	
 	private String awsAdminSecretKey = "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";
 	private String awsAccessKey = "";//"AKIAIKX2MDKF6M6GXD7Q";	
@@ -73,7 +73,7 @@ public class S3 {
 		awsAccessKey = aKey;
 		awsSecretKey = sKey;
 		//rootFolder = rFolder;
-		bucketName = "scattering";
+//		bucketName = "scattering";
 		communityBucketName = "cmac-community";
 		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
 		amazonS3Service = new AmazonS3Client(credentials);
@@ -82,7 +82,7 @@ public class S3 {
 	public S3(){
 		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAdminAccessKey, awsAdminSecretKey);
 		amazonS3Service = new AmazonS3Client(credentials);		
-		bucketName = "scattering";
+//		bucketName = "scattering";
 		communityBucketName = "cmac-community";
 	}
 
@@ -133,9 +133,9 @@ public class S3 {
 		return delimiter;
 	}
 
-	public String getBucketName(){
-		return bucketName;
-	}
+//	public String getBucketName(){
+//		return bucketName;
+//	}
 
 
 	public String getCommunityBucketName(){

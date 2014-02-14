@@ -161,8 +161,7 @@ public class NavigatorView extends CommonNavigator {
 			project = ResourcesPlugin.getWorkspace().getRoot().getProject(bucket);
 			try {
 				if (project.exists()
-					&& (project.getName().equals(s3.getCommunityBucketName()) || project.getName().equals(
-						s3.getBucketName()))) {
+					&& (project.getName().equals(s3.getCommunityBucketName()) )) {
 					continue;
 				}
 				else if (project.exists())

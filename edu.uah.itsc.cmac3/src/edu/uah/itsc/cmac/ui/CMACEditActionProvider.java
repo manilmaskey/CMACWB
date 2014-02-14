@@ -32,12 +32,12 @@ public class CMACEditActionProvider extends EditActionProvider {
    IStructuredSelection selection = (IStructuredSelection)view.getViewer().getSelection();
    if (selection.getFirstElement() instanceof IProject){
 	   IProject prj = (IProject)selection.getFirstElement();
-
-	   if (prj.getName().equals(S3.communityBucketName) || prj.getName().equals(S3.bucketName)) {
+	// Remove following menus for every project
+//	   if (prj.getName().equals(S3.communityBucketName) || prj.getName().equals(S3.bucketName)) {
 		    menu.remove("org.eclipse.ui.CopyAction");
 		   	menu.remove("org.eclipse.ui.PasteAction");
 		   	menu.remove("org.eclipse.ui.DeleteResourceAction");
-	   }
+//	   }
    }
    else if  (selection.getFirstElement() instanceof IFolder){
 	   IFolder selectedFolder = (IFolder)selection.getFirstElement();

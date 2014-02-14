@@ -28,9 +28,9 @@ public class CMACNewActionProvider extends NewActionProvider {
 	   NavigatorView view = (NavigatorView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("edu.uah.itsc.cmac.NavigatorView");
 	   IStructuredSelection selection = (IStructuredSelection)view.getViewer().getSelection();
 	   if (selection.getFirstElement() instanceof IProject){
-		   IProject prj = (IProject)selection.getFirstElement();
-
-		   if (prj.getName().equals(S3.communityBucketName) || prj.getName().equals(S3.bucketName)) 
+//		   IProject prj = (IProject)selection.getFirstElement();
+		// Remove this menu for every project
+//		   if (prj.getName().equals(S3.communityBucketName) || prj.getName().equals(S3.bucketName)) 
 		       menu.remove("group.new");
 	   }
 	   else if (selection.getFirstElement() instanceof IFolder ){

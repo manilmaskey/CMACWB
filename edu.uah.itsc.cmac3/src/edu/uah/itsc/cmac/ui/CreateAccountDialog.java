@@ -219,13 +219,13 @@ public class CreateAccountDialog {
 //						}
 						User.username = username;
 						User.password = password;
-						S3 adminS3 = new S3();
-						if (!adminS3.userFolderExists(username,
-								adminS3.getBucketName())) {
-							adminS3.uploadUserFolder(username,
-									adminS3.getBucketName());
-							
-						}
+//						S3 adminS3 = new S3();
+//						if (!adminS3.userFolderExists(username,
+//								adminS3.getBucketName())) {
+//							adminS3.uploadUserFolder(username,
+//									adminS3.getBucketName());
+//							
+//						}
 						
 						
 						shell.close();
