@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IFile;
@@ -55,35 +56,29 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 public class S3 {
-	private String prefix = "";
+	private static Properties properties = null;
 	private AmazonS3 amazonS3Service;
 	public static String delimiter = "/";
-	private String communityBucketName = "cmac-community";
-//	public static String bucketName = "scattering";
-	private String awsAdminAccessKey = "AKIAIKX2MDKF6M6GXD7Q";	
-	private String awsAdminSecretKey = "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";
-	private String awsAccessKey = "";//"AKIAIKX2MDKF6M6GXD7Q";	
-	private String awsSecretKey = "";//"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";	
-	//private String bucketName;
-	
-	//private String rootFolder;
+	private String communityBucketName;
+	private String awsAdminAccessKey;
+	private String awsAdminSecretKey;
+	private String awsAccessKey;
+	private String awsSecretKey;
 
-	//public S3(String aKey,String sKey,String rFolder){
 	public S3(String aKey,String sKey){
 		awsAccessKey = aKey;
 		awsSecretKey = sKey;
-		//rootFolder = rFolder;
-//		bucketName = "scattering";
-		communityBucketName = "cmac-community";
+		communityBucketName = getKeyValueFromProperties("community_bucket_name");
 		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
 		amazonS3Service = new AmazonS3Client(credentials);
 	}
 	
 	public S3(){
+		awsAdminAccessKey = getKeyValueFromProperties("aws_admin_access_key");
+		awsAdminSecretKey = getKeyValueFromProperties("aws_admin_secret_key");
 		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAdminAccessKey, awsAdminSecretKey);
 		amazonS3Service = new AmazonS3Client(credentials);		
-//		bucketName = "scattering";
-		communityBucketName = "cmac-community";
+		communityBucketName = getKeyValueFromProperties("community_bucket_name");
 	}
 
 	public void addGroupPolicy(String groupName, String policyName, String policyToAdd) {
@@ -133,44 +128,9 @@ public class S3 {
 		return delimiter;
 	}
 
-//	public String getBucketName(){
-//		return bucketName;
-//	}
-
-
 	public String getCommunityBucketName(){
 		return communityBucketName;
 	}
-	//	public String getRootFolder(){
-	//		return rootFolder;
-	//	}
-	//change
-	//	public void downloadFile(String bucketName,String s3fileName,String localfileName){
-	//		try{	
-	//		S3Object object = s3Service.getObject(bucketName, s3fileName);	
-	//		InputStream reader = new BufferedInputStream(
-	//				   object.getDataInputStream());
-	//				File file = new File(localfileName);      
-	//				OutputStream writer = new BufferedOutputStream(new FileOutputStream(file));
-	//	
-	//				int read = -1;
-	//	
-	//				while ( ( read = reader.read() ) != -1 ) {
-	//				    writer.write(read);
-	//				}
-	//	
-	//				writer.flush();
-	//				writer.close();
-	//				reader.close();
-	//		}
-	//		catch (ServiceException se){
-	//			System.out.println("ServiceException: "+se.toString());
-	//		}
-	//		catch (IOException ioe){
-	//			System.out.println("IOException: "+ioe.toString());
-	//		}
-	//	}
-
 
 	public void downloadFile(String bucketName,String s3fileName,String localfileName){
 		try{	
@@ -216,7 +176,6 @@ public class S3 {
 
 			}
 			else{
-				IFile f;
 				String fullFilePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()+java.io.File.separator+bucketName+java.io.File.separator+ currentResource;
 				System.out.println("Downloading file "+currentResource);
 				downloadFile(bucketName, currentResource, fullFilePath);
@@ -269,7 +228,6 @@ public class S3 {
 		amazonS3Service.putObject(bucketName, folderKey, new ByteArrayInputStream(new byte[0]), null);
 		}
 		catch (AmazonServiceException ae) {
-			// TODO: handle exception
 			System.out.println(User.awsAccessKey+"  "+User.awsSecretKey);
 			System.out.println("Error while uploading foldername "+ae.toString());
 		}
@@ -350,7 +308,6 @@ public class S3 {
 				bucketName, folderKey, communityBucketName, folder.getProject().getName() + "/" + folderKey);
 		IProject communityProject = ResourcesPlugin.getWorkspace().getRoot().getProject(communityBucketName);
 		IFolder userFolder = communityProject.getFolder(bucketName).getFolder(User.username);
-		String userFolderString = userFolder.toString() + "_$folder$";
 		//copyObjRequest.setCannedAccessControlList(CannedAccessControlList.PublicRead);
 		try{
 			amazonS3Service.copyObject(copyObjRequest);
@@ -472,4 +429,19 @@ public class S3 {
 		amazonS3Service.deleteBucket(deleteRequest);
 	}
 	
+	private static String getKeyValueFromProperties(String key) {
+		if (properties != null && properties.containsKey(key)) {
+			return properties.getProperty(key);
+		}
+		if (properties == null) {
+			properties = new Properties();
+			try {
+				properties.load(S3.class.getClassLoader().getResourceAsStream("cmac.properties"));
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return properties.getProperty(key);
+	}
 }
