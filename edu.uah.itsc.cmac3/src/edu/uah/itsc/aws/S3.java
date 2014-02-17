@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IFile;
@@ -55,35 +56,29 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 public class S3 {
-	private String prefix = "";
+	private static Properties properties = null;
 	private AmazonS3 amazonS3Service;
 	public static String delimiter = "/";
-	private String communityBucketName = "cmac-community";
-//	public static String bucketName = "scattering";
-	private String awsAdminAccessKey = "AKIAIKX2MDKF6M6GXD7Q";	
-	private String awsAdminSecretKey = "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";
-	private String awsAccessKey = "";//"AKIAIKX2MDKF6M6GXD7Q";	
-	private String awsSecretKey = "";//"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";	
-	//private String bucketName;
+	private String communityBucketName;
+	private String awsAdminAccessKey;
+	private String awsAdminSecretKey;
+	private String awsAccessKey;
+	private String awsSecretKey;
 	
-	//private String rootFolder;
-
-	//public S3(String aKey,String sKey,String rFolder){
 	public S3(String aKey,String sKey){
 		awsAccessKey = aKey;
 		awsSecretKey = sKey;
-		//rootFolder = rFolder;
-//		bucketName = "scattering";
-		communityBucketName = "cmac-community";
+		communityBucketName = getKeyValueFromProperties("community_bucket_name");
 		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
 		amazonS3Service = new AmazonS3Client(credentials);
 	}
 	
 	public S3(){
+		awsAdminAccessKey = getKeyValueFromProperties("aws_admin_access_key");
+		awsAdminSecretKey = getKeyValueFromProperties("aws_admin_secret_key");
 		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAdminAccessKey, awsAdminSecretKey);
 		amazonS3Service = new AmazonS3Client(credentials);		
-//		bucketName = "scattering";
-		communityBucketName = "cmac-community";
+		communityBucketName = getKeyValueFromProperties("community_bucket_name");
 	}
 
 	public void addGroupPolicy(String groupName, String policyName, String policyToAdd) {
@@ -516,4 +511,19 @@ public class S3 {
 		amazonS3Service.deleteBucket(deleteRequest);
 	}
 	
+	private static String getKeyValueFromProperties(String key) {
+		if (properties != null && properties.containsKey(key)) {
+			return properties.getProperty(key);
+		}
+		if (properties == null) {
+			properties = new Properties();
+			try {
+				properties.load(S3.class.getClassLoader().getResourceAsStream("cmac.properties"));
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return properties.getProperty(key);
+	}
 }
