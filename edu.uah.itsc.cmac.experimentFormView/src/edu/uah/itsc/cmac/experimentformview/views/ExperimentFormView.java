@@ -135,8 +135,12 @@ public class ExperimentFormView extends ViewPart {
 									AmazonS3 amazonS3Service = s3.getAmazonS3Service();
 									String bucketName = jsonExperiment.get("title").toString();
 									Bucket newBucket = amazonS3Service.createBucket(bucketName);
-									s3.addGroupPolicy("cmac_collaborators", "policy_cmac_collaborators",
-										getPolicyToAdd(bucketName));
+									// Instead of adding a block of policy in the policy json, add the bucekt in
+									// resource list
+									// s3.addGroupPolicy("cmac_collaborators", "policy_cmac_collaborators",
+									// getPolicyToAdd(bucketName));
+									s3.addBucketGroupPolicy("cmac_collaborators", "policy_cmac_collaborators",
+										bucketName);
 									response = portalPost.post(PortalUtilities.getNodeRestPoint(), jsonExperiment);
 									if (response == null || response.getStatusLine().getStatusCode() != 200) {
 										message.setMessage("Invalid Status Code");
