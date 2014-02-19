@@ -42,7 +42,7 @@ public class SearchView extends ViewPart {
 	/**
 	 * The ID of the view as specified by the extension.
 	 */
-	public static final String ID = "edu.uah.itsc.cmac.searchview.views.SearchView";
+	public static final String	ID	= "edu.uah.itsc.cmac.searchview.views.SearchView";
 
 	/**
 	 * The constructor.
@@ -51,31 +51,26 @@ public class SearchView extends ViewPart {
 	}
 
 	/**
-	 * This is a callback that will allow us to create the viewer and initialize
-	 * it.
+	 * This is a callback that will allow us to create the viewer and initialize it.
 	 */
 	public void createPartControl(final Composite parent) {
 		/*
-		 * Build the UI. The UI contains a composite. This compsite contains a
-		 * search textbox and a push button. The search textbox fills the first
-		 * column in the grid and is centered. The search textbox contains
+		 * Build the UI. The UI contains a composite. This compsite contains a search textbox and a push button. The
+		 * search textbox fills the first column in the grid and is centered. The search textbox contains
 		 * "Search Experiments" as help text and the button says "Search"
 		 */
 		parent.setLayout(new GridLayout(2, false));
 		final Text searchTextWidget = new Text(parent, SWT.SEARCH);
 		searchTextWidget.setMessage("Search Workflows");
-		searchTextWidget.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true,
-				true, 1, 1));
+		searchTextWidget.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, true, 1, 1));
 
 		Button searchButton = new Button(parent, SWT.PUSH);
-		searchButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false,
-				false, 1, 1));
+		searchButton.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
 		searchButton.setText("Search");
 
 		/*
-		 * Selection listener for the search button. When the button is pressed
-		 * it grabs the content in the search textbox and calls the method
-		 * createSearchResult.
+		 * Selection listener for the search button. When the button is pressed it grabs the content in the search
+		 * textbox and calls the method createSearchResult.
 		 */
 		searchButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
@@ -83,8 +78,7 @@ public class SearchView extends ViewPart {
 				String searchText = searchTextWidget.getText();
 				ArrayList<SearchResult> searchResults = createSearchResult(searchText);
 				/*
-				 * TODO: Make a generic messagebox to display messages from all
-				 * places
+				 * TODO: Make a generic messagebox to display messages from all places
 				 */
 				MessageBox message = new MessageBox(shell);
 				if (searchResults == null || searchResults.size() == 0) {
@@ -94,21 +88,17 @@ public class SearchView extends ViewPart {
 					return;
 				}
 				/*
-				 * The IPartView returned using showView method is casted into
-				 * SearchResultInterface. This is done so as to pass objects
-				 * from this view to the SearchResultView. Once you get the
-				 * IPartView as SearchResultInterface, you can call the accept
-				 * method defined in the SearchResultInterface.
+				 * The IPartView returned using showView method is casted into SearchResultInterface. This is done so as
+				 * to pass objects from this view to the SearchResultView. Once you get the IPartView as
+				 * SearchResultInterface, you can call the accept method defined in the SearchResultInterface.
 				 */
 				try {
-					SearchResultInterface searchResultView = (SearchResultInterface) PlatformUI
-							.getWorkbench()
-							.getActiveWorkbenchWindow()
-							.getActivePage()
-							.showView(
-									"edu.uah.itsc.cmac.searchview.views.SearchResultView");
+					SearchResultInterface searchResultView = (SearchResultInterface) PlatformUI.getWorkbench()
+						.getActiveWorkbenchWindow().getActivePage()
+						.showView("edu.uah.itsc.cmac.searchview.views.SearchResultView");
 					searchResultView.accept(searchResults);
-				} catch (PartInitException e1) {
+				}
+				catch (PartInitException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -125,9 +115,8 @@ public class SearchView extends ViewPart {
 	}
 
 	/**
-	 * This method fetches and parses data from the URL passed as parameter The
-	 * parsing of json data is entirely dependent on the format of JSON provided
-	 * by Drupal Search Services. If the data format changes, the parsing of
+	 * This method fetches and parses data from the URL passed as parameter The parsing of json data is entirely
+	 * dependent on the format of JSON provided by Drupal Search Services. If the data format changes, the parsing of
 	 * JSON should be adjusted in this method as per required.
 	 */
 
@@ -156,14 +145,11 @@ public class SearchView extends ViewPart {
 				searchResult.setSnippet(jsonObject.get("snippet").toString());
 				searchResult.setType(jsonObject.get("type").toString());
 				searchResult.setUser(jsonObject.get("user").toString());
-				searchResult.setCreated(new Date(Long.parseLong(jsonObject.get(
-						"created").toString())));
+				searchResult.setCreated(new Date(Long.parseLong(jsonObject.get("created").toString())));
 				searchResult.setLanguage(jsonObject.get("language").toString());
-				searchResult
-						.setLink(new URL(jsonObject.get("link").toString()));
+				searchResult.setLink(new URL(jsonObject.get("link").toString()));
 				jsonObject = (JSONObject) jsonObject.get("node");
-				searchResult.setNode(Integer.parseInt(jsonObject.get("nid")
-						.toString()));
+				searchResult.setNode(Integer.parseInt(jsonObject.get("nid").toString()));
 
 				Object object = jsonObject.get("body");
 				String description = "";
@@ -188,10 +174,12 @@ public class SearchView extends ViewPart {
 				searchResult.setFolderPath(folderPath);
 				SearchResults.add(searchResult);
 			}
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 
-		} catch (org.json.simple.parser.ParseException e) {
+		}
+		catch (org.json.simple.parser.ParseException e) {
 			e.printStackTrace();
 		}
 
@@ -210,7 +198,8 @@ public class SearchView extends ViewPart {
 				return false;
 			else
 				return true;
-		} else if (objFieldIsShared instanceof JSONArray) {
+		}
+		else if (objFieldIsShared instanceof JSONArray) {
 		}
 		return false;
 	}
@@ -221,18 +210,20 @@ public class SearchView extends ViewPart {
 		String jsonText;
 		try {
 			InputStream is = new URL(url).openStream();
-			BufferedReader rd = new BufferedReader(new InputStreamReader(is,
-					Charset.forName("UTF-8")));
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 			int cp;
 			while ((cp = rd.read()) != -1) {
 				sb.append((char) cp);
 			}
 
-		} catch (FileNotFoundException e) {
+		}
+		catch (FileNotFoundException e) {
 			System.out.println("File not found");
-		} catch (MalformedURLException e) {
+		}
+		catch (MalformedURLException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 		jsonText = sb.toString();
@@ -241,20 +232,18 @@ public class SearchView extends ViewPart {
 	}
 
 	/*
-	 * This method builds the REST URL to fetch data from server. The URL is
-	 * defined in search.properties file. Also, the extraquery is appended to
-	 * the URL, so that the content type to search on can be changed dynamically
+	 * This method builds the REST URL to fetch data from server. The URL is defined in search.properties file. Also,
+	 * the extraquery is appended to the URL, so that the content type to search on can be changed dynamically
 	 */
 	protected String buildURL(String searchText) {
 		Properties property = new Properties();
 		String url = null;
 		try {
-			property.load(SearchView.class.getClassLoader()
-					.getResourceAsStream("search.properties"));
-			url = property.getProperty("url") + "?keys="
-					+ URLEncoder.encode(searchText, "UTF-8") + "%20"
-					+ property.getProperty("extraquery");
-		} catch (IOException e) {
+			property.load(SearchView.class.getClassLoader().getResourceAsStream("search.properties"));
+			url = property.getProperty("url") + "?keys=" + URLEncoder.encode(searchText, "UTF-8") + "%20"
+				+ property.getProperty("extraquery");
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 		return url;

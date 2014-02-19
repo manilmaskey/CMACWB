@@ -20,11 +20,11 @@ public class FolderDecorator extends LabelProvider implements ILabelDecorator {
     public Image decorateImage(Image image, Object element) {
 //return the image
     	IFolder folder = (IFolder)element;
-    	    	
-    	if (folder.getProject().getName().equals(S3.communityBucketName))
+    	S3 s3 = new S3();
+    	if (folder.getProject().getName().equals(s3.getCommunityBucketName()))
     		return image;
     	else{
-    		IProject communityProject = ResourcesPlugin.getWorkspace().getRoot().getProject(S3.communityBucketName);
+    		IProject communityProject = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
     		
     		if (folder.getName().equals(User.username)){
     			return AbstractUIPlugin.imageDescriptorFromPlugin("edu.uah.itsc.cmac3","icons/user-folder-16x16.png").createImage();
@@ -51,11 +51,11 @@ public class FolderDecorator extends LabelProvider implements ILabelDecorator {
     { 
       // return null to specify no decoration 
     	IFolder folder = (IFolder)object;
-    	
-    	if (folder.getProject().getName().equals(S3.communityBucketName))
+    	S3 s3 = new S3();
+    	if (folder.getProject().getName().equals(s3.getCommunityBucketName()))
     		return label;
     	else{
-    		IProject communityProject = ResourcesPlugin.getWorkspace().getRoot().getProject(S3.communityBucketName);
+    		IProject communityProject = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
     		
     		if (folder.getName().equals(User.username)){
     			return label;

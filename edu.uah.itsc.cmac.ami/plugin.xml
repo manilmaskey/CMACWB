@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="CMACWB"
+            id="edu.uah.itsc.cmac">
+      </category>
+      <view
+            name="EC2 AMI View"
+            icon="icons/sample.gif"
+            category="edu.uah.itsc.cmac"
+            class="edu.uah.itsc.cmac.ami.views.AMIView"
+            id="edu.uah.itsc.cmac.ami.views.AMIView">
+      </view>
+   </extension>
+
+</plugin>

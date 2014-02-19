@@ -1,10 +1,6 @@
 package edu.uah.itsc.cmac.actions;
 
-import java.io.ByteArrayInputStream;
 import java.util.HashMap;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -37,24 +33,19 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import edu.uah.itsc.aws.S3;
-import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
 import edu.uah.itsc.cmac.ui.NavigatorView;
 
 public class ShareCommandHandler extends AbstractHandler {
-	private IStructuredSelection selection = StructuredSelection.EMPTY;
+	private IStructuredSelection	selection	= StructuredSelection.EMPTY;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		selection = (IStructuredSelection) HandlerUtil
-				.getCurrentSelectionChecked(event);
+		selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 
 		Object object = selection.getFirstElement();
 		// Job job = new Job("Sharing...") {
@@ -64,10 +55,10 @@ public class ShareCommandHandler extends AbstractHandler {
 
 			final Object firstElement = selection.getFirstElement();
 			if (firstElement instanceof IFile) {
-				MessageDialog.openInformation(Display.getDefault()
-						.getActiveShell(), "Information",
-						"You can only share folders!");
-			} else if (firstElement instanceof IFolder) {
+				MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Information",
+					"You can only share folders!");
+			}
+			else if (firstElement instanceof IFolder) {
 				final IFolder selectedFolder = (IFolder) firstElement;
 
 				final String path = selectedFolder.getFullPath().toString();
@@ -81,8 +72,7 @@ public class ShareCommandHandler extends AbstractHandler {
 				addSpanData(titleText);
 				Label description = new Label(shell, SWT.NONE);
 				description.setText("Description : ");
-				final Text descText = new Text(shell, SWT.MULTI | SWT.BORDER
-						| SWT.WRAP | SWT.V_SCROLL);
+				final Text descText = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
 				GridData data = new GridData(GridData.FILL_BOTH);
 				data.horizontalSpan = 2;
 				descText.setLayoutData(data);
@@ -94,22 +84,21 @@ public class ShareCommandHandler extends AbstractHandler {
 				final Text keywordText = new Text(shell, SWT.BORDER);
 				addSpanData(keywordText);
 
-				org.eclipse.swt.widgets.Button ok = new org.eclipse.swt.widgets.Button(
-						shell, SWT.PUSH);
+				org.eclipse.swt.widgets.Button ok = new org.eclipse.swt.widgets.Button(shell, SWT.PUSH);
 				ok.setText("  OK  ");
-				org.eclipse.swt.widgets.Button cancel = new org.eclipse.swt.widgets.Button(
-						shell, SWT.PUSH);
+				org.eclipse.swt.widgets.Button cancel = new org.eclipse.swt.widgets.Button(shell, SWT.PUSH);
 				cancel.setText("Cancel");
 				final String nodeID;
 				HashMap<String, String> nodeMap = PortalUtilities.getPortalWorkflowDetails(path);
-				if (nodeMap != null){
+				if (nodeMap != null) {
 					nodeID = nodeMap.get("nid");
-					titleText.setText((String)nodeMap.get("title"));
-					keywordText.setText((String)nodeMap.get("keywords"));
-					descText.setText(((String)nodeMap.get("description")).replaceAll("\\<.*?\\>", ""));
+					titleText.setText((String) nodeMap.get("title"));
+					keywordText.setText((String) nodeMap.get("keywords"));
+					descText.setText(((String) nodeMap.get("description")).replaceAll("\\<.*?\\>", ""));
 				}
-				else nodeID = null;
-				
+				else
+					nodeID = null;
+
 				ok.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent event) {
 						try {
@@ -117,65 +106,65 @@ public class ShareCommandHandler extends AbstractHandler {
 							System.out.println("Button clicked");
 							PortalPost portalPost = new PortalPost();
 
-							Workflow workflow = new Workflow(titleText
-									.getText(), descText.getText(), keywordText
-									.getText());
+							Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keywordText
+								.getText());
 							workflow.setPath(path);
 							workflow.setShared(true);
 							System.out.println(workflow.getJSON());
-							if (nodeID != null){
-								portalPost.put(PortalUtilities.getNodeRestPoint()+ nodeID,
-										workflow.getJSON());
+							if (nodeID != null) {
+								portalPost.put(PortalUtilities.getNodeRestPoint() + nodeID, workflow.getJSON());
 							}
 							else {
-								portalPost
-								.post(PortalUtilities.getNodeRestPoint(),
-										workflow.getJSON());
+								portalPost.post(PortalUtilities.getNodeRestPoint(), workflow.getJSON());
 							}
 							portalPost.runCron();
-							Job job = new Job("Sharing..."){
-					        	protected IStatus run(IProgressMonitor monitor){
-					        		
-									if(selection.size() == 1) {
-										
-										 Object firstElement = selection.getFirstElement();
-										 if(firstElement instanceof IFile  ) {
-					                       MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Information", "You can only share folders!");
-											}
-										 else if (firstElement instanceof IFolder){
-												S3 s3 = new S3();
-												
-												s3.uploadFolder((IFolder)firstElement);
-												if (!s3.userFolderExists(User.username, S3.communityBucketName))
-													s3.uploadUserFolder(User.username, S3.communityBucketName);
-												s3.shareFolder((IFolder)firstElement);
-												try{
-												NavigatorView view = (NavigatorView) getPage().findView("edu.uah.itsc.cmac.NavigatorView");
+							Job job = new Job("Sharing...") {
+								protected IStatus run(IProgressMonitor monitor) {
+
+									if (selection.size() == 1) {
+
+										Object firstElement = selection.getFirstElement();
+										if (firstElement instanceof IFile) {
+											MessageDialog.openInformation(Display.getDefault().getActiveShell(),
+												"Information", "You can only share folders!");
+										}
+										else if (firstElement instanceof IFolder) {
+											S3 s3 = new S3();
+
+											s3.uploadFolder((IFolder) firstElement);
+											// We do not create a userfolder under community bucket directly
+//											if (!s3.userFolderExists(User.username, S3.communityBucketName))
+//												s3.uploadUserFolder(User.username, S3.communityBucketName);
+											s3.shareFolder((IFolder) firstElement);
+											try {
+												NavigatorView view = (NavigatorView) getPage().findView(
+													"edu.uah.itsc.cmac.NavigatorView");
 												view.refreshCommunityResource();
-												}
-												catch(Exception e){
-													System.out.println("Errror while refreshCommunityResource "+e.toString());
-												}
-												IProject communityProject = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
-												try{
-													communityProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-												}
-												catch(CoreException e)
-												{
-													e.printStackTrace();
-												}
-										 }
-									 
-										 }
-					        		monitor.done();
-					        		return Status.OK_STATUS;
-					        	}
-					        		};
-					        job.setUser(true);
-					        job.schedule();
-						} catch (Exception e) {
-							MessageDialog.openError(shell, "Error",
-									e.getMessage());
+											}
+											catch (Exception e) {
+												System.out.println("Errror while refreshCommunityResource "
+													+ e.toString());
+											}
+											IProject communityProject = ResourcesPlugin.getWorkspace().getRoot()
+												.getProject(s3.getCommunityBucketName());
+											try {
+												communityProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+											}
+											catch (CoreException e) {
+												e.printStackTrace();
+											}
+										}
+
+									}
+									monitor.done();
+									return Status.OK_STATUS;
+								}
+							};
+							job.setUser(true);
+							job.schedule();
+						}
+						catch (Exception e) {
+							MessageDialog.openError(shell, "Error", e.getMessage());
 						}
 						shell.close();
 					}
@@ -210,9 +199,8 @@ public class ShareCommandHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Returns the active page or null if no page is available. A page is a
-	 * composition of views and editors which are meant to show at the same
-	 * time.
+	 * Returns the active page or null if no page is available. A page is a composition of views and editors which are
+	 * meant to show at the same time.
 	 * 
 	 * @return The active page.
 	 */
@@ -226,7 +214,8 @@ public class ShareCommandHandler extends AbstractHandler {
 					IWorkbench wb = PlatformUI.getWorkbench();
 					IWorkbenchWindow wbWindow = wb.getActiveWorkbenchWindow();
 					page[0] = wbWindow.getActivePage();
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					errorMessages[0] = e.toString();
 				}
 			}

@@ -41,15 +41,16 @@ public class RubyClient {
 	private String folder;
 	private String filename;
 	private String fname;
-
+	private String publicURL;
 	public RubyClient(String title, String description, String bucket,
-			String folder, String filename) {
+			String folder, String filename, String publicURL) {
 
 		this.title = title;
 		this.desc = description;
 		this.bucket = bucket;
 		this.folder = folder;
 		this.filename = filename;
+		this.publicURL = publicURL;
 		InputStream is = null;
 		FileInputStream fileInputStream = null;
 		File file = new File(this.filename);
@@ -95,7 +96,7 @@ public class RubyClient {
 				CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 		// HttpPost httppost = new
 		// HttpPost("http://ec2-107-21-179-173.compute-1.amazonaws.com:3000/posts");
-		HttpPost httppost = new HttpPost("http://54.208.76.40:3000/posts");
+		HttpPost httppost = new HttpPost(publicURL);
 		ContentBody cb = new ByteArrayBody(image, "text/plain; charset=utf8",
 				fname);
 		// ContentBody cb = new InputStreamBody(new ByteArrayInputStream(image),

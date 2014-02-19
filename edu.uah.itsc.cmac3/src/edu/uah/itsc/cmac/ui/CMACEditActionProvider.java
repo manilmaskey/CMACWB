@@ -2,18 +2,10 @@ package edu.uah.itsc.cmac.ui;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IExtension;
-import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.actions.ActionFactory;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.navigator.resources.actions.EditActionProvider;
-import org.eclipse.ui.internal.registry.ActionSetRegistry;
-import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
@@ -30,14 +22,15 @@ public class CMACEditActionProvider extends EditActionProvider {
 
    NavigatorView view = (NavigatorView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("edu.uah.itsc.cmac.NavigatorView");
    IStructuredSelection selection = (IStructuredSelection)view.getViewer().getSelection();
+   S3 s3 = new S3();
    if (selection.getFirstElement() instanceof IProject){
 	   IProject prj = (IProject)selection.getFirstElement();
-
-	   if (prj.getName().equals(S3.communityBucketName) || prj.getName().equals(S3.bucketName)) {
+	// Remove following menus for every project
+//	   if (prj.getName().equals(S3.communityBucketName) || prj.getName().equals(S3.bucketName)) {
 		    menu.remove("org.eclipse.ui.CopyAction");
 		   	menu.remove("org.eclipse.ui.PasteAction");
 		   	menu.remove("org.eclipse.ui.DeleteResourceAction");
-	   }
+//	   }
    }
    else if  (selection.getFirstElement() instanceof IFolder){
 	   IFolder selectedFolder = (IFolder)selection.getFirstElement();
@@ -46,7 +39,7 @@ public class CMACEditActionProvider extends EditActionProvider {
 		   	menu.remove("org.eclipse.ui.PasteAction");
 		   	menu.remove("org.eclipse.ui.DeleteResourceAction");		   
 	   }
-	   if (selectedFolder.getProject().getName().equals(S3.communityBucketName)){
+	   if (selectedFolder.getProject().getName().equals(s3.getCommunityBucketName())){
 		   menu.remove("org.eclipse.ui.DeleteResourceAction");
 	   }
    }

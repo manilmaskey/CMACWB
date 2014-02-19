@@ -42,36 +42,37 @@ public class ImportWorkflowHandler extends AbstractHandler {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands.
-	 * ExecutionEvent)
+	 * @see org.eclipse.core.commands.IHandler#execute(org.eclipse.core.commands. ExecutionEvent)
 	 */
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		System.out.println("Importing workflow... ");
 		IStructuredSelection selection = StructuredSelection.EMPTY;
 		IFolder selectedFolder = null;
+		IFolder bucketFolder = null;
 		String path = "";
 		try {
 
-			selection = (IStructuredSelection) HandlerUtil
-					.getCurrentSelectionChecked(event);
+			selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 			Object firstElement = selection.getFirstElement();
 			if (firstElement instanceof IFile) {
-				MessageDialog.openInformation(Display.getDefault()
-						.getActiveShell(), "Information",
-						"You can only import folders!");
+				MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Information",
+					"You can only import folders!");
 				return null;
-			} else if (firstElement instanceof IFolder) {
+			}
+			else if (firstElement instanceof IFolder) {
 				selectedFolder = (IFolder) firstElement;
-
+				bucketFolder = (IFolder) selectedFolder.getParent().getParent();
+				if (!(bucketFolder.getParent() instanceof IProject)) {
+					MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Information",
+						"You can only import workflow!");
+					return null;
+				}
 				path = selectedFolder.getFullPath().toString();
 			}
 			// Object object = selection.getFirstElement();
-			IWorkbenchPage page = PlatformUI.getWorkbench()
-					.getActiveWorkbenchWindow().getActivePage();
-			NavigatorView view = (NavigatorView) page
-					.findView("edu.uah.itsc.cmac.NavigatorView");
+			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			final NavigatorView view = (NavigatorView) page.findView("edu.uah.itsc.cmac.NavigatorView");
 			final S3 s3 = view.getS3();
 
 			String copyFromFolderPath = path;
@@ -79,39 +80,35 @@ public class ImportWorkflowHandler extends AbstractHandler {
 
 			folderToCopy = copyFromFolderPath;
 
-			copyFromFolderPath = copyFromFolderPath.replaceFirst(
-					s3.getCommunityBucketName(), "");
+			copyFromFolderPath = copyFromFolderPath.replaceFirst(s3.getCommunityBucketName(), "");
 			copyFromFolderPath = copyFromFolderPath.replaceAll("^/+", "");
-			// Replace first two words separated by "/" with empty space
-			folderToCopy = folderToCopy
-					.replaceFirst("^/[\\w|-]+/[\\w|-]+/", "");
+			// Replace first three words separated by "/" with empty space
+			folderToCopy = folderToCopy.replaceFirst("^/[\\w|-]+/[\\w|-]+/[\\w|-]+/", "");
 			System.out.println("folderpath: " + folderToCopy);
 
-			
 			final String copyFolderPath = copyFromFolderPath;
 			final String folderCopy = folderToCopy;
+			final String bucketName = bucketFolder.getName();
 			Job job = new Job("Importing..") {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
-					buildTree(s3, copyFolderPath, folderCopy, ResourcesPlugin
-							.getWorkspace().getRoot().getProject(s3.getBucketName()));
+					buildTree(s3, copyFolderPath, folderCopy,
+						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName));
 					monitor.done();
 					return Status.OK_STATUS;
 				}
 			};
 			job.setUser(true);
 			job.schedule();
-			
-			
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		return null;
 	}
 
-	private void buildTree(S3 s3, String copyFromFolderPath, String folderToCopy,
-			IResource resource) {
+	private void buildTree(S3 s3, String copyFromFolderPath, String folderToCopy, IResource resource) {
 		System.out.println(copyFromFolderPath);
 		System.out.println(folderToCopy);
 		IFolder userFolder = ((IProject) resource).getFolder(User.username);
@@ -135,57 +132,51 @@ public class ImportWorkflowHandler extends AbstractHandler {
 
 		ObjectListing filteredObjects = amazonS3Service.listObjects(lor);
 
-		for (S3ObjectSummary objectSummary : filteredObjects
-				.getObjectSummaries()) {
+		for (S3ObjectSummary objectSummary : filteredObjects.getObjectSummaries()) {
 			String currentResource = objectSummary.getKey();
 			String[] fileNameArray = currentResource.split("/");
 			String fileName = fileNameArray[fileNameArray.length - 1];
 			if (currentResource.indexOf("_$folder$") > 0) {
 
-			} else {
-				String fullFilePath = ResourcesPlugin.getWorkspace().getRoot()
-						.getLocation().toOSString()
-						+ java.io.File.separator
-						+ s3.getBucketName()
-						+ java.io.File.separator
-						+ User.username
-						+ java.io.File.separator
-						+ copyToFolder.getName()
-						+ java.io.File.separator + fileName;
+			}
+			else {
+				String fullFilePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()
+					+ java.io.File.separator + copyToFolder.getProject().getName() + java.io.File.separator
+					+ User.username + java.io.File.separator + copyToFolder.getName() + java.io.File.separator
+					+ fileName;
 				System.out.println("Downloading file " + currentResource);
 				System.out.println("fullFilePath: " + fullFilePath);
 
-				s3.downloadFile(s3.getCommunityBucketName(), currentResource,
-						fullFilePath);
+				s3.downloadFile(s3.getCommunityBucketName(), currentResource, fullFilePath);
 
 			}
 
 		}
 		try {
 			copyToFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
-		} catch (CoreException e) {
+		}
+		catch (CoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	private void createFolderPath(IFolder folder, String folderToAdd) {
-		String folderPart = "";
 		if (folderToAdd.indexOf("/") <= 0) {
 			IFolder newFolder = folder.getFolder(folderToAdd);
 			if (!newFolder.exists()) {
 				try {
 					newFolder.create(true, true, null);
-				} catch (CoreException e) {
+				}
+				catch (CoreException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-		} else
+		}
+		else
 			while (folderToAdd.indexOf("/") > 0) {
-				folderPart = folderToAdd.substring(0, folderToAdd.indexOf("/"));
-				folderToAdd = folderToAdd
-						.substring(folderToAdd.indexOf("/") + 1);
+				folderToAdd = folderToAdd.substring(folderToAdd.indexOf("/") + 1);
 
 			}
 	}

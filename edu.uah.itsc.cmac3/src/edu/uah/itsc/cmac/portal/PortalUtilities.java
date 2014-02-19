@@ -14,6 +14,11 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -27,6 +32,29 @@ public class PortalUtilities {
 	private static Properties properties = null;
 
 	private PortalUtilities() {
+	}
+
+	public static String getDataFromHTTP(String url) {
+		PortalPost portalPost = new PortalPost();
+		HttpResponse response = portalPost.get(url);
+		InputStream is = null;
+		StringBuilder sb = new StringBuilder();
+		try {
+			is = response.getEntity().getContent();
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is,
+					Charset.forName("UTF-8")));
+			int cp;
+			while ((cp = rd.read()) != -1) {
+				sb.append((char) cp);
+			}
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return sb.toString(); 
 	}
 
 	public static String getDataFromURL(String url) {
@@ -87,6 +115,10 @@ public class PortalUtilities {
 
 	}
 
+	public static String getExperimentFeedURL() {
+		return getKeyValueFromProperties("experiment_url");
+	}
+	
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
 		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities
 				.getWorkflowFeedURL() + "?field_could_path_value=" + path);
@@ -112,7 +144,38 @@ public class PortalUtilities {
 			return map;
 		} catch (ParseException e) {
 			e.printStackTrace();
+			System.out.println("Unable to parse json object");
+			return null;
 		}
-		return null;
 	}
+	
+	public static HashMap<String, String> getPortalExperimentDetails(String bucketName){
+		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getExperimentFeedURL() + "?title=" + bucketName);
+		JSONParser parser = new JSONParser();
+		Object obj;
+		try{
+			obj = parser.parse(jsonText);
+			JSONObject experiments = (JSONObject) obj;
+			
+			if (experiments == null)
+				return null;
+			JSONArray experimentArray = (JSONArray) experiments.get("experiments");
+			if (experimentArray == null || experimentArray.size() == 0)
+				return null;
+			JSONObject experiment = (JSONObject) experimentArray.get(0);
+			experiment = (JSONObject) experiment.get("experiment");
+			HashMap<String, String> map = new HashMap<String, String>();
+			map.put("nid", experiment.get("nid").toString());
+			map.put("title", experiment.get("title").toString());
+			map.put("creator", experiment.get("creator").toString());
+			map.put("creatorID", experiment.get("creatorID").toString());
+			map.put("description", experiment.get("description").toString());
+			return map;
+		} catch (ParseException e){
+			e.printStackTrace();
+			System.out.println("Unable to parse json object");
+			return null;
+		}
+	}
+	
 }

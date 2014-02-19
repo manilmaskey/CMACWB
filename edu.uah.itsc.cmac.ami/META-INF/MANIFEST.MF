@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Ami
+Bundle-SymbolicName: edu.uah.itsc.cmac.ami;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui,
+ edu.uah.itsc.cmac.libs;bundle-version="1.0.0",
+ org.eclipse.jface,
+ org.eclipse.swt
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: edu.uah.itsc.aws

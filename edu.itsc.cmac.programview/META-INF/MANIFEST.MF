@@ -13,3 +13,4 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: edu.uah.itsc.cmac.programview.programsHolder,
  edu.uah.itsc.uah.programview.programObjects
+
