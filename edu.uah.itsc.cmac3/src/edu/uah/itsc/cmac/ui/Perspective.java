@@ -34,6 +34,8 @@ public class Perspective implements IPerspectiveFactory {
 			
 			bottom.addView("org.eclipse.ecf.presence.ui.MultiRosterView");
 			bottom.addView("edu.uah.itsc.cmac.programview.views.ProgramView");
+			bottom.addView("edu.uah.itsc.cmac.ami.views.AMIView");
+			bottom.addView("edu.uah.itsc.cmac.ec2instance.views.EC2InstanceView");
 			
 			
 			// left.addPlaceholder(IPageLayout.ID_BOOKMARKS);

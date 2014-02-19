@@ -30,6 +30,7 @@ import com.amazonaws.services.ec2.model.StopInstancesResult;
 import com.amazonaws.services.ec2.model.Tag;
 
 import edu.uah.itsc.aws.EC2;
+import edu.uah.itsc.aws.User;
 
 /**
  * @author sshrestha
@@ -170,8 +171,10 @@ public class EC2InstanceView extends ViewPart {
 				Instance instance = (Instance) e.item.getData();
 				System.out.println("selected: " + e.item + " name: "
 						+ instance.getInstanceId());
-				startButton.setEnabled(true);
-				stopButton.setEnabled(true);
+				if (User.isAdmin){
+					startButton.setEnabled(true);
+					stopButton.setEnabled(true);
+				}
 
 			}
 		});

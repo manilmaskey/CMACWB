@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.model.CreateImageRequest;
 import com.amazonaws.services.ec2.model.CreateImageResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
@@ -116,7 +115,8 @@ public class AMIView extends ViewPart {
 				}
 			}
 		});
-
+		
+		
 		layoutData.widthHint = 400;
 		addComposite.setLayoutData(layoutData);
 
@@ -211,6 +211,14 @@ public class AMIView extends ViewPart {
 			}
 		});
 		buttonComposite.setLayoutData(layoutData);
+		
+		// Disable texts and buttons for non-admin users
+		if (!User.isAdmin){
+			nameText.setEnabled(false);
+			instanceText.setEnabled(false);
+			runInstanceText.setEnabled(false);
+			submitButton.setEnabled(false);
+		}
 	}
 
 	/**
@@ -241,9 +249,10 @@ public class AMIView extends ViewPart {
 				Image image = (Image) e.item.getData();
 				System.out.println("selected: " + e.item + " name: "
 						+ image.getImageId());
-				runButton.setEnabled(true);
-				deleteButton.setEnabled(true);
-
+				if (User.isAdmin){
+					runButton.setEnabled(true);
+					deleteButton.setEnabled(true);
+				}
 			}
 		});
 	}

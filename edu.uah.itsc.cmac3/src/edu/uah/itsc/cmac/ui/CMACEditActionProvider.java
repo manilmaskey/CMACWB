@@ -34,7 +34,8 @@ public class CMACEditActionProvider extends EditActionProvider {
    }
    else if  (selection.getFirstElement() instanceof IFolder){
 	   IFolder selectedFolder = (IFolder)selection.getFirstElement();
-	   if (selectedFolder.getName().equals(User.username)){
+	   if (selectedFolder.getName().equals(User.username) || 
+		   selectedFolder.getProject().getName().equalsIgnoreCase(s3.getCommunityBucketName())){
 		    menu.remove("org.eclipse.ui.CopyAction");
 		   	menu.remove("org.eclipse.ui.PasteAction");
 		   	menu.remove("org.eclipse.ui.DeleteResourceAction");		   

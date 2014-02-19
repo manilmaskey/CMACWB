@@ -10,7 +10,7 @@
       </category>
       <view
             name="EC2 AMI View"
-            icon="icons/sample.gif"
+            icon="icons/ami.png"
             category="edu.uah.itsc.cmac"
             class="edu.uah.itsc.cmac.ami.views.AMIView"
             id="edu.uah.itsc.cmac.ami.views.AMIView">

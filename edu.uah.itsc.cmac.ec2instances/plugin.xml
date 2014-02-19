@@ -10,7 +10,7 @@
       </category>
       <view
             name="EC2 Instance View"
-            icon="icons/sample.gif"
+            icon="icons/instance.png"
             category="edu.uah.itsc.cmac"
             class="edu.uah.itsc.cmac.ec2instance.views.EC2InstanceView"
             id="edu.uah.itsc.cmac.ec2instance.views.EC2InstanceView">

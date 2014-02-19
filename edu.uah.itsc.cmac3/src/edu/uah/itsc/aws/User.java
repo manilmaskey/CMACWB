@@ -2,6 +2,8 @@
  * This Class holds current user information
  * */
 package edu.uah.itsc.aws;
+
+import java.util.HashMap;
 /*
 This document is a part of the source code and related artifacts for CMAC Project funded by NASA 
 Copyright © 2013, University of Alabama in Huntsville
@@ -23,6 +25,10 @@ public static String rootFolder;
 public static String sessionID;
 public static String sessionName;
 public static String portalUserID;
+public static String userEmail;
+public static boolean isActive;
+public static boolean isAdmin = false;
+public static HashMap<String, String> userRoles;
 
 
 	

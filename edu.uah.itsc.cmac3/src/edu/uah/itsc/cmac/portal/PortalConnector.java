@@ -1,7 +1,9 @@
 package edu.uah.itsc.cmac.portal;
 
-import org.apache.http.HttpResponse;
+import java.util.HashMap;
+import java.util.Iterator;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -58,7 +60,21 @@ public class PortalConnector {
              // Shreedhan - Store portal's User ID as well
              jsonUser = jsonObject.getJSONObject("user");
              User.portalUserID = jsonUser.getString("uid");
-
+             
+             JSONObject jsonRoles = jsonUser.getJSONObject("roles");
+             Iterator<String> roleKeys = jsonRoles.keys();
+             String roleKey = null;
+             String roleValue = null;
+             if (User.userRoles == null)
+            	 User.userRoles = new HashMap<String, String>();
+             while (roleKeys.hasNext()){
+            	 roleKey = roleKeys.next();
+            	 roleValue = jsonRoles.getString(roleKey);
+            	 User.userRoles.put(roleKey, roleValue);
+            	 if (roleValue.equalsIgnoreCase("admin") || roleValue.equalsIgnoreCase("administrator"))
+            		 User.isAdmin = true;
+             }
+//             User.userEmail = jsonUser.getString("mail");
              if (!username.equals(adminUsername)){
             	 JSONObject jsonAWSAccessKeyField   =  jsonUser.getJSONObject("field_access_key"); 
 	             JSONObject jsonAWSAccessKey = (JSONObject)jsonAWSAccessKeyField.getJSONArray("und").get(0);
