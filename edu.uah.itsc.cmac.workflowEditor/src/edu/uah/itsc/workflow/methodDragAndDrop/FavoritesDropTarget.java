@@ -1,5 +1,6 @@
 package edu.uah.itsc.workflow.methodDragAndDrop;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.DropTargetAdapter;
@@ -8,9 +9,13 @@ import org.eclipse.swt.dnd.DropTargetListener;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ResourceTransfer;
 
 import edu.uah.itsc.workflow.programDropHandler.ProgramDropHandler;
+import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
+import edu.uah.itsc.workflow.variableHolder.POJOHolder;
 import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
 
 /**
@@ -46,12 +51,28 @@ public class FavoritesDropTarget extends DropTargetAdapter {
 				// method1EventsObj.handleMethod1_Events(event.data);
 				// MethodEvents obj = new MethodEvents(event.x, event.y);
 				// obj.MethodEventsHandler(event.data);
+				
+				String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+				CopyOfVariablePoJo dataObj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
+				Point cursorLocation = dataObj.getChildCreatorObject().getChildComposite_WorkSpace().getDisplay().getCursorLocation();
+//				Point cursorLocation = display.getCurrent().getCursorLocation();
+//				Point relativeCursorLocation = Display.getCurrent().getFocusControl().toControl(cursorLocation);
+//				System.out.println("RELATIVE CURSOR LOCATION X: " + relativeCursorLocation.x);
+//				System.out.println("RELATIVE CURSOR LOCATION Y: " + relativeCursorLocation.y);
+				
+				Point p = dataObj.getChildCreatorObject().getChildComposite_WorkSpace().toControl(cursorLocation);
+				int relativeX = p.x;
+				int relativeY = p.y;
+//				PlatformUI.getWorkbench().getDisplay().getCursorLocation();
+				
+				System.out.println("RELATIVE CURSOR LOCATION X: " + p.x);
+				System.out.println("RELATIVE CURSOR LOCATION Y: " + p.y);
 
 				ProgramDropHandler handlerObject = new ProgramDropHandler();
 				try {
-					System.out.println("event x " + event.x);
-					System.out.println("event y " + event.y);
-					handlerObject.handleDrop(event.x, event.y, event.data);
+//					System.out.println("event x " + event.x);
+//					System.out.println("event y " + event.y);
+					handlerObject.handleDrop(relativeX, relativeY, event.data);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

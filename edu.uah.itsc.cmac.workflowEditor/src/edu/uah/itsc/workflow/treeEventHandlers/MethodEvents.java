@@ -109,7 +109,7 @@ public class MethodEvents {
 										.getCompositeID()
 										.equals(methodComposite
 												.getCompositeID())) {
-									handlerObject.handleCompositeClick(i);
+									handlerObject.handleCompositeClick(i,e.display.getCursorLocation());
 								}
 							}
 						} catch (Exception e1) {

@@ -14,9 +14,9 @@ import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.uah.programview.programObjects.ProgramPOJO;
 import edu.uah.itsc.workflow.actionHandler.CompositeClickHandler;
+import edu.uah.itsc.workflow.actionHandler.DeleteProgram;
 import edu.uah.itsc.workflow.movementTrackers.MethodCompositeTracker;
 import edu.uah.itsc.workflow.programDropHandler.CreateProgram;
-import edu.uah.itsc.workflow.programDropHandler.DeleteProgram;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
 import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
 import edu.uah.itsc.workflow.variableHolder.POJOHolder;
@@ -163,13 +163,12 @@ public class RecreateProgramHandler {
 					@Override
 					public void mouseDoubleClick(MouseEvent e) {
 						CompositeClickHandler handlerObject = new CompositeClickHandler();
-
 						try {
 							for (int i = 0; i < dataobj.getCompositeList().size(); i++) {
 								if (dataobj.getCompositeList().get(i)
 										.getCompositeID()
 										.equals(method.getCompositeID())) {
-									handlerObject.handleCompositeClick(i);
+									handlerObject.handleCompositeClick(i,e.display.getCursorLocation());
 								}
 							}
 						} catch (Exception e1) {

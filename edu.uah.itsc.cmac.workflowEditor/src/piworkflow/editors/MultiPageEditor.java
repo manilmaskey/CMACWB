@@ -1,13 +1,11 @@
 package piworkflow.editors;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import jsonForSave.DataPOJO;
 import jsonForSave.JSONRead;
 import jsonForSave.ReCreate;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -15,8 +13,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -31,7 +31,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.internal.EditorReference;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
@@ -96,14 +95,18 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 		/**
 		 * Setting up parent composite, using GridLayout
 		 */
-//		CompositeWrapper parentComposite = (CompositeWrapper) VariablePoJo
-//				.getInstance().getParentComposite();
 		CompositeWrapper parentComposite = (CompositeWrapper) newpojo.getParentComposite();
-		
-		
-		
-
+//		final ScrolledComposite parent = newpojo.getParent();		
+//		parent = new ScrolledComposite(getContainer(), SWT.H_SCROLL|SWT.V_SCROLL);
 		parentComposite = new CompositeWrapper(getContainer(), SWT.NONE);
+		parentComposite.setLayout(new FillLayout());
+		final ScrolledComposite parent = new ScrolledComposite(parentComposite, SWT.H_SCROLL|SWT.V_SCROLL);
+		newpojo.setParent(parent);
+		parent.setLayout(new GridLayout(1, false));
+
+		
+		
+		
 //		VariablePoJo.getInstance().setDisplayX(
 //				parentComposite.getDisplay().getBounds().width);
 //		VariablePoJo.getInstance().setDisplayY(
@@ -116,7 +119,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 			newpojo.setDisplayY(parentComposite.getDisplay().getBounds().height);
 		//--------------------------------------------------
 			
-			parentComposite.setLayout(new GridLayout(1, false));
+//			parentComposite.setLayout(new GridLayout(1, false));
 			
 		
 
@@ -127,6 +130,7 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 //				new ChildCompositeCreator());
 //		ChildCompositeCreator childCreatorObject = VariablePoJo.getInstance()
 //				.getChildCreatorObject();
+			
 		
 			newpojo.setChildCreatorObject(
 					new ChildCompositeCreator());
@@ -135,10 +139,45 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 			
 			t_VariablePoJo.getInstance().setChildCreatorObject(newpojo.getChildCreatorObject());
 		
-		
+		//*****************************************************
 		childCreatorObject.setParentComposite(parentComposite);
+		childCreatorObject.setSc(parent);
 		childCreatorObject.createChildComposites();
+		final CompositeWrapper c_ws = childCreatorObject.getChildComposite_WorkSpace();
+		
+		// additions for scrolled composite
+		c_ws.addListener(SWT.Resize, new Listener() {
+			int width = -1;
+			int height = -1;
+			@Override
+			public void handleEvent(Event event) {
+				System.out.println("C_WS TOOK A RESIZE EVENT ...");
+				 int newWidth = c_ws.getSize().x;
+				 int newHeight = c_ws.getSize().y;
+				 System.out.println("\n\tnewWidth = " + newWidth + "\n\tnewHiehgt = " + newHeight);
+			     // + 10 for a little padding after the composite for convenience  
+				 if (newWidth != width) {
+			    	  System.out.println("IN NEW WIDTH != WIDTH LOOP");
+			        parent.setMinHeight(c_ws.computeSize(newWidth, SWT.DEFAULT).y + 10);
+//			        width = newWidth;
+			      }
+			      if (newHeight != height) {
+			    	  System.out.println("IN NEW HEIGHT != HEIGHT LOOP");
+				        parent.setMinWidth(c_ws.computeSize(SWT.DEFAULT, newHeight).x + 10);
+//				        height = newHeight;
+				      }
+			}
+			
+		});
+		
+		parent.setExpandHorizontal(true);
+		parent.setExpandVertical(true);
 
+		parent.setContent(c_ws);
+		
+//		parent.setMinSize(c_ws.computeSize(parentComposite.getDisplay().getBounds().width, parentComposite.getDisplay().getBounds().height));		
+//		parent.setSize(500, 500);
+//		parent.setMinSize();
 //		//--------------------------------------------------
 //			newpojo.setChildCreatorObject(VariablePoJo.getInstance().getChildCreatorObject());
 //		//--------------------------------------------------
@@ -168,6 +207,23 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 
 					@Override
 					public void paintControl(PaintEvent e) {
+						int width = 1;
+						int height = 1;
+						System.out.println("CHECKING FOR RESIZE FROM PAINT EVENT ...");
+						 int newWidth = c_ws.getSize().x;
+						 int newHeight = c_ws.getSize().y;
+						 System.out.println("\n\tnewWidth = " + newWidth + "\n\tnewHiehgt = " + newHeight);
+					     // + 10 for a little padding after the composite for convenience  
+						 if (newWidth != width) {
+					    	  System.out.println("IN NEW WIDTH != WIDTH LOOP");
+					        parent.setMinHeight(c_ws.computeSize(newWidth, SWT.DEFAULT).y + 10);
+//					        width = newWidth;
+					      }
+					      if (newHeight != height) {
+					    	  System.out.println("IN NEW HEIGHT != HEIGHT LOOP");
+						        parent.setMinWidth(c_ws.computeSize(SWT.DEFAULT, newHeight).x + 10);
+//						        height = newHeight;
+						      }
 						
 						String filename = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
 						
@@ -180,6 +236,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 		/**
 		 * Temp listener to check mouse down event's location and save function
 		 */
+		final int okw = parent.getMinWidth();
+		final int okh = parent.getMinHeight();
+		final int cwsw = c_ws.getBounds().width;
+		final int cwsh = c_ws.getBounds().height;
 		newpojo.getChildCreatorObject()
 				.getChildComposite_WorkSpace()
 				.addListener(SWT.MouseDown, new Listener() {
@@ -194,6 +254,10 @@ public class MultiPageEditor extends MultiPageEditorPart implements
 						// get the event location
 						System.out.println("event x " + event.x);
 						System.out.println("event y " + event.y);
+						System.out.println("SC MIN WIDTH: " +  okw);
+						System.out.println("SC MIN HEIGHT: " + okh);
+						System.out.println("CWS WIDTH: " + cwsw);
+						System.out.println("CWS HEIGHT: " + cwsh);
 
 					}
 				});

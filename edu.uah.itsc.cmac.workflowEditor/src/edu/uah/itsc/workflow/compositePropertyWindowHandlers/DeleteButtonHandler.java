@@ -99,7 +99,7 @@ public class DeleteButtonHandler {
 					cdlist.remove(i);
 					i = -1;
 				}
-				dataobj.setConnectorDetectableList(cdlist);
+//				dataobj.setConnectorDetectableList(cdlist);
 			}
 			/**
 			 * Now when all the connections are removed .. remove the composite

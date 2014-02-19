@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.widgets.Label;
 
 import piworkflow.editors.MultiPageEditor;
@@ -28,7 +29,10 @@ public class CopyOfVariablePoJo /* implements SerializableCompatibility */{
 	Connectors connectorObj;
 	CompositeWrapper startingComposite;
 	CompositeWrapper endingComposite;
+	
 	CompositeWrapper parentComposite;
+	ScrolledComposite parent;
+	
 	ChildCompositeCreator childCreatorObject;
 	CompositeWrapper selected_composite;
 	Label titleLabel;
@@ -83,6 +87,18 @@ public class CopyOfVariablePoJo /* implements SerializableCompatibility */{
 //	public void setEditor(MultiPageEditor editor) {
 //		this.editor = editor;
 //	}
+
+	public ScrolledComposite getParent() {
+		return parent;
+	}
+
+
+
+	public void setParent(ScrolledComposite parent) {
+		this.parent = parent;
+	}
+
+
 
 	public ArrayList<CompositeWrapper> getChildcompositewrappers() {
 		return childcompositewrappers;

@@ -7,12 +7,14 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 
 public class NewWindow {
 
@@ -54,7 +56,12 @@ public class NewWindow {
 	 */
 	protected void createContents() {
 		shell = new Shell();
-		shell.setSize(450, 254);
+//		Rectangle display_bounds = Display.getCurrent().getBounds();
+		Rectangle display_bounds = PlatformUI.getWorkbench().getDisplay().getBounds();
+		int shell_x = display_bounds.width / 2;
+		int shell_y = display_bounds.height / 2;
+		shell.setBounds(shell_x, shell_y, 450, 254);
+//		shell.setSize(450, 254);
 		
 		Composite composite = new Composite(shell, SWT.BORDER);
 		composite.setBackground(composite.getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));

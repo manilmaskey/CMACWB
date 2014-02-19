@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.refresh.IRefreshMonitor;
 import org.eclipse.core.resources.refresh.IRefreshResult;
 import org.eclipse.core.resources.refresh.RefreshProvider;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -223,6 +225,17 @@ public class JSONWrite extends RefreshProvider {
 			 * uncomment to create .wf files
 			 */
 			// wf_fileCreator(path);
+			
+			String parentpath = getParentPath();
+			String name = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+			
+			System.out.println("parent path = " + parentpath);
+			System.out.println("name = " + name);
+			System.out.println("filename = " + filename);
+			
+			CreateWFfile cwf = new CreateWFfile();
+			cwf.createfile(name);
+			
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -232,35 +245,47 @@ public class JSONWrite extends RefreshProvider {
 
 	}
 
-	/**
-	 * Creates a .wf file in the same folder as the .json file
-	 * 
-	 * @param path
-	 */
-	private void wf_fileCreator(String filename) {
-
-		try {
-
-			String key = StringFormatter(filename);
-
-			File file = new File(key + ".wf");
-
-			System.out.println("file is " + file);
-
-			if (file.createNewFile()) {
-				System.out.println("File is created!");
-			} else {
-				System.out.println("File already exists.");
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		// CreateWFfile cwff = new CreateWFfile();
-		// cwff.createfile(filename);
-
+	private String getParentPath() {
+		
+		String parentpath = "";
+		
+		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+		parentpath = file.getParent().getRawLocation().toOSString();
+		System.out.println("file parent path = " + parentpath);
+		
+		return parentpath;
 	}
+
+//	/**
+//	 * Creates a .wf file in the same folder as the .json file
+//	 * 
+//	 * @param path
+//	 */
+//	private void wf_fileCreator(String filename) {
+//
+//		try {
+//
+//			String key = StringFormatter(filename);
+//
+//			File file = new File(key + ".wf");
+//
+//			System.out.println("file is " + file);
+//
+//			if (file.createNewFile()) {
+//				System.out.println("File is created!");
+//			} else {
+//				System.out.println("File already exists.");
+//			}
+//
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//
+//		// CreateWFfile cwff = new CreateWFfile();
+//		// cwff.createfile(filename);
+//
+//	}
 
 	/**
 	 * Removes the .json extension from the file name

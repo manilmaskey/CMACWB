@@ -158,6 +158,7 @@ public class CreateProgram {
 
 		// int x1 = (ChildComposite_WorkSpace.getBounds().width - 987);
 		// final int width_difference = (362 - x1);
+		System.out.println("CHILD WS W: " + ChildComposite_WorkSpace.getBounds().width);
 		int width_difference = ((dataobj.getDisplayX() - ChildComposite_WorkSpace
 				.getBounds().width) - 17);
 		final int height_difference = 112;
@@ -166,7 +167,10 @@ public class CreateProgram {
 				+ ChildComposite_WorkSpace.getBounds().width);
 		// System.out.println("x1 " + x1);
 
-		methodComposite.setBounds(x - width_difference, y - height_difference,
+//		methodComposite.setBounds(x - width_difference, y - height_difference,
+//				240, 40);
+		
+		methodComposite.setBounds(x, y,
 				240, 40);
 
 		System.out.println("method x " + methodComposite.getBounds().x);
@@ -202,7 +206,7 @@ public class CreateProgram {
 					if (dataobj.getCompositeList().get(i).getCompositeID()
 							.equals(methodComposite.getCompositeID())) {
 						try {
-							handlerObject.handleCompositeClick(i);
+							handlerObject.handleCompositeClick(i,e.display.getCursorLocation());
 						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
@@ -406,6 +410,7 @@ public class CreateProgram {
 		}
 		catch (Exception e){
 			System.out.println("No active page ...(triggered while setting editor to dirty in create program)");
+			e.printStackTrace();
 		}
 	}
 

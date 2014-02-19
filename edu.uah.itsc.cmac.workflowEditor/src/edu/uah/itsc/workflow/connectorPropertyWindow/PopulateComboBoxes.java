@@ -8,6 +8,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Label;
 import org.json.JSONException;
 
+import edu.uah.itsc.uah.programview.programObjects.IOPOJO;
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
 
 //get the lists and the tables from the 
@@ -67,9 +68,20 @@ public class PopulateComboBoxes {
 				if (!(connectionsMap.get(outputLables.get(i).getText())
 						.equals("<Select>"))) {
 					// if hooked add the input
-					box.add(connectionsMap.get(outputLables.get(i).getText()));
+//					box.add(connectionsMap.get(outputLables.get(i).getText()));
 					box.setText(connectionsMap.get(outputLables.get(i)
 							.getText()));
+					// Set the input values in the io object
+					List<IOPOJO> programInputs = cd.getConnector().getEndingComposite().getProgram_inputs();
+					for(int j = 0; j < programInputs.size(); j++){
+						// if program input name is equal to the name of the input hooked to the current output 
+						System.out.println("prog input name " + programInputs.get(j).getTitle());
+						System.out.println("connection name " + connectionsMap.get(outputLables.get(i).getText()));
+						if ((programInputs.get(j).getTitle()).equals(connectionsMap.get(outputLables.get(i).getText()))){
+							// add output name as value of input to the io object
+							programInputs.get(j).setData_Value(box.getText());
+						}
+					}
 				} else {
 					box.setText("<Select>");
 				}

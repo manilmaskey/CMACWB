@@ -7,6 +7,8 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
@@ -14,6 +16,7 @@ import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.uah.programview.programObjects.ProgramPOJO;
 import edu.uah.itsc.workflow.actionHandler.CompositeClickHandler;
+import edu.uah.itsc.workflow.actionHandler.DeleteProgram;
 import edu.uah.itsc.workflow.movementTrackers.MethodCompositeTracker;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
 import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
@@ -160,6 +163,15 @@ public class ProgramDropHandler {
 
 					@Override
 					public void mouseDoubleClick(MouseEvent e) {
+						
+						int a = e.x;
+						int b = e.y;
+						
+						System.out.println("a=" + a);
+						System.out.println("b=" + b);
+						
+						Point cursor_location = e.display.getCursorLocation();
+						
 						CompositeClickHandler handlerObject = new CompositeClickHandler();
 
 						try {
@@ -167,7 +179,7 @@ public class ProgramDropHandler {
 								if (dataobj.getCompositeList().get(i)
 										.getCompositeID()
 										.equals(method.getCompositeID())) {
-									handlerObject.handleCompositeClick(i);
+									handlerObject.handleCompositeClick(i,cursor_location);
 								}
 							}
 						} catch (Exception e1) {

@@ -58,7 +58,7 @@ public class ConnectorClickHandler {
 				ConnectorPropertyWindow object = new ConnectorPropertyWindow();
 				// try {
 				try {
-					object.openConnectorPropertyWindow(cd);
+					object.openConnectorPropertyWindow(cd, event.display.getCursorLocation());
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

@@ -3,6 +3,7 @@ package edu.uah.itsc.workflow.connectorPropertyWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
@@ -28,9 +29,10 @@ public class ConnectorPropertyWindow {
 	 * @param cd
 	 *            is a composite which holds the starting and ending composite
 	 *            data
+	 * @param point 
 	 * @throws Exception
 	 */
-	public void openConnectorPropertyWindow(final ConnectorDetectable cd)
+	public void openConnectorPropertyWindow(final ConnectorDetectable cd, Point point)
 			throws Exception {
 		
 		try{
@@ -60,7 +62,9 @@ public class ConnectorPropertyWindow {
 
 //		shell.setSize(500, shellHeight);
 		
-		shell.setBounds(x + 500, y + 200, 500, shellHeight);
+		// point gets the location of the event with respect to the screen.
+		// we cushion it using the x,y coordinates of the starting composite of the connector
+		shell.setBounds(point.x, point.y, 500, shellHeight);
 		
 		
 		dataobj.getChildCreatorObject().getChildComposite_WorkSpace().addListener(SWT.MouseDown, new Listener() {

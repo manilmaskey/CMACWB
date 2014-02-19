@@ -29,16 +29,49 @@ public class ReadIOFile {
 		IOPOJO object = new IOPOJO();
 		
 		// set required data
-		object.setTitle(input_Object.getString("title"));
+//		JSONObject titleobject = (JSONObject) input_Object.get("title");
+//		String title = (String) titleobject.get("safe_value");
+		object.setTitle((String) input_Object.get("title"));
 		
-		object.setOption(input_Object.getString("field_option"));
+		if (!(input_Object.get("field_option") instanceof JSONArray)){
+		JSONObject optionobject = (JSONObject) (input_Object.get("field_option"));
+		JSONArray ound = optionobject.getJSONArray("und");
+		JSONObject ovalue = ound.getJSONObject(0);
+		String option = ovalue.getString("safe_value");
+		object.setOption(option);
+		}else{
+			object.setOption("");
+		}
 		
-		object.setFormat(input_Object.getString("field_type"));
+		if (!(input_Object.get("field_type") instanceof JSONArray)){
+		JSONObject feildobject = (JSONObject) (input_Object.get("field_type"));
+		JSONArray tund = feildobject.getJSONArray("und");
+		JSONObject tvalue = tund.getJSONObject(0);
+		String type = tvalue.getString("safe_value");
+		object.setType(type);
+		}else{
+			object.setType("");
+		}
 		
-		object.setStatus(input_Object.getString("field_status"));
+		if (!(input_Object.get("field_status") instanceof JSONArray)){
+		JSONObject statusobject = (JSONObject) (input_Object.get("field_status"));
+		JSONArray sund = statusobject.getJSONArray("und");
+		JSONObject svalue = sund.getJSONObject(0);
+		String status = svalue.getString("safe_value");
+		object.setStatus(status);
+		}else{
+			object.setStatus("");
+		}
 		
-		object.setFormat(input_Object.getString("field_format"));
-		
+		if (!(input_Object.get("field_format") instanceof JSONArray)){
+		JSONObject formatobject = (JSONObject) (input_Object.get("field_format"));
+		JSONArray fund = formatobject.getJSONArray("und");
+		JSONObject fvalue = fund.getJSONObject(0);
+		String format = fvalue.getString("safe_value");
+		object.setFormat(format);
+		}else{
+			object.setFormat("");
+		}
 		
 		return object;
 	}

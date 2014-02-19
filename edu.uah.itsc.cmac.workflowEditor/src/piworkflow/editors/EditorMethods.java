@@ -103,16 +103,24 @@ public class EditorMethods {
 			throws PartInitException {
 
 		String path = null;
-
-		IEditorReference[] referencelist = page.getEditorReferences();
-
-		for (int i = 0; i < referencelist.length; i++) {
-			IFile ifile = (IFile) referencelist[i].getEditorInput().getAdapter(
-					IFile.class);
-			if (ifile.getName().equals(filename)) {
-				path = ifile.getRawLocation().toOSString();
-			}
+		
+		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
+		IFile file = (IFile) ((IStructuredSelection)selection).getFirstElement();
+		System.out.println("FILE NAME SELECTED: " + file.getName());
+		
+		if(file.getName().equals(filename)){
+			path = file.getRawLocation().toOSString();
 		}
+		
+//		IEditorReference[] referencelist = page.getEditorReferences();
+//
+//		for (int i = 0; i < referencelist.length; i++) {
+//			IFile ifile = (IFile) referencelist[i].getEditorInput().getAdapter(
+//					IFile.class);
+//			if (ifile.getName().equals(filename)) {
+//				path = ifile.getRawLocation().toOSString();
+//			}
+//		}
 
 		return path;
 

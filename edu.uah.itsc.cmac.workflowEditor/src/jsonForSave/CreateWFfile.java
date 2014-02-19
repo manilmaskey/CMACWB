@@ -6,16 +6,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 
 public class CreateWFfile {
@@ -25,37 +24,58 @@ public class CreateWFfile {
 		String filename = getfilename(file);
 
 		ISelection selection = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getSelectionService()
-				.getSelection();
+				.getActiveWorkbenchWindow().getActivePage().getSelection();
 
-		if (selection != null && selection instanceof IStructuredSelection) {
-			Object obj = ((IStructuredSelection) selection).getFirstElement();
-			IFolder res = (IFolder) obj;
+		IEditorPart editor = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IFile m_file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+		IFolder resource = (IFolder) m_file.getParent();
+
+//		if (selection != null && selection instanceof IStructuredSelection) {
+			// Object obj = ((IStructuredSelection)
+			// selection).getFirstElement();
+			// IFolder res = (IFolder) obj;
 			// System.out.println("res parent " + res.getParent());
-			System.out.println("New file selected " + res.getLocation());
+			System.out.println("New file selected " + resource.getLocation());
 
-			String location = res.getLocation().toString();
+			String location = resource.getLocation().toString();
 
-			IFile mywfFile = res.getFile(filename);
+			System.out.println();
+			IFile mywfFile = resource.getFile(filename);
 			System.out.println(mywfFile);
 
-			byte[] bytes = "".getBytes();
-			InputStream source = new ByteArrayInputStream(bytes);
+			// byte[] bytes = "".getBytes();
+			// InputStream source = new ByteArrayInputStream(bytes);
 
 			try {
-				mywfFile.create(source, IResource.NONE, null);
-				IPath path = mywfFile.getFullPath();
-				populatefile(path);
-			} catch (CoreException e1) {
+
+				WFContents wfc = new WFContents();
+				String content = wfc.getcontent();
+				System.out.println("\nthe file contents are \n" + content
+						+ "\n");
+
+				byte[] bytes = content.getBytes();
+				InputStream source = new ByteArrayInputStream(bytes);
+
+				try {
+					mywfFile.create(source, IResource.NONE, null);
+					IPath path = mywfFile.getFullPath();
+				} catch (Exception e) {
+					mywfFile.setContents(source, 0, null);
+					// populatefile(path);
+				}
+
+			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			} // catch (IOException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
 		}
-	}
+//	}
 
+	
 	private String getfilename(String file) {
 
 		StringTokenizer st = new StringTokenizer(file, ".");

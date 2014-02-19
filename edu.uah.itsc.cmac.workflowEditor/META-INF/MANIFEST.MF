@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide,
  edu.uah.itsc.cmac.programview;bundle-version="1.0.0",
  org.json.simple;bundle-version="1.0.0",
- org.json;bundle-version="1.0.0"
+ org.json;bundle-version="1.0.0",
+ edu.uah.itsc.cmac3;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .

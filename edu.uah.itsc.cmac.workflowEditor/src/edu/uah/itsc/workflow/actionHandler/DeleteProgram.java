@@ -1,4 +1,4 @@
-package edu.uah.itsc.workflow.programDropHandler;
+package edu.uah.itsc.workflow.actionHandler;
 
 import java.util.List;
 
@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PlatformUI;
 
 import edu.uah.itsc.workflow.connectors.ConnectorDetectable;
+import edu.uah.itsc.workflow.connectors.Connectors;
 import edu.uah.itsc.workflow.relayComposites.RelayComposites;
 import edu.uah.itsc.workflow.variableHolder.CopyOfVariablePoJo;
 import edu.uah.itsc.workflow.variableHolder.POJOHolder;
@@ -72,6 +73,7 @@ public class DeleteProgram {
 							.size());
 
 			List<ConnectorDetectable> cdlist = dataobj.getConnectorDetectableList();
+			List<Connectors> connectorslist = dataobj.getConnectorList();
 
 			for (int i = 0; i < cdlist.size(); i++) {
 				System.out.println("cd is "
@@ -90,6 +92,8 @@ public class DeleteProgram {
 					cdlist.get(i).getConnector().getEndingComposite()
 							.getConnectionsMap().clear();
 					cdlist.remove(i);
+//					int index = connectorslist.indexOf(cdlist.get(i).getConnector());
+//					connectorslist.remove(index);
 					i = -1;
 				} else if (cdlist.get(i).getConnector().getEndingComposite()
 						.getCompositeID().equals(method.getCompositeID())) {
@@ -99,9 +103,12 @@ public class DeleteProgram {
 					cdlist.get(i).getConnector().getEndingComposite()
 							.getConnectionsMap().clear();
 					cdlist.remove(i);
+//					connectorslist.indexOf(cdlist.get(i).getConnector());
+//					connectorslist.remove(connectorslist.indexOf(cdlist.get(i).getConnector()));
 					i = -1;
 				}
 				dataobj.setConnectorDetectableList(cdlist);
+//				dataobj.setConnectorList(connectorslist);
 			}
 			/**
 			 * Now when all the connections are removed .. remove the composite
