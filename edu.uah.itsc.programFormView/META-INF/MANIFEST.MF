@@ -11,6 +11,6 @@ Require-Bundle: org.eclipse.core.runtime,
  edu.uah.itsc.cmac3;bundle-version="1.0.0",
  org.json.simple;bundle-version="1.0.0",
  edu.uah.itsc.cmac.libs
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.json
 Export-Package: edu.uah.itsc.programformview.views
