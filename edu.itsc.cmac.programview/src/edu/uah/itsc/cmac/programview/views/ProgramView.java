@@ -5,11 +5,14 @@ import java.util.List;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
@@ -157,9 +160,20 @@ public class ProgramView extends ViewPart {
 		};
 		openProgramView.setText("Add Program");
 		openProgramView.setToolTipText("Add Program");
-		openProgramView.setImageDescriptor(PlatformUI.getWorkbench()
-				.getSharedImages()
-				.getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
+		ImageDescriptor programImageDescriptor = new ImageDescriptor() {
+			
+			@Override
+			public ImageData getImageData() {
+				Image programImage = new Image(
+					getSite().getShell().getDisplay(), getClass().getClassLoader()
+					.getResourceAsStream("icons/page_add.png"));
+				return programImage.getImageData();
+			}
+		};
+		openProgramView.setImageDescriptor(programImageDescriptor);
+//		openProgramView.setImageDescriptor(PlatformUI.getWorkbench()
+//				.getSharedImages()
+//				.getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		IActionBars bars = getViewSite().getActionBars();
 		IToolBarManager toolBarManager = bars.getToolBarManager();
 		toolBarManager.add(openProgramView);
