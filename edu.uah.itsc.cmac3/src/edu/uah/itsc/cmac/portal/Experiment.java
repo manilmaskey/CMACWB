@@ -15,13 +15,12 @@ import edu.uah.itsc.aws.User;
  */
 public class Experiment {
 
-	private String title;
-	private String description;
-	private String creator;
-	private String workflows;
+	private String	title;
+	private String	description;
+	private String	creator;
+	private String	workflows;
 
-	public Experiment(String title, String description, String userID,
-			String workflows) {
+	public Experiment(String title, String description, String userID, String workflows) {
 		this.title = title;
 		this.description = description;
 		this.creator = userID;
@@ -39,8 +38,7 @@ public class Experiment {
 		if (description != null && !description.isEmpty())
 			jsonData.put("body", getComplexObject("value", description));
 		if (creator != null && !creator.isEmpty())
-			jsonData.put("field_creator",
-					getComplexObject("uid", User.username));
+			jsonData.put("field_creator", getComplexObject("uid", User.username));
 		// jsonData.put("field_creator", new JSONObject("{'und':'"
 		// + creator + "'}"));
 		// if (workflows != null && !workflows.isEmpty())
@@ -49,16 +47,14 @@ public class Experiment {
 		return jsonData;
 	}
 
-	private JSONObject getComplexObject(String key, String value)
-			throws JSONException {
+	private JSONObject getComplexObject(String key, String value) throws JSONException {
 
 		JSONObject undObject = new JSONObject();
 		JSONArray undArray = new JSONArray();
 		JSONObject undArrayObject = new JSONObject();
 
 		/*
-		 * This method will return a JSONObject similar to "field_is_shared": {
-		 * "und": [ { "value": "1" } ] }
+		 * This method will return a JSONObject similar to "field_is_shared": { "und": [ { "value": "1" } ] }
 		 */
 
 		undArrayObject.put(key, value);

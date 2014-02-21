@@ -123,8 +123,9 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 						}
 						else {
 							String fullFilePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()
-								+ java.io.File.separator + copyToFolder.getProject().getName() + java.io.File.separator + User.username
-								+ java.io.File.separator + copyToFolder.getName() + java.io.File.separator + fileName;
+								+ java.io.File.separator + copyToFolder.getProject().getName() + java.io.File.separator
+								+ User.username + java.io.File.separator + copyToFolder.getName()
+								+ java.io.File.separator + fileName;
 							System.out.println("Downloading file " + currentResource);
 							System.out.println("fullFilePath: " + fullFilePath);
 
@@ -178,7 +179,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 						folderToCopy = folderToCopy.substring(fromIndex);
 						// Remove all the / character in the beginning
 						folderToCopy = folderToCopy.replaceFirst("^/+", "");
-						
+
 						String bucketName = null;
 						copyFromFolderPath = copyFromFolderPath.replaceAll("^/+", "");
 						fromIndex = copyFromFolderPath.indexOf('/');

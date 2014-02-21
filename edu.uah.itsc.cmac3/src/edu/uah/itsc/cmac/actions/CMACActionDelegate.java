@@ -26,7 +26,7 @@ import edu.uah.itsc.cmac.ui.LoginDialog;
 
 /**
  * @author mmaskey
- *
+ * 
  */
 public class CMACActionDelegate extends ActionDelegate {
 
@@ -35,15 +35,11 @@ public class CMACActionDelegate extends ActionDelegate {
 	 */
 	public CMACActionDelegate() {
 		// TODO Auto-generated constructor stub
-		
-	if (User.sessionID == null || User.sessionID.equals("")){
-		LoginDialog loginDialog = new LoginDialog(PlatformUI.createDisplay());
-		loginDialog.createContents();
-	}
+
+		if (User.sessionID == null || User.sessionID.equals("")) {
+			LoginDialog loginDialog = new LoginDialog(PlatformUI.createDisplay());
+			loginDialog.createContents();
+		}
 	}
 
-
-	
-	
-	
 }

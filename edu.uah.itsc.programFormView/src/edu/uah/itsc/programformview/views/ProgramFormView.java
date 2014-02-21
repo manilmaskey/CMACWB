@@ -1,6 +1,5 @@
 package edu.uah.itsc.programformview.views;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.http.HttpResponse;
@@ -22,20 +21,12 @@ import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.ViewPart;
-import org.json.JSONException;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
-import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.Parameter;
-import edu.uah.itsc.cmac.portal.PortalPost;
-import edu.uah.itsc.cmac.portal.PortalUtilities;
-import edu.uah.itsc.cmac.portal.Program;
 
 public class ProgramFormView extends ViewPart {
-	private FormToolkit toolkit;
-	private ScrolledForm form;
+	private FormToolkit		toolkit;
+	private ScrolledForm	form;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -52,18 +43,13 @@ public class ProgramFormView extends ViewPart {
 		Dialog.applyDialogFont(form.getBody());
 	}
 
-	private Section createTableSection(final ScrolledForm form2,
-			final FormToolkit toolkit, String title) {
+	private Section createTableSection(final ScrolledForm form2, final FormToolkit toolkit, String title) {
 		GridData gd;
-		final Section section = toolkit.createSection(form2.getBody(),
-				Section.TWISTIE | Section.TITLE_BAR);
-		section.setActiveToggleColor(toolkit.getHyperlinkGroup()
-				.getActiveForeground());
-		section.setToggleColor(toolkit.getColors().getColor(
-				IFormColors.SEPARATOR));
+		final Section section = toolkit.createSection(form2.getBody(), Section.TWISTIE | Section.TITLE_BAR);
+		section.setActiveToggleColor(toolkit.getHyperlinkGroup().getActiveForeground());
+		section.setToggleColor(toolkit.getColors().getColor(IFormColors.SEPARATOR));
 		FormText description = toolkit.createFormText(section, false);
-		description.setText("<form><p>Create a new <b>program</b></p></form>",
-				true, false);
+		description.setText("<form><p>Create a new <b>program</b></p></form>", true, false);
 		section.setDescriptionControl(description);
 
 		final Composite client = toolkit.createComposite(section, SWT.WRAP);
@@ -104,10 +90,8 @@ public class ProgramFormView extends ViewPart {
 		final Text versionText = toolkit.createText(client, "");
 		versionText.setLayoutData(new GridData(200, 15));
 
-		final Button parameterButton = toolkit.createButton(client,
-				"This program has parameters", SWT.CHECK);
-		final Button addNewParameterButton = toolkit.createButton(client,
-				"Add a parameter", SWT.PUSH);
+		final Button parameterButton = toolkit.createButton(client, "This program has parameters", SWT.CHECK);
+		final Button addNewParameterButton = toolkit.createButton(client, "Add a parameter", SWT.PUSH);
 		addNewParameterButton.setVisible(false);
 
 		final ArrayList<Text> parametersText = new ArrayList<Text>();
@@ -122,13 +106,11 @@ public class ProgramFormView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				// TODO Auto-generated method stub
-				Label ioComboLabel = toolkit
-						.createLabel(client, "Input/Output");
+				Label ioComboLabel = toolkit.createLabel(client, "Input/Output");
 				Combo io = new Combo(client, SWT.DROP_DOWN | SWT.READ_ONLY);
 				io.add("Input Parameter", 0);
 				io.add("Output Parameter", 1);
-				Label parameterLabel = toolkit.createLabel(client,
-						"Parameter Name");
+				Label parameterLabel = toolkit.createLabel(client, "Parameter Name");
 				Text parameterText = toolkit.createText(client, "");
 				Label optionLabel = toolkit.createLabel(client, "Option");
 				Text optionText = toolkit.createText(client, "");
@@ -160,10 +142,9 @@ public class ProgramFormView extends ViewPart {
 				boolean hasParameters = parameterButton.getSelection();
 				System.out.println(hasParameters);
 				addNewParameterButton.setVisible(hasParameters);
-				if (!hasParameters && parametersText != null
-						&& parametersText.size() > 0) {
-					disposeParameters(section, parametersText, parametersLabel,
-							optionsText, optionsLabel, ioCombos, ioCombosLabel);
+				if (!hasParameters && parametersText != null && parametersText.size() > 0) {
+					disposeParameters(section, parametersText, parametersLabel, optionsText, optionsLabel, ioCombos,
+						ioCombosLabel);
 				}
 			}
 
@@ -176,8 +157,7 @@ public class ProgramFormView extends ViewPart {
 
 		gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
 		gd.horizontalSpan = 2;
-		Button submitButton = toolkit.createButton(client, "Submit Program",
-				SWT.PUSH);
+		Button submitButton = toolkit.createButton(client, "Submit Program", SWT.PUSH);
 		submitButton.setLayoutData(gd);
 		submitButton.addSelectionListener(new SelectionListener() {
 
@@ -193,19 +173,16 @@ public class ProgramFormView extends ViewPart {
 					parameter.setTitle(parametersText.get(i).getText());
 					parameter.setOption(optionsText.get(i).getText());
 
-					System.out.println("Combo value: "
-							+ ioCombos.get(i).getText()
-							+ ioCombos.get(i).getSelectionIndex());
+					System.out.println("Combo value: " + ioCombos.get(i).getText()
+						+ ioCombos.get(i).getSelectionIndex());
 					if (ioCombos.get(i).getSelectionIndex() == 0)
 						inputParameters.add(parameter);
 					else
 						outputParameters.add(parameter);
 				}
-				HttpResponse response = ProgramCreator.createProgram(inputParameters,
-						outputParameters, titleText.getText(),
-						descriptionText.getText(), contactText.getText(),
-						urlText.getText(), pathText.getText(),
-						versionText.getText());
+				HttpResponse response = ProgramCreator.createProgram(inputParameters, outputParameters,
+					titleText.getText(), descriptionText.getText(), contactText.getText(), urlText.getText(),
+					pathText.getText(), versionText.getText());
 
 				MessageBox message = new MessageBox(form2.getShell());
 				if (response.getStatusLine().getStatusCode() == 200) {
@@ -220,13 +197,13 @@ public class ProgramFormView extends ViewPart {
 					pathText.setText("");
 					titleText.setText("");
 					versionText.setText("");
-					disposeParameters(section, parametersText, parametersLabel,
-							optionsText, optionsLabel, ioCombos, ioCombosLabel);
+					disposeParameters(section, parametersText, parametersLabel, optionsText, optionsLabel, ioCombos,
+						ioCombosLabel);
 					addNewParameterButton.setVisible(false);
 					parameterButton.setSelection(false);
-				} else {
-					message.setMessage("Could not add the program.\n"
-							+ response.toString());
+				}
+				else {
+					message.setMessage("Could not add the program.\n" + response.toString());
 					message.open();
 					message.setText("Error");
 
@@ -256,13 +233,9 @@ public class ProgramFormView extends ViewPart {
 	 * @param ioCombos
 	 * @param ioCombosLabel
 	 */
-	private void disposeParameters(final Section section,
-			final ArrayList<Text> parametersText,
-			final ArrayList<Label> parametersLabel,
-			final ArrayList<Text> optionsText,
-			final ArrayList<Label> optionsLabel,
-			final ArrayList<Combo> ioCombos,
-			final ArrayList<Label> ioCombosLabel) {
+	private void disposeParameters(final Section section, final ArrayList<Text> parametersText,
+		final ArrayList<Label> parametersLabel, final ArrayList<Text> optionsText, final ArrayList<Label> optionsLabel,
+		final ArrayList<Combo> ioCombos, final ArrayList<Label> ioCombosLabel) {
 		int i = 0;
 		for (Text text : parametersText) {
 			text.dispose();
@@ -300,8 +273,6 @@ public class ProgramFormView extends ViewPart {
 		section.layout(true, true);
 		form.layout(true);
 	}
-
-
 
 	@Override
 	public void setFocus() {

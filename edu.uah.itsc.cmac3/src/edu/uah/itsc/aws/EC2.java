@@ -37,53 +37,46 @@ import com.amazonaws.services.ec2.model.Tag;
  * 
  */
 public class EC2 {
-	private AmazonEC2 amazonEC2;
-	private String awsAdminAccessKey = "AKIAIKX2MDKF6M6GXD7Q";
-	private String awsAdminSecretKey = "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";
-	private final String AWS_USER_ID = "709010204591";
+	private AmazonEC2		amazonEC2;
+	private String			awsAdminAccessKey	= "AKIAIKX2MDKF6M6GXD7Q";
+	private String			awsAdminSecretKey	= "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";
+	private final String	AWS_USER_ID			= "709010204591";
 
 	public EC2() {
-		AWSCredentials credentials = new BasicAWSCredentials(awsAdminAccessKey,
-				awsAdminSecretKey);
-		System.out.println("User................" + User.awsAccessKey + "\t"
-				+ User.awsSecretKey);
+		AWSCredentials credentials = new BasicAWSCredentials(awsAdminAccessKey, awsAdminSecretKey);
+		System.out.println("User................" + User.awsAccessKey + "\t" + User.awsSecretKey);
 		amazonEC2 = new AmazonEC2Client(credentials);
 	}
 
-	public List<Image> getAMIImages() throws AmazonServiceException,
-			AmazonClientException {
+	public List<Image> getAMIImages() throws AmazonServiceException, AmazonClientException {
 		DescribeImagesRequest request = new DescribeImagesRequest();
 		request.withOwners(AWS_USER_ID);
 		List<Image> images = amazonEC2.describeImages(request).getImages();
 		return images;
 	}
 
-	public void modifyImageAttribute(ModifyImageAttributeRequest request)
-			throws AmazonServiceException, AmazonClientException {
+	public void modifyImageAttribute(ModifyImageAttributeRequest request) throws AmazonServiceException,
+		AmazonClientException {
 		amazonEC2.modifyImageAttribute(request);
 	}
 
-	public CreateImageResult createImage(CreateImageRequest createRequest)
-			throws AmazonServiceException, AmazonClientException {
+	public CreateImageResult createImage(CreateImageRequest createRequest) throws AmazonServiceException,
+		AmazonClientException {
 		return amazonEC2.createImage(createRequest);
 
 	}
 
-	public void deregisterImage(DeregisterImageRequest request)
-			throws AmazonServiceException, AmazonClientException {
+	public void deregisterImage(DeregisterImageRequest request) throws AmazonServiceException, AmazonClientException {
 		amazonEC2.deregisterImage(request);
 	}
 
-	public void createTags(CreateTagsRequest ctRequest)
-			throws AmazonServiceException, AmazonClientException {
+	public void createTags(CreateTagsRequest ctRequest) throws AmazonServiceException, AmazonClientException {
 		amazonEC2.createTags(ctRequest);
 	}
 
-	public ArrayList<Instance> getInstances(String instanceState)
-			throws AmazonServiceException, AmazonClientException {
-		/* Amazon EC2 instance state
-		 * Allowed Values: 
-		 * pending, running, shutting-down, terminated, stopping, stopped 
+	public ArrayList<Instance> getInstances(String instanceState) throws AmazonServiceException, AmazonClientException {
+		/*
+		 * Amazon EC2 instance state Allowed Values: pending, running, shutting-down, terminated, stopping, stopped
 		 */
 		ArrayList<Instance> allInstances = new ArrayList<Instance>();
 		DescribeInstancesRequest request = new DescribeInstancesRequest();
@@ -106,14 +99,12 @@ public class EC2 {
 		return allInstances;
 	}
 
-	public String getInstancePublicURL(String instanceNameTag)
-			throws AmazonServiceException, AmazonClientException {
+	public String getInstancePublicURL(String instanceNameTag) throws AmazonServiceException, AmazonClientException {
 		Filter filter = new Filter();
 		filter.withName("tag:Name");
 		filter.withValues(instanceNameTag);
 		DescribeInstancesRequest request = new DescribeInstancesRequest();
-		DescribeInstancesResult result = amazonEC2.describeInstances(request
-				.withFilters(filter));
+		DescribeInstancesResult result = amazonEC2.describeInstances(request.withFilters(filter));
 
 		List<Reservation> reservations = result.getReservations();
 
@@ -131,21 +122,19 @@ public class EC2 {
 		return null;
 	}
 
-	public StartInstancesResult startInstances(List<String> instanceIds)
-			throws AmazonServiceException, AmazonClientException {
-		StartInstancesRequest startRequest = new StartInstancesRequest(
-				instanceIds);
+	public StartInstancesResult startInstances(List<String> instanceIds) throws AmazonServiceException,
+		AmazonClientException {
+		StartInstancesRequest startRequest = new StartInstancesRequest(instanceIds);
 		return amazonEC2.startInstances(startRequest);
 	}
 
-	public StopInstancesResult stopInstances(List<String> instanceIds)
-			throws AmazonServiceException, AmazonClientException {
+	public StopInstancesResult stopInstances(List<String> instanceIds) throws AmazonServiceException,
+		AmazonClientException {
 		StopInstancesRequest stopRequest = new StopInstancesRequest(instanceIds);
 		return amazonEC2.stopInstances(stopRequest);
 	}
 
-	public void runInstances(RunInstancesRequest runInstancesRequest,
-			String instanceName) {
+	public void runInstances(RunInstancesRequest runInstancesRequest, String instanceName) {
 		RunInstancesResult result = amazonEC2.runInstances(runInstancesRequest);
 		Reservation reservation = result.getReservation();
 		List<Instance> instanceList = reservation.getInstances();
@@ -157,6 +146,6 @@ public class EC2 {
 		tags.add(tag);
 		CreateTagsRequest tagRequest = new CreateTagsRequest(resources, tags);
 		amazonEC2.createTags(tagRequest);
-		
+
 	}
 }

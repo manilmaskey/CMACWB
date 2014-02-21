@@ -35,7 +35,7 @@ public class PortalPost {
 	public PortalPost() {
 	}
 
-	private PortalConnector portalConnector = new PortalConnector();
+	private PortalConnector	portalConnector	= new PortalConnector();
 
 	public HttpResponse put(String url, JSONObject putData) {
 		return executeRequest(url, putData, "PUT");
@@ -57,7 +57,7 @@ public class PortalPost {
 		return executeRequest(url, postData, "POST");
 	}
 
-	public HttpResponse get(String url){
+	public HttpResponse get(String url) {
 		String data = null;
 		return executeRequest(url, data, "GET");
 	}
@@ -69,24 +69,26 @@ public class PortalPost {
 		HttpGet httpget = new HttpGet(url);
 		try {
 			HttpResponse response = httpclient.execute(httpget);
-		} catch (ClientProtocolException e) {
+		}
+		catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	private BasicHttpContext getHttpContext() {
-		JSONObject jsonObject = portalConnector.connect(User.username,
-				User.password);
+		JSONObject jsonObject = portalConnector.connect(User.username, User.password);
 		String session_id = "";
 		String session_name = "";
 		try {
 			session_name = jsonObject.getString("session_name");
 			session_id = jsonObject.getString("sessid");
-		} catch (JSONException e) {
+		}
+		catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -94,8 +96,7 @@ public class PortalPost {
 		BasicHttpContext mHttpContext = new BasicHttpContext();
 		CookieStore mCookieStore = new BasicCookieStore();
 
-		BasicClientCookie cookie = new BasicClientCookie(session_name,
-				session_id);
+		BasicClientCookie cookie = new BasicClientCookie(session_name, session_id);
 		cookie.setVersion(0);
 		cookie.setDomain(".itsc.uah.edu");
 		cookie.setPath("/");
@@ -106,8 +107,7 @@ public class PortalPost {
 
 	}
 
-	private HttpResponse executeRequest(String url, JSONObject postData,
-			String action) {
+	private HttpResponse executeRequest(String url, JSONObject postData, String action) {
 
 		HttpResponse response = null;
 
@@ -116,9 +116,9 @@ public class PortalPost {
 			try {
 				se = new StringEntity(postData.toString());
 				// set request content type
-				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
-						"application/json"));
-			} catch (UnsupportedEncodingException e1) {
+				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+			}
+			catch (UnsupportedEncodingException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -126,8 +126,7 @@ public class PortalPost {
 		return response;
 	}
 
-	private HttpResponse executeRequest(String url, String postData,
-			String action) {
+	private HttpResponse executeRequest(String url, String postData, String action) {
 
 		HttpResponse response = null;
 
@@ -136,9 +135,9 @@ public class PortalPost {
 			try {
 				se = new StringEntity(postData);
 				// set request content type
-				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
-						"application/x-www-form-urlencoded"));
-			} catch (UnsupportedEncodingException e1) {
+				se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/x-www-form-urlencoded"));
+			}
+			catch (UnsupportedEncodingException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -158,7 +157,7 @@ public class PortalPost {
 		HttpResponse response = null;
 		BasicHttpContext mHttpContext = getHttpContext();
 		try {
-			if (action.equalsIgnoreCase("get")){
+			if (action.equalsIgnoreCase("get")) {
 				HttpGet httpGet = new HttpGet(url);
 				response = httpClient.execute(httpGet, mHttpContext);
 			}
@@ -167,16 +166,19 @@ public class PortalPost {
 				httpPut.setEntity(se);
 				response = httpClient.execute(httpPut, mHttpContext);
 
-			} else if (action.equalsIgnoreCase("post")) {
+			}
+			else if (action.equalsIgnoreCase("post")) {
 				HttpPost httpPost = new HttpPost(url);
 				httpPost.setEntity(se);
 				response = httpClient.execute(httpPost, mHttpContext);
 
-			} else if (action.equalsIgnoreCase("delete")) {
+			}
+			else if (action.equalsIgnoreCase("delete")) {
 				HttpDelete httpDelete = new HttpDelete(url);
 				response = httpClient.execute(httpDelete, mHttpContext);
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 		}
 		return response;
 	}

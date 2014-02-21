@@ -30,72 +30,78 @@ import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.ui.NavigatorView;
 
 public class RefreshCommandHandler extends AbstractHandler {
-	private IStructuredSelection selection = StructuredSelection.EMPTY;
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
-    	
-        Object object =  selection.getFirstElement();
-        Job job = new Job("Refreshing..."){
-        	protected IStatus run(IProgressMonitor monitor){
-				if(selection.size() == 1) {
-					
-					 Object firstElement = selection.getFirstElement();
-					 if(firstElement instanceof IFile  ) {
-                      MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Information", "You can only share folders!");
+	private IStructuredSelection	selection	= StructuredSelection.EMPTY;
+
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
+
+		Object object = selection.getFirstElement();
+		Job job = new Job("Refreshing...") {
+			protected IStatus run(IProgressMonitor monitor) {
+				if (selection.size() == 1) {
+
+					Object firstElement = selection.getFirstElement();
+					if (firstElement instanceof IFile) {
+						MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Information",
+							"You can only share folders!");
+					}
+					else if (firstElement instanceof IProject) {
+						S3 s3 = new S3();
+						try {
+							NavigatorView view = (NavigatorView) getPage().findView("edu.uah.itsc.cmac.NavigatorView");
+							view.refreshCommunityResource();
 						}
-					 else if (firstElement instanceof IProject){
-							S3 s3 = new S3();
-							try{
-								NavigatorView view = (NavigatorView) getPage().findView("edu.uah.itsc.cmac.NavigatorView");
-								view.refreshCommunityResource();
-							}
-							catch(Exception e){
-								System.out.println("Errror while refreshCommunityResource in RefreshAction "+e.toString());
-							}
-							IProject communityProject = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
-							try{
+						catch (Exception e) {
+							System.out
+								.println("Errror while refreshCommunityResource in RefreshAction " + e.toString());
+						}
+						IProject communityProject = ResourcesPlugin.getWorkspace().getRoot()
+							.getProject(s3.getCommunityBucketName());
+						try {
 							communityProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-							}catch (CoreException e){
-								e.printStackTrace();
-							}
-					 }
-				 
-					 }
-        		monitor.done();
-        		return Status.OK_STATUS;
-        	}
-        		};
-        job.setUser(true);
-        job.schedule();
+						}
+						catch (CoreException e) {
+							e.printStackTrace();
+						}
+					}
 
-        return object;
-    }
-	   /**
-	    * Returns the active page or null if no page is available. A page is a
-	    * composition of views and editors which are meant to show at the same
-	    * time.
-	    *
-	    * @return The active page.
-	    */
-	   public static IWorkbenchPage getPage() throws Exception {
-	      final IWorkbenchPage page[] = new IWorkbenchPage[]{null};
-	       final String errorMessages[] = new String[]{""};
+				}
+				monitor.done();
+				return Status.OK_STATUS;
+			}
+		};
+		job.setUser(true);
+		job.schedule();
 
-	       Display.getDefault().syncExec(new Runnable() {
-	          public void run() {
-	             try {
-	                IWorkbench wb = PlatformUI.getWorkbench();
-	                IWorkbenchWindow wbWindow = wb.getActiveWorkbenchWindow();
-	                page[0] = wbWindow.getActivePage();
-	             } catch(Exception e){
-	                errorMessages[0] = e.toString();
-	             }
-	          }
-	       });
-	       if(errorMessages[0].length() > 0){
-	          throw new Exception(errorMessages[0]);
-	       }
-	      return page[0];
-	   } 
+		return object;
+	}
+
+	/**
+	 * Returns the active page or null if no page is available. A page is a composition of views and editors which are
+	 * meant to show at the same time.
+	 * 
+	 * @return The active page.
+	 */
+	public static IWorkbenchPage getPage() throws Exception {
+		final IWorkbenchPage page[] = new IWorkbenchPage[] { null };
+		final String errorMessages[] = new String[] { "" };
+
+		Display.getDefault().syncExec(new Runnable() {
+			public void run() {
+				try {
+					IWorkbench wb = PlatformUI.getWorkbench();
+					IWorkbenchWindow wbWindow = wb.getActiveWorkbenchWindow();
+					page[0] = wbWindow.getActivePage();
+				}
+				catch (Exception e) {
+					errorMessages[0] = e.toString();
+				}
+			}
+		});
+		if (errorMessages[0].length() > 0) {
+			throw new Exception(errorMessages[0]);
+		}
+		return page[0];
+	}
 }

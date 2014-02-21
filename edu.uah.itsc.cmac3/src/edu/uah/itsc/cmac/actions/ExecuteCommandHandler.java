@@ -40,12 +40,11 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 
 public class ExecuteCommandHandler extends AbstractHandler {
-	private IStructuredSelection selection = StructuredSelection.EMPTY;
+	private IStructuredSelection	selection	= StructuredSelection.EMPTY;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		selection = (IStructuredSelection) HandlerUtil
-				.getCurrentSelectionChecked(event);
+		selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 
 		Object object = selection.getFirstElement();
 
@@ -63,23 +62,22 @@ public class ExecuteCommandHandler extends AbstractHandler {
 				selectedFolder = (IFolder) selectedFile.getParent();
 				folder = selectedFile.getParent().getName();
 
-				IEditorPart myeditor = PlatformUI.getWorkbench()
-						.getActiveWorkbenchWindow().getActivePage()
-						.getActiveEditor();
+				IEditorPart myeditor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+					.getActiveEditor();
 				if (myeditor != null && myeditor.isDirty())
 					myeditor.doSave(new NullProgressMonitor());
 				// myeditor.doSaveAs();
 
 				String bucket = selectedFolder.getProject().getName();
 				String file = selectedFile.getLocation().toOSString();
-				System.out.println("Selected Folder:"
-						+ selectedFolder.getName());
+				System.out.println("Selected Folder:" + selectedFolder.getName());
 				String path = selectedFolder.getFullPath().toString();
 
 				try {
-					ExecuteDialog executeDialog = new ExecuteDialog(path, file,
-							folder, bucket, selectedFolder, getPage());
-				} catch (Exception e) {
+					ExecuteDialog executeDialog = new ExecuteDialog(path, file, folder, bucket, selectedFolder,
+						getPage());
+				}
+				catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -96,9 +94,8 @@ public class ExecuteCommandHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Returns the active page or null if no page is available. A page is a
-	 * composition of views and editors which are meant to show at the same
-	 * time.
+	 * Returns the active page or null if no page is available. A page is a composition of views and editors which are
+	 * meant to show at the same time.
 	 * 
 	 * @return The active page.
 	 */
@@ -112,7 +109,8 @@ public class ExecuteCommandHandler extends AbstractHandler {
 					IWorkbench wb = PlatformUI.getWorkbench();
 					IWorkbenchWindow wbWindow = wb.getActiveWorkbenchWindow();
 					page[0] = wbWindow.getActivePage();
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					errorMessages[0] = e.toString();
 				}
 			}

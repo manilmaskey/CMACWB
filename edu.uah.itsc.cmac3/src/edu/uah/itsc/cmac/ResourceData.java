@@ -7,27 +7,31 @@ import org.eclipse.core.resources.IFile;
  * 
  * @since 3.2
  */
-public class ResourceData { 
+public class ResourceData {
 
-	private IFile container; 
-	private String name;  
-	private String value;
+	private IFile	container;
+	private String	name;
+	private String	value;
 
 	/**
-	 * Create a property with the given name and value contained by the given file. 
-	 *  
-	 * @param aName The name of the property.
-	 * @param aValue The value of the property.
-	 * @param aFile The file that defines this property.
+	 * Create a property with the given name and value contained by the given file.
+	 * 
+	 * @param aName
+	 *            The name of the property.
+	 * @param aValue
+	 *            The value of the property.
+	 * @param aFile
+	 *            The file that defines this property.
 	 */
-	public ResourceData(String aName, String aValue, IFile aFile) { 
+	public ResourceData(String aName, String aValue, IFile aFile) {
 		name = aName;
 		value = aValue;
-		container = aFile; 
-	} 
- 
+		container = aFile;
+	}
+
 	/**
 	 * The name of this property.
+	 * 
 	 * @return The name of this property.
 	 */
 	public String getName() {
@@ -35,7 +39,8 @@ public class ResourceData {
 	}
 
 	/**
-	 * Return the value of the property in the file.  
+	 * Return the value of the property in the file.
+	 * 
 	 * @return The value of the property in the file.
 	 */
 	public String getValue() {
@@ -43,10 +48,11 @@ public class ResourceData {
 	}
 
 	/**
-	 * The IFile that defines this property.  
+	 * The IFile that defines this property.
+	 * 
 	 * @return The IFile that defines this property.
 	 */
-	public IFile getFile() { 
+	public IFile getFile() {
 		return container;
 	}
 
@@ -55,15 +61,12 @@ public class ResourceData {
 	}
 
 	public boolean equals(Object obj) {
-		return obj instanceof ResourceData
-				&& ((ResourceData) obj).getName().equals(name);
-	} 
-
-	public String toString() {
-		StringBuffer toString = 
-				new StringBuffer(getName()).append(":").append(getValue()); //$NON-NLS-1$
-		return toString.toString();
+		return obj instanceof ResourceData && ((ResourceData) obj).getName().equals(name);
 	}
 
+	public String toString() {
+		StringBuffer toString = new StringBuffer(getName()).append(":").append(getValue()); //$NON-NLS-1$
+		return toString.toString();
+	}
 
 }

@@ -20,13 +20,12 @@ import edu.uah.itsc.cmac.portal.Program;
 
 /**
  * @author sshrestha
- *
+ * 
  */
 public class ProgramCreator {
 	public static HttpResponse createProgram(ArrayList<Parameter> inputParameters,
-			ArrayList<Parameter> outputParameters, String title,
-			String description, String contactInfo, String docURL, String path,
-			String version) {
+		ArrayList<Parameter> outputParameters, String title, String description, String contactInfo, String docURL,
+		String path, String version) {
 		HttpResponse response = null;
 		PortalPost portalPost = new PortalPost();
 		ArrayList<Parameter> allParameters = new ArrayList<Parameter>();
@@ -36,36 +35,37 @@ public class ProgramCreator {
 		for (Parameter parameter : allParameters) {
 
 			try {
-				response = portalPost.post(PortalUtilities.getNodeRestPoint(),
-						parameter.getJSON());
+				response = portalPost.post(PortalUtilities.getNodeRestPoint(), parameter.getJSON());
 				if (response.getStatusLine().getStatusCode() != 200) {
 					// TODO: Check the error status from Drupal
 					return null;
-				} else {
-					byte[] byteResponse = new byte[(int) response.getEntity()
-							.getContentLength()];
-					int length = response.getEntity().getContent()
-							.read(byteResponse);
+				}
+				else {
+					byte[] byteResponse = new byte[(int) response.getEntity().getContentLength()];
+					int length = response.getEntity().getContent().read(byteResponse);
 					String stringResponse = new String(byteResponse);
 					System.out.println(length + "\n" + stringResponse);
 					JSONParser jsonParser = new JSONParser();
-					JSONObject jsonResponse = (JSONObject) jsonParser
-							.parse(stringResponse);
+					JSONObject jsonResponse = (JSONObject) jsonParser.parse(stringResponse);
 					String nidParameter = (String) jsonResponse.get("nid");
 					System.out.println(nidParameter);
 					parameter.setNid(nidParameter);
 				}
 
-			} catch (JSONException e1) {
+			}
+			catch (JSONException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			} catch (IllegalStateException e1) {
+			}
+			catch (IllegalStateException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			} catch (IOException e1) {
+			}
+			catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			} catch (ParseException e1) {
+			}
+			catch (ParseException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
@@ -81,9 +81,7 @@ public class ProgramCreator {
 		program.setVersion(version);
 		program.setInputParameters(inputParameters);
 		program.setOutputParameters(outputParameters);
-		response = portalPost.post(
-				PortalUtilities.getNodeRestPoint(),
-				program.getQueryString());
+		response = portalPost.post(PortalUtilities.getNodeRestPoint(), program.getQueryString());
 
 		return response;
 

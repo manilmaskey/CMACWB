@@ -1,6 +1,6 @@
 /*
- * This is a model class for SearchResult.
- * The data received from portal (Drupal) is converted to a list of objects of SearchResult.
+ * This is a model class for SearchResult. The data received from portal (Drupal) is converted to a list of objects of
+ * SearchResult.
  */
 package edu.uah.itsc.cmac.searchview.models;
 
@@ -9,16 +9,16 @@ import java.util.Date;
 
 public class SearchResult {
 
-	private Date created;
-	private String language;
-	private URL link;
-	private int node;
-	private String snippet;
-	private String title;
-	private String type;
-	private String user;
-	private String description;
-	private String folderPath;
+	private Date	created;
+	private String	language;
+	private URL		link;
+	private int		node;
+	private String	snippet;
+	private String	title;
+	private String	type;
+	private String	user;
+	private String	description;
+	private String	folderPath;
 
 	/**
 	 * @return the created
@@ -156,7 +156,8 @@ public class SearchResult {
 	}
 
 	/**
-	 * @param folderPath the folderPath to set
+	 * @param folderPath
+	 *            the folderPath to set
 	 */
 	public void setFolderPath(String folderPath) {
 		this.folderPath = folderPath;
@@ -165,8 +166,8 @@ public class SearchResult {
 	public SearchResult() {
 	}
 
-	public SearchResult(int node, Date created, String title, String type,
-			String user, String snippet, String description, URL link) {
+	public SearchResult(int node, Date created, String title, String type, String user, String snippet,
+		String description, URL link) {
 	}
 
 	@Override

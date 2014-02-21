@@ -12,14 +12,14 @@ import org.json.JSONObject;
  * 
  */
 public class Parameter {
-	private String title;
-	private String body;
-	private String option;
-	private String type;
-	private String status;
-	private String format;
-	private String nid;
-	private String default_value;
+	private String	title;
+	private String	body;
+	private String	option;
+	private String	type;
+	private String	status;
+	private String	format;
+	private String	nid;
+	private String	default_value;
 
 	public JSONObject getJSON() throws JSONException {
 		JSONObject jsonData = new JSONObject();
@@ -37,21 +37,18 @@ public class Parameter {
 			jsonData.put("field_format", getComplexObject("value", format));
 		// added field - rohith
 		if (default_value != null && !default_value.isEmpty())
-			jsonData.put("field_default",
-					getComplexObject("value", default_value));
+			jsonData.put("field_default", getComplexObject("value", default_value));
 		return jsonData;
 	}
 
-	private JSONObject getComplexObject(String key, String value)
-			throws JSONException {
+	private JSONObject getComplexObject(String key, String value) throws JSONException {
 
 		JSONObject undObject = new JSONObject();
 		JSONArray undArray = new JSONArray();
 		JSONObject undArrayObject = new JSONObject();
 
 		/*
-		 * This method will return a JSONObject similar to "field_is_shared": {
-		 * "und": [ { "value": "1" } ] }
+		 * This method will return a JSONObject similar to "field_is_shared": { "und": [ { "value": "1" } ] }
 		 */
 
 		undArrayObject.put(key, value);

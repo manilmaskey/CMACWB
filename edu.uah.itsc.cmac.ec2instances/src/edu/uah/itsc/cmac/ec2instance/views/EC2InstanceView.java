@@ -34,15 +34,15 @@ import edu.uah.itsc.aws.User;
 
 /**
  * @author sshrestha
- *
+ * 
  */
 public class EC2InstanceView extends ViewPart {
-	private TableViewer viewer;
-	private Button stopButton;
-	private Button startButton;
+	private TableViewer	viewer;
+	private Button		stopButton;
+	private Button		startButton;
+
 	/**
-	 * This is a callback that will allow us to create the viewer and initialize
-	 * it.
+	 * This is a callback that will allow us to create the viewer and initialize it.
 	 */
 	public void createPartControl(Composite parent) {
 		EC2 amazonEC2 = new EC2();
@@ -59,18 +59,18 @@ public class EC2InstanceView extends ViewPart {
 	private void createWidgets(final Composite parent, final EC2 amazonEC2) {
 		GridData layoutData = new GridData();
 
-//		Composite addComposite = new Composite(parent, SWT.NONE);
-//		addComposite.setLayout(new GridLayout(5, false));
-//		Label nameLabel = new Label(addComposite, SWT.NONE);
-//		nameLabel.setText("AMI Name");
-//		final Text nameText = new Text(addComposite, SWT.BORDER);
-//
-//		Label instanceLabel = new Label(addComposite, SWT.NONE);
-//		instanceLabel.setText("Instance ID");
-//		final Text instanceText = new Text(addComposite, SWT.BORDER);
-//
-//		layoutData.widthHint = 400;
-//		addComposite.setLayoutData(layoutData);
+		// Composite addComposite = new Composite(parent, SWT.NONE);
+		// addComposite.setLayout(new GridLayout(5, false));
+		// Label nameLabel = new Label(addComposite, SWT.NONE);
+		// nameLabel.setText("AMI Name");
+		// final Text nameText = new Text(addComposite, SWT.BORDER);
+		//
+		// Label instanceLabel = new Label(addComposite, SWT.NONE);
+		// instanceLabel.setText("Instance ID");
+		// final Text instanceText = new Text(addComposite, SWT.BORDER);
+		//
+		// layoutData.widthHint = 400;
+		// addComposite.setLayoutData(layoutData);
 
 		Composite buttonComposite = new Composite(parent, SWT.NONE);
 		buttonComposite.setLayout(new GridLayout(3, false));
@@ -86,10 +86,8 @@ public class EC2InstanceView extends ViewPart {
 				Table table = viewer.getTable();
 				TableItem selectedItems[] = table.getSelection();
 				List<String> instanceIds = new ArrayList<String>();
-				boolean userConfirmation = MessageDialog.openConfirm(
-						parent.getShell(),
-						"Warning! Start Instances!!",
-						"Are you sure you want to start the selected instance(s)?");
+				boolean userConfirmation = MessageDialog.openConfirm(parent.getShell(), "Warning! Start Instances!!",
+					"Are you sure you want to start the selected instance(s)?");
 				if (userConfirmation)
 					for (TableItem tableItem : selectedItems) {
 						Instance instance = (Instance) tableItem.getData();
@@ -113,10 +111,8 @@ public class EC2InstanceView extends ViewPart {
 				Table table = viewer.getTable();
 				TableItem selectedItems[] = table.getSelection();
 				List<String> instanceIds = new ArrayList<String>();
-				boolean userConfirmation = MessageDialog.openConfirm(
-						parent.getShell(),
-						"Warning! Stop Instances!!",
-						"Are you sure you want to stop the selected instance(s)?");
+				boolean userConfirmation = MessageDialog.openConfirm(parent.getShell(), "Warning! Stop Instances!!",
+					"Are you sure you want to stop the selected instance(s)?");
 				if (userConfirmation)
 					for (TableItem tableItem : selectedItems) {
 						Instance instance = (Instance) tableItem.getData();
@@ -139,7 +135,6 @@ public class EC2InstanceView extends ViewPart {
 				refreshInstances(amazonEC2);
 			}
 
-
 		});
 		buttonComposite.setLayoutData(layoutData);
 	}
@@ -150,8 +145,7 @@ public class EC2InstanceView extends ViewPart {
 	 */
 	private void createTable(Composite parent, EC2 amazonEC2) {
 		GridData layoutData = new GridData();
-		viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL
-				| SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
+		viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 		createColumns(viewer);
 		Table table = viewer.getTable();
 		table.setHeaderVisible(true);
@@ -169,9 +163,8 @@ public class EC2InstanceView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				Instance instance = (Instance) e.item.getData();
-				System.out.println("selected: " + e.item + " name: "
-						+ instance.getInstanceId());
-				if (User.isAdmin){
+				System.out.println("selected: " + e.item + " name: " + instance.getInstanceId());
+				if (User.isAdmin) {
 					startButton.setEnabled(true);
 					stopButton.setEnabled(true);
 				}
@@ -181,14 +174,12 @@ public class EC2InstanceView extends ViewPart {
 	}
 
 	public void createColumns(final TableViewer viewer) {
-		String[] titles = { "Name", "Instance ID", "Instance Type", "Instance State", "Status Checks",
-				"Public DNS", "Public IP", "Key Name" };
+		String[] titles = { "Name", "Instance ID", "Instance Type", "Instance State", "Status Checks", "Public DNS",
+				"Public IP", "Key Name" };
 		int[] bounds = { 100, 75, 100, 100, 100, 300, 100, 100 };
 
-
 		// Name
-		TableViewerColumn column = createTableViewerColumn(titles[0],
-				bounds[0], 0);
+		TableViewerColumn column = createTableViewerColumn(titles[0], bounds[0], 0);
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -273,10 +264,8 @@ public class EC2InstanceView extends ViewPart {
 		});
 	}
 
-	private TableViewerColumn createTableViewerColumn(String title, int bound,
-			final int colNumber) {
-		final TableViewerColumn viewerColumn = new TableViewerColumn(viewer,
-				SWT.NONE);
+	private TableViewerColumn createTableViewerColumn(String title, int bound, final int colNumber) {
+		final TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
 		final TableColumn column = viewerColumn.getColumn();
 		column.setText(title);
 		column.setWidth(bound);
@@ -284,16 +273,18 @@ public class EC2InstanceView extends ViewPart {
 		column.setMoveable(true);
 		return viewerColumn;
 	}
+
 	private void refreshInstances(EC2 amazonEC2) {
 		viewer.setInput(amazonEC2.getInstances(null));
 		viewer.refresh();
 		startButton.setEnabled(false);
 		stopButton.setEnabled(false);
 	}
+
 	@Override
 	public void setFocus() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

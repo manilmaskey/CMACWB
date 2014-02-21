@@ -133,8 +133,8 @@ public class ShareCommandHandler extends AbstractHandler {
 
 											s3.uploadFolder((IFolder) firstElement);
 											// We do not create a userfolder under community bucket directly
-//											if (!s3.userFolderExists(User.username, S3.communityBucketName))
-//												s3.uploadUserFolder(User.username, S3.communityBucketName);
+											// if (!s3.userFolderExists(User.username, S3.communityBucketName))
+											// s3.uploadUserFolder(User.username, S3.communityBucketName);
 											s3.shareFolder((IFolder) firstElement);
 											try {
 												NavigatorView view = (NavigatorView) getPage().findView(

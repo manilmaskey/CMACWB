@@ -42,9 +42,8 @@ public class ExecuteDialog {
 		comp.setLayoutData(data);
 	}
 
-	public ExecuteDialog(final String path, final String file,
-			final String folder, final String bucket,
-			final IFolder folderResource, final IWorkbenchPage page) {
+	public ExecuteDialog(final String path, final String file, final String folder, final String bucket,
+		final IFolder folderResource, final IWorkbenchPage page) {
 		final Shell shell = new Shell();
 		shell.setText("Workflow Settings");
 		shell.setLayout(new GridLayout(2, false));
@@ -54,8 +53,7 @@ public class ExecuteDialog {
 		addSpanData(titleText);
 		Label description = new Label(shell, SWT.NONE);
 		description.setText("Description : ");
-		final Text descText = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP
-				| SWT.V_SCROLL);
+		final Text descText = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
 		GridData data = new GridData(GridData.FILL_BOTH);
 		data.horizontalSpan = 2;
 		descText.setLayoutData(data);
@@ -71,33 +69,35 @@ public class ExecuteDialog {
 		instanceLabel.setText("Run on instance");
 		final Combo instanceCombo = new Combo(shell, SWT.READ_ONLY);
 		String[] instanceList = getInstanceList();
-		if (instanceList.length > 0){
+		if (instanceList.length > 0) {
 			instanceCombo.setItems(instanceList);
 			instanceCombo.select(0);
 		}
 		addSpanData(instanceCombo);
-		
+
 		Button ok = new Button(shell, SWT.PUSH);
 		ok.setText("  OK  ");
 		Button cancel = new Button(shell, SWT.PUSH);
 		cancel.setText("Cancel");
-		
-		if (instanceList.length <= 0){
+
+		if (instanceList.length <= 0) {
 			ok.setEnabled(false);
-			MessageDialog.openError(shell, "No running Instances of EC2", "There are no running instances of Amazon EC2. Cannot execute workflow");
+			MessageDialog.openError(shell, "No running Instances of EC2",
+				"There are no running instances of Amazon EC2. Cannot execute workflow");
 			shell.close();
 			return;
 		}
-		
+
 		final String nodeID;
 		HashMap<String, String> nodeMap = PortalUtilities.getPortalWorkflowDetails(path);
-		if (nodeMap != null){
+		if (nodeMap != null) {
 			nodeID = nodeMap.get("nid");
-			titleText.setText((String)nodeMap.get("title"));
-			keywordText.setText((String)nodeMap.get("keywords"));
-			descText.setText(((String)nodeMap.get("description")).replaceAll("\\<.*?\\>", ""));
+			titleText.setText((String) nodeMap.get("title"));
+			keywordText.setText((String) nodeMap.get("keywords"));
+			descText.setText(((String) nodeMap.get("description")).replaceAll("\\<.*?\\>", ""));
 		}
-		else nodeID = null;
+		else
+			nodeID = null;
 		ok.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				try {
@@ -109,25 +109,22 @@ public class ExecuteDialog {
 					if (publicURL == null)
 						throw new Exception("This instance does not have a public IP. Cannot execute workflow.");
 					System.out.println(publicURL);
-					Workflow workflow = new Workflow(titleText.getText(),
-							descText.getText(), keywordText.getText());
+					Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keywordText.getText());
 					workflow.setPath(path);
 					workflow.setShared(false);
 					System.out.println(workflow.getJSON());
 					if (nodeID != null) {
-						portalPost.put(PortalUtilities.getNodeRestPoint() + "/"
-								+ nodeID, workflow.getJSON());
+						portalPost.put(PortalUtilities.getNodeRestPoint() + "/" + nodeID, workflow.getJSON());
 
-					} else
-						portalPost.post(PortalUtilities.getNodeRestPoint(),
-								workflow.getJSON());
+					}
+					else
+						portalPost.post(PortalUtilities.getNodeRestPoint(), workflow.getJSON());
 					portalPost.runCron();
-					new ProgressMonitorDialog(shell).run(true, true,
-							new LongRunningOperation(true, titleText.getText(),
-									descText.getText(), file, folder, bucket,
-									folderResource, page, publicURL));
+					new ProgressMonitorDialog(shell).run(true, true, new LongRunningOperation(true,
+						titleText.getText(), descText.getText(), file, folder, bucket, folderResource, page, publicURL));
 					shell.close();
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					MessageDialog.openError(shell, "Error", e.getMessage());
 				}
 			}
@@ -148,17 +145,15 @@ public class ExecuteDialog {
 		ArrayList<Instance> instances = amazonEC2.getInstances("running");
 		String[] instanceString = new String[instances.size()];
 		int count = 0;
-		for (Instance instance: instances){
+		for (Instance instance : instances) {
 			List<Tag> tags = instance.getTags();
 			for (Tag tag : tags) {
 				if (tag.getKey().equalsIgnoreCase("name"))
 					instanceString[count++] = tag.getValue();
 			}
-//			instanceString[count++] = instance.getKeyName();
+			// instanceString[count++] = instance.getKeyName();
 		}
 		return instanceString;
 	}
-	
-
 
 }

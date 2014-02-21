@@ -16,9 +16,8 @@ import org.eclipse.ui.ide.IDE;
 public class CreateFile {
 
 	public void createfile(String filename) {
-		ISelection selection = PlatformUI.getWorkbench()
-				.getActiveWorkbenchWindow().getSelectionService()
-				.getSelection();
+		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService()
+			.getSelection();
 
 		if (selection != null && selection instanceof IStructuredSelection) {
 			Object obj = ((IStructuredSelection) selection).getFirstElement();
@@ -36,15 +35,15 @@ public class CreateFile {
 
 			try {
 				mywfFile.create(source, IResource.NONE, null);
-				
+
 				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-				
+
 				System.out.println("file path is " + mywfFile);
-				
+
 				IDE.openEditor(page, mywfFile, true);
-				
-				
-			} catch (CoreException e1) {
+
+			}
+			catch (CoreException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}

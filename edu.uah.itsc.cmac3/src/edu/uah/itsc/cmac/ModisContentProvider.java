@@ -25,97 +25,102 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.progress.UIJob;
 
 /**
- * Provides the properties contained in a *.properties file as children of that
- * file in a Common Navigator.  
- * @since 3.2 
+ * Provides the properties contained in a *.properties file as children of that file in a Common Navigator.
+ * 
+ * @since 3.2
  */
-public class ModisContentProvider implements ITreeContentProvider,
-		IResourceChangeListener, IResourceDeltaVisitor {
-  
-	private static final Object[] NO_CHILDREN = new Object[0];
+public class ModisContentProvider implements ITreeContentProvider, IResourceChangeListener, IResourceDeltaVisitor {
 
-	private static final Object MODIS_EXT = "modis"; //$NON-NLS-1$
+	private static final Object[]	NO_CHILDREN											= new Object[0];
 
-	private final Map/*<IFile, PropertiesTreeData[]>*/ cachedModelMap = new HashMap();
+	private static final Object		MODIS_EXT											= "modis";			//$NON-NLS-1$
 
-	private StructuredViewer viewer;
-	
+	private final Map				/* <IFile, PropertiesTreeData[]> */cachedModelMap	= new HashMap();
+
+	private StructuredViewer		viewer;
+
 	/**
 	 * Create the PropertiesContentProvider instance.
 	 * 
 	 * Adds the content provider as a resource change listener to track changes on disk.
-	 *
+	 * 
 	 */
 	public ModisContentProvider() {
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
 	}
 
 	/**
-	 * Return the model elements for a *.properties IFile or
-	 * NO_CHILDREN for otherwise.
+	 * Return the model elements for a *.properties IFile or NO_CHILDREN for otherwise.
 	 */
-	public Object[] getChildren(Object parentElement) {  
+	public Object[] getChildren(Object parentElement) {
 		Object[] children = null;
-		if (parentElement instanceof ResourceData) { 
+		if (parentElement instanceof ResourceData) {
 			children = NO_CHILDREN;
-		} else if(parentElement instanceof IFile) {
+		}
+		else if (parentElement instanceof IFile) {
 			/* possible model file */
 			IFile modelFile = (IFile) parentElement;
-			if(MODIS_EXT.equals(modelFile.getFileExtension())) {				
+			if (MODIS_EXT.equals(modelFile.getFileExtension())) {
 				children = (ResourceData[]) cachedModelMap.get(modelFile);
-				if(children == null && updateModel(modelFile) != null) {
+				if (children == null && updateModel(modelFile) != null) {
 					children = (ResourceData[]) cachedModelMap.get(modelFile);
 				}
 			}
-		}   
+		}
 		return children != null ? children : NO_CHILDREN;
-	}  
+	}
 
 	/**
-	 * Load the model from the given file, if possible.  
-	 * @param modelFile The IFile which contains the persisted model 
-	 */ 
-	private synchronized Properties updateModel(IFile modelFile) { 
-		
-		if(MODIS_EXT.equals(modelFile.getFileExtension()) ) {
+	 * Load the model from the given file, if possible.
+	 * 
+	 * @param modelFile
+	 *            The IFile which contains the persisted model
+	 */
+	private synchronized Properties updateModel(IFile modelFile) {
+
+		if (MODIS_EXT.equals(modelFile.getFileExtension())) {
 			Properties model = new Properties();
 			if (modelFile.exists()) {
 				try {
-					model.load(modelFile.getContents()); 
-					
-					String propertyName; 
+					model.load(modelFile.getContents());
+
+					String propertyName;
 					List properties = new ArrayList();
-					for(Enumeration names = model.propertyNames(); names.hasMoreElements(); ) {
+					for (Enumeration names = model.propertyNames(); names.hasMoreElements();) {
 						propertyName = (String) names.nextElement();
-						properties.add(new ResourceData(propertyName,  model.getProperty(propertyName), modelFile));
+						properties.add(new ResourceData(propertyName, model.getProperty(propertyName), modelFile));
 					}
-					ResourceData[] propertiesTreeData = (ResourceData[])
-						properties.toArray(new ResourceData[properties.size()]);
-					
+					ResourceData[] propertiesTreeData = (ResourceData[]) properties.toArray(new ResourceData[properties
+						.size()]);
+
 					cachedModelMap.put(modelFile, propertiesTreeData);
-					return model; 
-				} catch (IOException e) {
-				} catch (CoreException e) {
+					return model;
 				}
-			} else {
+				catch (IOException e) {
+				}
+				catch (CoreException e) {
+				}
+			}
+			else {
 				cachedModelMap.remove(modelFile);
 			}
 		}
-		return null; 
+		return null;
 	}
 
 	public Object getParent(Object element) {
 		if (element instanceof ResourceData) {
 			ResourceData data = (ResourceData) element;
 			return data.getFile();
-		} 
+		}
 		return null;
 	}
 
-	public boolean hasChildren(Object element) {		
+	public boolean hasChildren(Object element) {
 		if (element instanceof ResourceData) {
-			return false;		
-		} else if(element instanceof IFile) {
+			return false;
+		}
+		else if (element instanceof IFile) {
 			return MODIS_EXT.equals(((IFile) element).getFileExtension());
 		}
 		return false;
@@ -127,7 +132,7 @@ public class ModisContentProvider implements ITreeContentProvider,
 
 	public void dispose() {
 		cachedModelMap.clear();
-		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this); 
+		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 	}
 
 	public void inputChanged(Viewer aViewer, Object oldInput, Object newInput) {
@@ -139,16 +144,19 @@ public class ModisContentProvider implements ITreeContentProvider,
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent)
+	 * @see
+	 * org.eclipse.core.resources.IResourceChangeListener#resourceChanged(org.eclipse.core.resources.IResourceChangeEvent
+	 * )
 	 */
 	public void resourceChanged(IResourceChangeEvent event) {
 
 		IResourceDelta delta = event.getDelta();
 		try {
 			delta.accept(this);
-		} catch (CoreException e) { 
+		}
+		catch (CoreException e) {
 			e.printStackTrace();
-		} 
+		}
 	}
 
 	/*
@@ -168,16 +176,16 @@ public class ModisContentProvider implements ITreeContentProvider,
 			final IFile file = (IFile) source;
 			if (MODIS_EXT.equals(file.getFileExtension())) {
 				updateModel(file);
-				new UIJob("Update Properties Model in CommonViewer") {  //$NON-NLS-1$
+				new UIJob("Update Properties Model in CommonViewer") { //$NON-NLS-1$
 					public IStatus runInUIThread(IProgressMonitor monitor) {
 						if (viewer != null && !viewer.getControl().isDisposed())
 							viewer.refresh(file);
-						return Status.OK_STATUS;						
+						return Status.OK_STATUS;
 					}
 				}.schedule();
 			}
 			return false;
 		}
 		return false;
-	} 
+	}
 }

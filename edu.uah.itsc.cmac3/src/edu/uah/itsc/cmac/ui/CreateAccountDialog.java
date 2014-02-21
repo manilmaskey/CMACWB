@@ -2,16 +2,17 @@ package edu.uah.itsc.cmac.ui;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Region;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
@@ -20,26 +21,31 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.json.JSONObject;
 import org.osgi.framework.Bundle;
 
-import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.Activator;
 import edu.uah.itsc.cmac.actions.XMPPClient;
 import edu.uah.itsc.cmac.portal.PortalConnector;
-import edu.uah.itsc.cmac.util.Program;
 
-//import com.swtdesigner.SWTResourceManager;
+// import com.swtdesigner.SWTResourceManager;
 
 public class CreateAccountDialog {
 
-	private static Text txt_Password;
-	private static Text txt_Password2;
-	private static Text txt_Username;
-	private static Text txt_Email;
-	private Display display;
+	private static Text	txt_Password;
+	private static Text	txt_Password2;
+	private static Text	txt_Username;
+	private static Text	txt_Email;
+	private Display		display;
 
 	public CreateAccountDialog(Display display) {
 		this.display = display;
@@ -65,7 +71,7 @@ public class CreateAccountDialog {
 		// Setting the background of the composite
 		// with the image background for login dialog
 		final Label img_Label = new Label(composite, SWT.NONE);
-	//	img_Label.setLayoutData(new GridData(195, 200));
+		// img_Label.setLayoutData(new GridData(195, 200));
 
 		Bundle bundle = Activator.getDefault().getBundle();
 		Path path = new Path("splash.bmp");
@@ -73,14 +79,15 @@ public class CreateAccountDialog {
 		URL fileUrl = null;
 		try {
 			fileUrl = FileLocator.toFileURL(url);
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			System.out.println(e.toString());
 		}
 
 		final Image img = new Image(display, fileUrl.getPath());
 		// final Image img = new
 		// Image(display,"/User/mmaskey/Documents/workspace/svn/glider/splash.bmp");
-		//img_Label.setImage(img);
+		// img_Label.setImage(img);
 
 		// Creating the composite which will contain
 		// the login related widgets
@@ -88,8 +95,7 @@ public class CreateAccountDialog {
 		final RowLayout rowLayout = new RowLayout();
 		rowLayout.fill = true;
 		cmp_Login.setLayout(rowLayout);
-		final GridData gridData = new GridData(GridData.FILL, GridData.FILL,
-				false, false);
+		final GridData gridData = new GridData(GridData.FILL, GridData.FILL, false, false);
 		gridData.widthHint = 360;
 		cmp_Login.setLayoutData(gridData);
 
@@ -153,7 +159,7 @@ public class CreateAccountDialog {
 		final RowData rowData_6 = new RowData();
 		rowData_6.width = 190;
 		txt_Email.setLayoutData(rowData_6);
-		//txt_Email.setEchoChar('*');
+		// txt_Email.setEchoChar('*');
 
 		// Composite to hold button as I want the
 		// button to be positioned to my choice.
@@ -170,22 +176,19 @@ public class CreateAccountDialog {
 		formData.bottom = new FormAttachment(0, 28);
 		formData.top = new FormAttachment(0, 5);
 		formData.right = new FormAttachment(100, -205);
-		//formData.left = new FormAttachment(120, -240);
+		// formData.left = new FormAttachment(120, -240);
 		btn_login.setLayoutData(formData);
 		btn_login.setText("Create Account");
 
-		
-		
 		final Button btn_cancel = new Button(cmp_ButtonBar, SWT.FLAT);
 		final FormData formData1 = new FormData();
 		formData1.bottom = new FormAttachment(0, 55);
 		formData1.top = new FormAttachment(0, 35);
 		formData1.right = new FormAttachment(100, -235);
-	//	formData1.left = new FormAttachment(100, -240);
+		// formData1.left = new FormAttachment(100, -240);
 		btn_cancel.setLayoutData(formData1);
-		btn_cancel.setText("Cancel");	
-		
-		
+		btn_cancel.setText("Cancel");
+
 		// Adding CLOSE action to this button.
 		btn_login.addListener(SWT.Selection, new Listener() {
 
@@ -197,45 +200,40 @@ public class CreateAccountDialog {
 				String email = txt_Email.getText();
 
 				if (!password.equals(password2)) {
-					MessageDialog
-							.openError(shell, "Error", "Password Mismatch");
-				} else {
+					MessageDialog.openError(shell, "Error", "Password Mismatch");
+				}
+				else {
 					PortalConnector pc = new PortalConnector();
-					JSONObject jsonObject = pc.createAccount(username,
-							password, email);
+					JSONObject jsonObject = pc.createAccount(username, password, email);
 
 					if (jsonObject != null) {
-						
+
 						XMPPClient xc = new XMPPClient();
-						
+
 						xc.createUser(username, password, email, "");
 						xc.setUsername(username);
 						xc.setPassword(password);
-//						try {
-//							xc.connect1();
-//						} catch (Exception e1) {
-//							// TODO Auto-generated catch block
-//							e1.printStackTrace();
-//						}
+						// try {
+						// xc.connect1();
+						// } catch (Exception e1) {
+						// // TODO Auto-generated catch block
+						// e1.printStackTrace();
+						// }
 						User.username = username;
 						User.password = password;
-//						S3 adminS3 = new S3();
-//						if (!adminS3.userFolderExists(username,
-//								adminS3.getBucketName())) {
-//							adminS3.uploadUserFolder(username,
-//									adminS3.getBucketName());
-//							
-//						}
-						
-						
+						// S3 adminS3 = new S3();
+						// if (!adminS3.userFolderExists(username,
+						// adminS3.getBucketName())) {
+						// adminS3.uploadUserFolder(username,
+						// adminS3.getBucketName());
+						//
+						// }
+
 						shell.close();
-						
-						
-						
-						
-					} else
-						MessageDialog.openError(shell, "Error",
-								"Could not create new account!");
+
+					}
+					else
+						MessageDialog.openError(shell, "Error", "Could not create new account!");
 					// In your case, you might wish
 					// to call the authentication method.
 				}
@@ -243,24 +241,22 @@ public class CreateAccountDialog {
 			}
 		});
 
-
-		
-		//Adding CLOSE action to this button.
+		// Adding CLOSE action to this button.
 		btn_cancel.addListener(SWT.Selection, new Listener() {
 
 			public void handleEvent(Event e) {
-	
-					shell.close();
+
+				shell.close();
 			}
 		});
-		
+
 		// Label for copyright info
-//		final CLabel clbl_Message = new CLabel(cmp_Login, SWT.NONE);
-//		clbl_Message.setAlignment(SWT.CENTER);
-//		final RowData rowData_8 = new RowData();
-//		rowData_8.width = 190;
-//		clbl_Message.setLayoutData(rowData_8);
-//		clbl_Message.setText("Copyright");
+		// final CLabel clbl_Message = new CLabel(cmp_Login, SWT.NONE);
+		// clbl_Message.setAlignment(SWT.CENTER);
+		// final RowData rowData_8 = new RowData();
+		// rowData_8.width = 190;
+		// clbl_Message.setLayoutData(rowData_8);
+		// clbl_Message.setText("Copyright");
 
 		// Drawing a region which will
 		// form the base of the login
@@ -271,7 +267,7 @@ public class CreateAccountDialog {
 
 		// Adding ability to move shell around
 		Listener l = new Listener() {
-			Point origin;
+			Point	origin;
 
 			public void handleEvent(Event e) {
 				switch (e.type) {

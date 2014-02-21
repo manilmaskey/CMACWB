@@ -15,23 +15,22 @@ import org.json.JSONObject;
  * 
  */
 public class Program {
-	private String title;
-	private String description;
-	private String keywords;
-	private String path;
-	private Date creationDate;
-	private Date modificationDate;
-	private String creator;
-	private String submittor;
-	private String docURL;
-	private String contactInfo;
-	private String version;
-	private String uri;
-	private ArrayList<Parameter> inputParameters;
-	private ArrayList<Parameter> outputParameters;
+	private String					title;
+	private String					description;
+	private String					keywords;
+	private String					path;
+	private Date					creationDate;
+	private Date					modificationDate;
+	private String					creator;
+	private String					submittor;
+	private String					docURL;
+	private String					contactInfo;
+	private String					version;
+	private String					uri;
+	private ArrayList<Parameter>	inputParameters;
+	private ArrayList<Parameter>	outputParameters;
 
-	public Program(String title, String description, String path,
-			String keywords, boolean isShared) {
+	public Program(String title, String description, String path, String keywords, boolean isShared) {
 		super();
 		this.title = title;
 		this.description = description;
@@ -65,16 +64,14 @@ public class Program {
 		if (docURL != null && !docURL.isEmpty())
 			stringData.append("&field_doc_url[und][0][value]=" + docURL);
 		if (contactInfo != null && !contactInfo.isEmpty())
-			stringData.append("&field_contact_info[und][0][value]="
-					+ contactInfo);
+			stringData.append("&field_contact_info[und][0][value]=" + contactInfo);
 		if (version != null && !version.isEmpty())
 			stringData.append("&field_version[und][0][value]=" + version);
 		for (Parameter parameter : inputParameters) {
 			stringData.append("&field_input_file[und][]=" + parameter.getNid());
 		}
 		for (Parameter parameter : outputParameters) {
-			stringData
-					.append("&field_output_file[und][]=" + parameter.getNid());
+			stringData.append("&field_output_file[und][]=" + parameter.getNid());
 		}
 		return stringData.toString();
 	}
@@ -102,16 +99,14 @@ public class Program {
 	// return jsonData;
 	// }
 
-	private JSONObject getComplexObject(String key, String value)
-			throws JSONException {
+	private JSONObject getComplexObject(String key, String value) throws JSONException {
 
 		JSONObject undObject = new JSONObject();
 		JSONArray undArray = new JSONArray();
 		JSONObject undArrayObject = new JSONObject();
 
 		/*
-		 * This method will return a JSONObject similar to "field_is_shared": {
-		 * "und": [ { "value": "1" } ] }
+		 * This method will return a JSONObject similar to "field_is_shared": { "und": [ { "value": "1" } ] }
 		 */
 
 		undArrayObject.put(key, value);
@@ -121,15 +116,14 @@ public class Program {
 
 	}
 
-	private JSONObject getComplexObject(String key, ArrayList<String> values)
-			throws JSONException {
+	private JSONObject getComplexObject(String key, ArrayList<String> values) throws JSONException {
 
 		JSONObject undObject = new JSONObject();
 		JSONArray undArray = new JSONArray();
 
 		/*
-		 * This method will return a JSONObject similar to "field_is_shared": {
-		 * "und": [ [{ "value": "1" }],[{"value":"2"] ] }
+		 * This method will return a JSONObject similar to "field_is_shared": { "und": [ [{ "value": "1"
+		 * }],[{"value":"2"] ] }
 		 */
 
 		for (String value : values) {

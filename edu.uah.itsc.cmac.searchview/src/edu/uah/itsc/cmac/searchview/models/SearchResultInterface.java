@@ -4,6 +4,7 @@
 package edu.uah.itsc.cmac.searchview.models;
 
 import java.util.ArrayList;
+
 public interface SearchResultInterface {
 	public void accept(ArrayList<SearchResult> searchResults);
 }

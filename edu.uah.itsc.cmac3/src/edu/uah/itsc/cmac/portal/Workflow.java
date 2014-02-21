@@ -14,24 +14,23 @@ import org.json.JSONObject;
  * 
  */
 public class Workflow {
-	private String title;
-	private String description;
-	private String creator;
-	private String submittor;
-	private String path;
-	private String keywords;
-	private String programs;
-	private Date startTime;
-	private Date endTime;
-	private String resourceUsageInfo;
-	private boolean isShared;
+	private String	title;
+	private String	description;
+	private String	creator;
+	private String	submittor;
+	private String	path;
+	private String	keywords;
+	private String	programs;
+	private Date	startTime;
+	private Date	endTime;
+	private String	resourceUsageInfo;
+	private boolean	isShared;
 
 	public Workflow() {
 		super();
 	}
 
-	public Workflow(String title, String description, String path,
-			String keywords, boolean isShared) {
+	public Workflow(String title, String description, String path, String keywords, boolean isShared) {
 		super();
 		this.title = title;
 		this.description = description;
@@ -51,8 +50,7 @@ public class Workflow {
 		JSONObject jsonData = new JSONObject();
 		jsonData.put("title", title);
 		jsonData.put("type", "workflow");
-		jsonData.put("field_is_shared", isShared ? getComplexObject("1")
-				: new JSONArray());
+		jsonData.put("field_is_shared", isShared ? getComplexObject("1") : new JSONArray());
 		if (description != null && !description.isEmpty())
 			jsonData.put("body", getComplexObject(description));
 		if (creator != null && !creator.isEmpty())
@@ -69,8 +67,7 @@ public class Workflow {
 		// getComplexObject(startTime.toString()));
 		// jsonData.put("field_end_time", getComplexObject(description));
 		if (resourceUsageInfo != null && !resourceUsageInfo.isEmpty())
-			jsonData.put("field_resource_usage_info",
-					getComplexObject(resourceUsageInfo));
+			jsonData.put("field_resource_usage_info", getComplexObject(resourceUsageInfo));
 		return jsonData;
 	}
 
@@ -81,8 +78,7 @@ public class Workflow {
 		JSONObject undArrayObject = new JSONObject();
 
 		/*
-		 * This method will return a JSONObject similar to "field_is_shared": {
-		 * "und": [ { "value": "1" } ] }
+		 * This method will return a JSONObject similar to "field_is_shared": { "und": [ { "value": "1" } ] }
 		 */
 
 		undArrayObject.put("value", value);

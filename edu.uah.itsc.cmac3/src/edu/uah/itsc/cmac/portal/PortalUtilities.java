@@ -29,7 +29,7 @@ import org.json.simple.parser.ParseException;
  * 
  */
 public class PortalUtilities {
-	private static Properties properties = null;
+	private static Properties	properties	= null;
 
 	private PortalUtilities() {
 	}
@@ -41,20 +41,21 @@ public class PortalUtilities {
 		StringBuilder sb = new StringBuilder();
 		try {
 			is = response.getEntity().getContent();
-			BufferedReader rd = new BufferedReader(new InputStreamReader(is,
-					Charset.forName("UTF-8")));
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 			int cp;
 			while ((cp = rd.read()) != -1) {
 				sb.append((char) cp);
 			}
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
+		}
+		catch (IllegalStateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return sb.toString(); 
+		catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return sb.toString();
 	}
 
 	public static String getDataFromURL(String url) {
@@ -63,18 +64,20 @@ public class PortalUtilities {
 		String xmlText;
 		try {
 			InputStream is = new URL(url).openStream();
-			BufferedReader rd = new BufferedReader(new InputStreamReader(is,
-					Charset.forName("UTF-8")));
+			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 			int cp;
 			while ((cp = rd.read()) != -1) {
 				sb.append((char) cp);
 			}
 
-		} catch (FileNotFoundException e) {
+		}
+		catch (FileNotFoundException e) {
 			System.out.println("File not found");
-		} catch (MalformedURLException e) {
+		}
+		catch (MalformedURLException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 		xmlText = sb.toString();
@@ -88,18 +91,17 @@ public class PortalUtilities {
 		if (properties == null)
 			properties = new Properties();
 		try {
-			properties.load(PortalUtilities.class.getClassLoader()
-					.getResourceAsStream("portal.properties"));
-		} catch (IOException e) {
+			properties.load(PortalUtilities.class.getClassLoader().getResourceAsStream("portal.properties"));
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 		return properties.getProperty(key);
 	}
 
 	/*
-	 * This method builds the REST URL to fetch data from server. The URL is
-	 * defined in search.properties file. Also, the extraquery is appended to
-	 * the URL, so that the content type to search on can be changed dynamically
+	 * This method builds the REST URL to fetch data from server. The URL is defined in search.properties file. Also,
+	 * the extraquery is appended to the URL, so that the content type to search on can be changed dynamically
 	 */
 	public static String getWorkflowFeedURL() {
 		return getKeyValueFromProperties("workflow_url");
@@ -118,10 +120,10 @@ public class PortalUtilities {
 	public static String getExperimentFeedURL() {
 		return getKeyValueFromProperties("experiment_url");
 	}
-	
+
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
-		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities
-				.getWorkflowFeedURL() + "?field_could_path_value=" + path);
+		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getWorkflowFeedURL()
+			+ "?field_could_path_value=" + path);
 		JSONParser parser = new JSONParser();
 		Object obj;
 		try {
@@ -142,21 +144,23 @@ public class PortalUtilities {
 			map.put("description", workflow.get("description").toString());
 			map.put("keywords", workflow.get("keywords").toString());
 			return map;
-		} catch (ParseException e) {
+		}
+		catch (ParseException e) {
 			e.printStackTrace();
 			System.out.println("Unable to parse json object");
 			return null;
 		}
 	}
-	
-	public static HashMap<String, String> getPortalExperimentDetails(String bucketName){
-		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getExperimentFeedURL() + "?title=" + bucketName);
+
+	public static HashMap<String, String> getPortalExperimentDetails(String bucketName) {
+		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getExperimentFeedURL() + "?title="
+			+ bucketName);
 		JSONParser parser = new JSONParser();
 		Object obj;
-		try{
+		try {
 			obj = parser.parse(jsonText);
 			JSONObject experiments = (JSONObject) obj;
-			
+
 			if (experiments == null)
 				return null;
 			JSONArray experimentArray = (JSONArray) experiments.get("experiments");
@@ -171,11 +175,12 @@ public class PortalUtilities {
 			map.put("creatorID", experiment.get("creatorID").toString());
 			map.put("description", experiment.get("description").toString());
 			return map;
-		} catch (ParseException e){
+		}
+		catch (ParseException e) {
 			e.printStackTrace();
 			System.out.println("Unable to parse json object");
 			return null;
 		}
 	}
-	
+
 }

@@ -23,56 +23,57 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 
 public class EditCommandHandler extends AbstractHandler {
-	private IStructuredSelection selection = StructuredSelection.EMPTY;
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
-    	
-        Object object =  selection.getFirstElement();
-        Job job = new Job("Edit..."){
-        	protected IStatus run(IProgressMonitor monitor){
-        		if(selection.size() == 1) {
-        			
-        			 Object firstElement = selection.getFirstElement();
-        			 
-        			 if(firstElement instanceof IFile  ) {
-        				 IFile data = (IFile) firstElement;
-        				 
-        				 IFile propertiesFile = data;
-        		
-        				// gets URI for EFS.
-        				URI uri = propertiesFile.getLocationURI();
+	private IStructuredSelection	selection	= StructuredSelection.EMPTY;
 
-        				// what if file is a link, resolve it.
-        				if(propertiesFile.isLinked()){
-        				   uri = propertiesFile.getRawLocationURI();
-        				}
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 
-        				// Gets native File using EFS
-        				File selectedFile = null;
-        				try{
-        				 selectedFile = EFS.getStore(uri).toLocalFile(0, new NullProgressMonitor());
-        				}
-        				catch (CoreException coreex){
-        					coreex.printStackTrace();
-        				}
+		Object object = selection.getFirstElement();
+		Job job = new Job("Edit...") {
+			protected IStatus run(IProgressMonitor monitor) {
+				if (selection.size() == 1) {
 
-        				S3 s3 = new S3 (User.awsAccessKey, User.awsSecretKey);
-        				s3.uploadFile(selectedFile);
-        				}
-        			 else if (firstElement instanceof IFolder){
-        					S3 s3 = new S3(User.awsAccessKey, User.awsSecretKey);
-        					s3.uploadFolder((IFolder)firstElement);
-        			 }
+					Object firstElement = selection.getFirstElement();
 
-        		}
-        		monitor.done();
-        		return Status.OK_STATUS;
-        	}
-        		};
-        job.setUser(true);
-        job.schedule();
+					if (firstElement instanceof IFile) {
+						IFile data = (IFile) firstElement;
 
-        return object;
-    }
+						IFile propertiesFile = data;
+
+						// gets URI for EFS.
+						URI uri = propertiesFile.getLocationURI();
+
+						// what if file is a link, resolve it.
+						if (propertiesFile.isLinked()) {
+							uri = propertiesFile.getRawLocationURI();
+						}
+
+						// Gets native File using EFS
+						File selectedFile = null;
+						try {
+							selectedFile = EFS.getStore(uri).toLocalFile(0, new NullProgressMonitor());
+						}
+						catch (CoreException coreex) {
+							coreex.printStackTrace();
+						}
+
+						S3 s3 = new S3(User.awsAccessKey, User.awsSecretKey);
+						s3.uploadFile(selectedFile);
+					}
+					else if (firstElement instanceof IFolder) {
+						S3 s3 = new S3(User.awsAccessKey, User.awsSecretKey);
+						s3.uploadFolder((IFolder) firstElement);
+					}
+
+				}
+				monitor.done();
+				return Status.OK_STATUS;
+			}
+		};
+		job.setUser(true);
+		job.schedule();
+
+		return object;
+	}
 }

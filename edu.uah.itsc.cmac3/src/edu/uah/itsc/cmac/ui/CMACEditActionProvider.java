@@ -11,71 +11,58 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 
 /**
- * Create the Edit actions (Cut/Copy/Paste) 
- * and register then globally in the workbench using CMACEditActionProvider.
+ * Create the Edit actions (Cut/Copy/Paste) and register then globally in the workbench using CMACEditActionProvider.
  * <p/>
  * Then, removes the Copy/Paste contributions in the pop-up menu.
  */
 public class CMACEditActionProvider extends EditActionProvider {
-   public void fillContextMenu(IMenuManager menu) { 
-	   super.fillContextMenu(menu);
+	public void fillContextMenu(IMenuManager menu) {
+		super.fillContextMenu(menu);
 
-   NavigatorView view = (NavigatorView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("edu.uah.itsc.cmac.NavigatorView");
-   IStructuredSelection selection = (IStructuredSelection)view.getViewer().getSelection();
-   S3 s3 = new S3();
-   if (selection.getFirstElement() instanceof IProject){
-	   IProject prj = (IProject)selection.getFirstElement();
-	// Remove following menus for every project
-//	   if (prj.getName().equals(S3.communityBucketName) || prj.getName().equals(S3.bucketName)) {
-		    menu.remove("org.eclipse.ui.CopyAction");
-		   	menu.remove("org.eclipse.ui.PasteAction");
-		   	menu.remove("org.eclipse.ui.DeleteResourceAction");
-//	   }
-   }
-   else if  (selection.getFirstElement() instanceof IFolder){
-	   IFolder selectedFolder = (IFolder)selection.getFirstElement();
-	   if (selectedFolder.getName().equals(User.username) || 
-		   selectedFolder.getProject().getName().equalsIgnoreCase(s3.getCommunityBucketName())){
-		    menu.remove("org.eclipse.ui.CopyAction");
-		   	menu.remove("org.eclipse.ui.PasteAction");
-		   	menu.remove("org.eclipse.ui.DeleteResourceAction");		   
-	   }
-	   if (selectedFolder.getProject().getName().equals(s3.getCommunityBucketName())){
-		   menu.remove("org.eclipse.ui.DeleteResourceAction");
-	   }
-   }
+		NavigatorView view = (NavigatorView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+			.findView("edu.uah.itsc.cmac.NavigatorView");
+		IStructuredSelection selection = (IStructuredSelection) view.getViewer().getSelection();
+		S3 s3 = new S3();
+		if (selection.getFirstElement() instanceof IProject) {
+			IProject prj = (IProject) selection.getFirstElement();
+			// Remove following menus for every project
+			// if (prj.getName().equals(S3.communityBucketName) || prj.getName().equals(S3.bucketName)) {
+			menu.remove("org.eclipse.ui.CopyAction");
+			menu.remove("org.eclipse.ui.PasteAction");
+			menu.remove("org.eclipse.ui.DeleteResourceAction");
+			// }
+		}
+		else if (selection.getFirstElement() instanceof IFolder) {
+			IFolder selectedFolder = (IFolder) selection.getFirstElement();
+			if (selectedFolder.getName().equals(User.username)
+				|| selectedFolder.getProject().getName().equalsIgnoreCase(s3.getCommunityBucketName())) {
+				menu.remove("org.eclipse.ui.CopyAction");
+				menu.remove("org.eclipse.ui.PasteAction");
+				menu.remove("org.eclipse.ui.DeleteResourceAction");
+			}
+			if (selectedFolder.getProject().getName().equals(s3.getCommunityBucketName())) {
+				menu.remove("org.eclipse.ui.DeleteResourceAction");
+			}
+		}
 
-  //menu.remove("org.eclipse.ui.WorkingSetActionSet");
-   //menu.remove("org.eclipse.update.ui.softwareUpdates");
-  // menu.remove("org.eclipse.ui.PasteAction");
-   /*
-   ActionSetRegistry reg = WorkbenchPlugin.getDefault().getActionSetRegistry();
-   
-   IActionSetDescriptor[] actionSets = reg.getActionSets();
-   String[] removeActionSets = new String[] {
-       "org.eclipse.ui.cheatsheets.actionSet",
-       "org.eclipse.ui.edit.text.actionSet.annotationNavigation",
-      "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo",
-         "org.eclipse.ui.WorkingSetActionSet",
-       "org.eclipse.update.ui.softwareUpdates", };
-
-
-   for (int i = 0; i < actionSets.length; i++)
-   {
-       boolean found = false;
-       for (int j = 0; j < removeActionSets.length; j++)
-       {
-           if (removeActionSets[j].equals(actionSets[i].getId()))
-               found = true;
-       }
-
-
-       if (!found)
-           continue;
-       IExtension ext = actionSets[i].getConfigurationElement()
-               .getDeclaringExtension();
-       reg.removeExtension(ext, new Object[] { actionSets[i] });
-   }
-   */
-   }
+		// menu.remove("org.eclipse.ui.WorkingSetActionSet");
+		// menu.remove("org.eclipse.update.ui.softwareUpdates");
+		// menu.remove("org.eclipse.ui.PasteAction");
+		/*
+		 * ActionSetRegistry reg = WorkbenchPlugin.getDefault().getActionSetRegistry();
+		 * 
+		 * IActionSetDescriptor[] actionSets = reg.getActionSets(); String[] removeActionSets = new String[] {
+		 * "org.eclipse.ui.cheatsheets.actionSet", "org.eclipse.ui.edit.text.actionSet.annotationNavigation",
+		 * "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", "org.eclipse.ui.WorkingSetActionSet",
+		 * "org.eclipse.update.ui.softwareUpdates", };
+		 * 
+		 * 
+		 * for (int i = 0; i < actionSets.length; i++) { boolean found = false; for (int j = 0; j <
+		 * removeActionSets.length; j++) { if (removeActionSets[j].equals(actionSets[i].getId())) found = true; }
+		 * 
+		 * 
+		 * if (!found) continue; IExtension ext = actionSets[i].getConfigurationElement() .getDeclaringExtension();
+		 * reg.removeExtension(ext, new Object[] { actionSets[i] }); }
+		 */
+	}
 }
