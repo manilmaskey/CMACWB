@@ -162,9 +162,10 @@ public class NavigatorView extends CommonNavigator {
 				if (project.exists() && (project.getName().equals(s3.getCommunityBucketName()))) {
 					continue;
 				}
-				else if (project.exists())
-					project.delete(true, monitor);
-				project.create(monitor);
+//				else if (project.exists())
+//					project.delete(true, monitor);
+				if (!project.exists())
+					project.create(monitor);
 				buildTree(User.username + "_$folder$", project, bucket);
 			}
 			catch (CoreException e) {
