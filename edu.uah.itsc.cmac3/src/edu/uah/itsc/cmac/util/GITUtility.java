@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.uah.itsc.cmac.s3jgitview.gitUtility;
+package edu.uah.itsc.cmac.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +14,7 @@ import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefUpdate;
@@ -35,8 +36,8 @@ import edu.uah.itsc.aws.User;
  * 
  */
 public class GITUtility {
-	public static void cloneRepository(String repoLocalPath, String repoCompleteRemotepath) throws InvalidRemoteException,
-		TransportException, GitAPIException {
+	public static void cloneRepository(String repoLocalPath, String repoCompleteRemotepath)
+		throws InvalidRemoteException, TransportException, GitAPIException {
 		// repoRemotepath = "amazon-s3://.jgit@cmac-test-experiment/shree/test3.git";
 		CloneCommand command = Git.cloneRepository();
 		command.setDirectory(new File(repoLocalPath));
@@ -44,7 +45,7 @@ public class GITUtility {
 		Git git = command.call();
 	}
 
-	public static void createLocalRepo(String repoName, String repoLocalPath) {
+	public static void createLocalRepo(String repoName, String repoLocalPath) throws IOException {
 		if (!validRepoName(repoName))
 			return;
 		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
@@ -57,27 +58,26 @@ public class GITUtility {
 		}
 		catch (Exception e) {
 			System.out.println("Error - Cannot create repository" + e.getMessage());
+			throw new IOException(e.getMessage());
 		}
 		repository.close();
 	}
 
-	public static void commitLocalChanges(String repoName, String repoLocalPath, String commitMessage) {
+	public static void commitLocalChanges(String repoName, String repoLocalPath, String commitMessage)
+		throws IOException, NoFilepatternException, GitAPIException {
 		if (!validRepoName(repoName))
 			return;
 		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
 		System.out.println("Commiting local changes in " + localPath);
 		FileRepositoryBuilder builder = new FileRepositoryBuilder();
-		try {
-			Repository repository = builder.setGitDir(localPath).findGitDir().build();
-			Git git = new Git(repository);
-			git.add().addFilepattern(".").call();
-			RevCommit commit = git.commit().setMessage(commitMessage)
-				.setAuthor(User.username, User.username + "@itsc.uah.edu").call();
-			System.out.println("Committed changes: " + commit.getFullMessage());
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+		Repository repository;
+		repository = builder.setGitDir(localPath).findGitDir().build();
+		Git git = new Git(repository);
+		git.rm().addFilepattern(".").call();
+		git.add().addFilepattern(".").call();
+		RevCommit commit = git.commit().setMessage(commitMessage)
+			.setAuthor(User.username, User.username + "@itsc.uah.edu").call();
+		System.out.println("Committed changes: " + commit.getFullMessage());
 	}
 
 	public static void push(String repoName, String repoLocalPath, String repoRemotePath) throws IOException,
@@ -87,14 +87,13 @@ public class GITUtility {
 		Repository repository = builder.setGitDir(localPath).findGitDir().build();
 		Git git = new Git(repository);
 		Ref head = repository.getRef("refs/heads/master");
-		
-		if (head == null){
+
+		if (head == null) {
 			System.out.println("Nothing to push");
 			return;
 		}
 		RevWalk walk = new RevWalk(repository);
 		RevCommit commit = walk.parseCommit(head.getObjectId());
-		
 
 		String remote = "origin";
 		String branch = "refs/heads/master";

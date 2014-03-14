@@ -643,4 +643,115 @@
             commandId="edu.uah.itsc.cmac3.AddExperiment">
       </handler>
    </extension>
+
+<!-- Shreedhan Added initLocal command-->
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="New tracking workflow"
+        id="edu.uah.itsc.cmac.InitTrackingWorkflow"
+        name="New tracking Workflow">
+  </command>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan Added initLocal handler -->
+<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.InitTrackingWorkflowHandler"
+        commandId="edu.uah.itsc.cmac.InitTrackingWorkflow">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="initTrackingWorkflow">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan initLocal in the menu -->
+<extension point="org.eclipse.ui.menus">
+  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+     <command
+           commandId="edu.uah.itsc.cmac.InitTrackingWorkflow"
+           style="push"
+           icon="icons/import.png">
+        <visibleWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="initTrackingWorkflow">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+  </menuContribution>
+</extension>
+<!-- Shreedhan Add import workflow in the menu -->
+
+<!-- Shreedhan Added saveForTrackingWorkflow command-->
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Save for tracking workflow"
+        id="edu.uah.itsc.cmac.SaveForTrackingWorkflow"
+        name="Save for tracking Workflow">
+  </command>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan Added initLocal handler -->
+<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.SaveForTrackingWorkflowHandler"
+        commandId="edu.uah.itsc.cmac.SaveForTrackingWorkflow">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="saveForTrackingWorkflow">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan initLocal in the menu -->
+<extension point="org.eclipse.ui.menus">
+  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+     <command
+           commandId="edu.uah.itsc.cmac.SaveForTrackingWorkflow"
+           style="push"
+           icon="icons/import.png">
+        <visibleWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="saveForTrackingWorkflow">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+  </menuContribution>
+</extension>
+<!-- Shreedhan Add import workflow in the menu -->
+
 </plugin>

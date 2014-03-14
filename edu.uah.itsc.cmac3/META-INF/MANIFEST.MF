@@ -32,7 +32,10 @@ Require-Bundle: edu.uah.itsc.cmac.libs;bundle-version="1.0.0",
  org.eclipse.ecf.provider.datashare;bundle-version="1.4.100",
  org.eclipse.ecf.provider.remoteservice;bundle-version="4.0.0",
  org.eclipse.ecf.console;bundle-version="1.0.0",
- org.json.simple;bundle-version="1.0.0"
+ org.json.simple;bundle-version="1.0.0",
+ org.eclipse.core.commands,
+ org.eclipse.ui.workbench,
+ org.eclipse.jgit;bundle-version="3.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: edu.uah.itsc.aws,
  edu.uah.itsc.cmac,
