@@ -1,12 +1,21 @@
 package edu.uah.itsc.cmac.s3jgitview.views;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jgit.api.CheckoutCommand;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeCommand;
+import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.lib.Repository;
@@ -30,17 +39,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.uah.itsc.aws.User;
-
-/**
- * This sample class demonstrates how to plug-in a new workbench view. The view shows data obtained from the model. The
- * sample creates a dummy model on the fly, but a real implementation would connect to the model available either in
- * this or another plug-in (e.g. the workspace). The view is connected to the model using a content provider.
- * <p>
- * The view uses a label provider to define how model objects should be presented in the view. Each view can present the
- * same model objects using different labels and icons, if needed. Alternatively, a single label provider can be shared
- * between views in order to ensure that objects of the same type are presented in the same way everywhere.
- * <p>
- */
+import edu.uah.itsc.cmac.s3jgitview.gitUtility.GITUtility;
 
 public class S3jgitView extends ViewPart {
 
@@ -66,6 +65,29 @@ public class S3jgitView extends ViewPart {
 
 		repoNameText = new Text(parent, SWT.BORDER);
 
+		Button btnCloneRepository = new Button(parent, SWT.NONE);
+		btnCloneRepository.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				try {
+					GITUtility.cloneRepository("C:\\temp\\test5", REMOTE_URL + "cmac-test-experiment/shree/test1250.git");
+				}
+				catch (InvalidRemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				catch (TransportException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				catch (GitAPIException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		btnCloneRepository.setText("Clone Repository");
+
 		Button btnCreateLocalRepository = new Button(parent, SWT.NONE);
 		btnCreateLocalRepository.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -74,24 +96,7 @@ public class S3jgitView extends ViewPart {
 			}
 
 			private void createLocalRepository(String repoName) {
-				if (!validRepoName())
-					return;
-				IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("cmac-test-experiment");
-				File localPath = new File(project.getLocation() + "/" + User.username + "/" + repoName);
-				Repository repository = null;
-				// create the directory
-				try {
-					repository = FileRepositoryBuilder.create(new File(localPath, ".git"));
-					repository.create();
-					System.out.println("Created repository: " + repository.getDirectory());
-					project.refreshLocal(IFolder.DEPTH_INFINITE, null);
-					MessageDialog.openInformation(parent.getShell(), "Created", "Created a local repostiory in "
-						+ repository.getDirectory());
-				}
-				catch (Exception e) {
-					MessageDialog.openError(parent.getShell(), "Error - Cannot create repository", e.getMessage());
-				}
-				repository.close();
+				GITUtility.createLocalRepo("test1250", "C:\\temp\\");
 			}
 		});
 		btnCreateLocalRepository.setText("Create Local Repository");
@@ -104,89 +109,45 @@ public class S3jgitView extends ViewPart {
 			}
 
 			private void pushToS3(String repoName) {
-				if (!validRepoName())
-					return;
-				IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("cmac-test-experiment");
-				File localPath = new File(project.getLocation() + "/" + User.username + "/" + repoName + "/.git");
-				System.out.println("Pushing to " + REMOTE_URL + " from " + localPath);
-				FileRepositoryBuilder builder = new FileRepositoryBuilder();
 				try {
-					Repository repository = builder.setGitDir(localPath).findGitDir().build();
-
-					Git git = new Git(repository);
-					// git.push().setRemote("origin").call();
-					Ref head = repository.getRef("refs/heads/master");
-					// System.out.println("Found head: " + head);
-
-					// a RevWalk allows to walk over commits based on some filtering that is defined
-					RevWalk walk = new RevWalk(repository);
-					RevCommit commit = walk.parseCommit(head.getObjectId());
-
-					String remote = "origin";
-					String branch = "refs/heads/master";
-					String trackingBranch = "refs/remotes/" + remote + "/master";
-					RefUpdate branchRefUpdate = repository.updateRef(branch);
-					branchRefUpdate.setNewObjectId(commit.getId());
-					branchRefUpdate.update();
-
-					RefUpdate trackingBranchRefUpdate = repository.updateRef(trackingBranch);
-					trackingBranchRefUpdate.setNewObjectId(commit.getId());
-					trackingBranchRefUpdate.update();
-
-					final StoredConfig config = repository.getConfig();
-					RemoteConfig remoteConfig = new RemoteConfig(config, remote);
-					// cmac-test-experiment/shree/test_s3jgit.git
-					URIish uri = new URIish(REMOTE_URL + project.getName() + "/" + User.username + "/" + repoName
-						+ "/.git");
-					remoteConfig.addURI(uri);
-					remoteConfig.addFetchRefSpec(new RefSpec("+refs/heads/*:refs/remotes/" + remote + "/*"));
-					remoteConfig.update(config);
-					config.save();
-
-					// RevCommit commit2 = git.commit().setMessage("Commit to push").call();
-
-					RefSpec spec = new RefSpec(branch + ":" + branch);
-					Iterable<PushResult> resultIterable = git.push().setRemote(remote).setRefSpecs(spec).call();
-
-					PushResult result = resultIterable.iterator().next();
-					TrackingRefUpdate trackingRefUpdate = result.getTrackingRefUpdate(trackingBranch);
-					MessageDialog.openInformation(parent.getShell(), "Success",
-						"Pushed local changes\n" + result.getMessages());
+					GITUtility.push("test1250", "C:\\temp", REMOTE_URL + "cmac-test-experiment/shree");
 				}
-				catch (Exception e) {
+				catch (InvalidRemoteException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
+				catch (TransportException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (URISyntaxException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				catch (GitAPIException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 		btnPushToS.setText("Push to S3");
 
-		// Button btnPullFromS = new Button(parent, SWT.NONE);
-		// btnPullFromS.addSelectionListener(new SelectionAdapter() {
-		// @Override
-		// public void widgetSelected(SelectionEvent e) {
-		// pullFromS3(repoNameText.getText());
-		// }
-		//
-		// private void pullFromS3(String repoName) {
-		// if (!validRepoName())
-		// return;
-		// IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("cmac-test-experiment");
-		// File localPath = new File(project.getLocation() + "/" + User.username + "/" + repoName + "/.git");
-		// System.out.println("Pulling from " + REMOTE_URL + " to " + localPath);
-		// FileRepositoryBuilder builder = new FileRepositoryBuilder();
-		// try {
-		// Repository repository = builder.setGitDir(localPath).findGitDir().build();
-		// Git git = new Git(repository);
-		// git.pull().call();
-		// MessageDialog.openInformation(parent.getShell(), "Success", "Pulled remote changes\n");
-		// }
-		// catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// });
-		// btnPullFromS.setText("Pull from S3");
+		Button btnPullFromS = new Button(parent, SWT.NONE);
+		btnPullFromS.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				pullFromS3(repoNameText.getText());
+			}
+
+			private void pullFromS3(String repoName) {
+				GITUtility.pull("test1250", "C:\\temp", REMOTE_URL + "cmac-test-experiment/shree");
+			}
+		});
+		btnPullFromS.setText("Pull from S3");
 
 		Button btnCommit = new Button(parent, SWT.NONE);
 		btnCommit.addSelectionListener(new SelectionAdapter() {
@@ -196,24 +157,7 @@ public class S3jgitView extends ViewPart {
 			}
 
 			private void commitLocalChanges(String repoName) {
-				if (!validRepoName())
-					return;
-				IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("cmac-test-experiment");
-				File localPath = new File(project.getLocation() + "/" + User.username + "/" + repoName + "/.git");
-				System.out.println("Commiting local changes in " + localPath);
-				FileRepositoryBuilder builder = new FileRepositoryBuilder();
-				try {
-					Repository repository = builder.setGitDir(localPath).findGitDir().build();
-					Git git = new Git(repository);
-					git.add().addFilepattern(".").call();
-					RevCommit commit = git.commit().setMessage("Test commit")
-						.setAuthor(User.username, User.username + "@itsc.uah.edu").call();
-					MessageDialog.openInformation(parent.getShell(), "Success",
-						"Committed changes\n" + commit.getFullMessage());
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-				}
+				GITUtility.commitLocalChanges("test1250", "C:\\temp", "Testing commit");
 			}
 		});
 
