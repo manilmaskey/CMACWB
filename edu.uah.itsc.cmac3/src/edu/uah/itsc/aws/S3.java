@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -130,11 +131,15 @@ public class S3 {
 					JSONArray resourceArray = (JSONArray) statementObject.getJSONArray("Resource");
 					resourceArray.put(resourceArray.length(), "arn:aws:s3:::" + bucketName);
 				}
-				else if (actionArray.length() == 3 && actionArray.getString(0).equalsIgnoreCase("s3:Get*")
-					&& actionArray.getString(1).equalsIgnoreCase("s3:Put*")
-					&& actionArray.getString(2).equalsIgnoreCase("s3:List*")) {
-					JSONArray resourceArray = (JSONArray) statementObject.getJSONArray("Resource");
-					resourceArray.put(resourceArray.length(), "arn:aws:s3:::" + bucketName + "/${aws:username}/*");
+				else if (actionArray.length() == 3){
+					HashSet<String> set = new HashSet<String>(3);
+					set.add(actionArray.getString(0));
+					set.add(actionArray.getString(1));
+					set.add(actionArray.getString(2));
+					if (set.contains("s3:Get*") && set.contains("s3:Put*") && set.contains("s3:List*")){
+						JSONArray resourceArray = (JSONArray) statementObject.getJSONArray("Resource");
+						resourceArray.put(resourceArray.length(), "arn:aws:s3:::" + bucketName + "/${aws:username}/*");
+					}
 				}
 			}
 
@@ -153,6 +158,50 @@ public class S3 {
 		PutGroupPolicyRequest pgpRequest = new PutGroupPolicyRequest(groupName, policyName, policy);
 		ami.putGroupPolicy(pgpRequest);
 
+	}
+
+	public void addWorkflowSharePolicy(String groupName, String policyName, String workflowPath) {
+		// Create ami with proper credentials
+		AmazonIdentityManagementClient ami = new AmazonIdentityManagementClient(new BasicAWSCredentials(
+			awsAdminAccessKey, awsAdminSecretKey));
+		GetGroupPolicyRequest ggpRequest = new GetGroupPolicyRequest(groupName, policyName);
+		GetGroupPolicyResult ggpResult = ami.getGroupPolicy(ggpRequest);
+		String policy = ggpResult.getPolicyDocument();
+		try {
+			policy = new URI(policy).getPath().toString();
+			JSONObject policyObject = new JSONObject(policy);
+			JSONArray policyStatementsArray = policyObject.getJSONArray("Statement");
+			// We are going to add new bucket in the Resource array list in the json format
+			for (int i = 0; i < policyStatementsArray.length(); i++) {
+				JSONObject statementObject = (JSONObject) policyStatementsArray.get(i);
+				JSONArray actionArray = (JSONArray) statementObject.getJSONArray("Action");
+				if (actionArray.length() == 3){
+					HashSet<String> set = new HashSet<String>(3);
+					set.add(actionArray.getString(0));
+					set.add(actionArray.getString(1));
+					set.add(actionArray.getString(2));
+					if (set.contains("s3:Get*") && set.contains("s3:Put*") && set.contains("s3:List*")){
+						JSONArray resourceArray = (JSONArray) statementObject.getJSONArray("Resource");
+						resourceArray.put(resourceArray.length(), "arn:aws:s3:::" + workflowPath + "/*");
+					}
+				}
+			}
+			
+			policyObject.put("Statement", policyStatementsArray);
+			policy = policyObject.toString(4);
+			// if (1 == 1 ) return;
+		}
+		catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+			
+		}
+		// Add new policy as required
+		PutGroupPolicyRequest pgpRequest = new PutGroupPolicyRequest(groupName, policyName, policy);
+		ami.putGroupPolicy(pgpRequest);
+		
 	}
 
 	public String getAccessKey() {

@@ -697,7 +697,7 @@
      </command>
   </menuContribution>
 </extension>
-<!-- Shreedhan Add import workflow in the menu -->
+<!-- Shreedhan Add initLocal in the menu -->
 
 <!-- Shreedhan Added saveForTrackingWorkflow command-->
 <extension point="org.eclipse.ui.commands">
@@ -709,7 +709,7 @@
 </extension>
 <!-- Shreedhan Added -->
 
-<!-- Shreedhan Added initLocal handler -->
+<!-- Shreedhan Added saveForTrackingWorkflow handler -->
 <extension point="org.eclipse.ui.handlers">
   <handler
         class="edu.uah.itsc.cmac.actions.SaveForTrackingWorkflowHandler"
@@ -730,7 +730,7 @@
 </extension>
 <!-- Shreedhan Added -->
 
-<!-- Shreedhan initLocal in the menu -->
+<!-- Shreedhan saveForTrackingWorkflow in the menu -->
 <extension point="org.eclipse.ui.menus">
   <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
      <command
@@ -752,6 +752,16 @@
      </command>
   </menuContribution>
 </extension>
-<!-- Shreedhan Add import workflow in the menu -->
+<!-- Shreedhan Add saveForTrackingWorkflow in the menu -->
+
+<!-- Shreedhan Added SendTrackingWorkflow command-->
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Send tracking workflow to cloud"
+        id="edu.uah.itsc.cmac.SendTrackingWorkflow"
+        name="Send tracking workflow to cloud">
+  </command>
+</extension>
+<!-- Shreedhan Added -->
 
 </plugin>

@@ -120,6 +120,10 @@ public class PortalUtilities {
 	public static String getExperimentFeedURL() {
 		return getKeyValueFromProperties("experiment_url");
 	}
+	
+	public static String getTokenURL() {
+		return getKeyValueFromProperties("token_url");
+	}
 
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
 		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getWorkflowFeedURL()
@@ -182,5 +186,4 @@ public class PortalUtilities {
 			return null;
 		}
 	}
-
 }

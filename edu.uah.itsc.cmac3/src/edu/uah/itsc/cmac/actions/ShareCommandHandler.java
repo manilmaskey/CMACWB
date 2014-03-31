@@ -2,15 +2,12 @@ package edu.uah.itsc.cmac.actions;
 
 import java.util.HashMap;
 
+import org.apache.http.HttpResponse;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -38,7 +35,6 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
-import edu.uah.itsc.cmac.ui.NavigatorView;
 
 public class ShareCommandHandler extends AbstractHandler {
 	private IStructuredSelection	selection	= StructuredSelection.EMPTY;
@@ -106,7 +102,7 @@ public class ShareCommandHandler extends AbstractHandler {
 							System.out.println("Button clicked");
 							PortalPost portalPost = new PortalPost();
 
-							Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keywordText
+							final Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keywordText
 								.getText());
 							workflow.setPath(path);
 							workflow.setShared(true);
@@ -115,7 +111,13 @@ public class ShareCommandHandler extends AbstractHandler {
 								portalPost.put(PortalUtilities.getNodeRestPoint() + nodeID, workflow.getJSON());
 							}
 							else {
-								portalPost.post(PortalUtilities.getNodeRestPoint(), workflow.getJSON());
+								HttpResponse response = portalPost.post(PortalUtilities.getNodeRestPoint(), workflow.getJSON());
+								if (response.getStatusLine().getStatusCode() != 200){
+									MessageDialog.openError(new Shell() , "Error", "Error. Received something other than 200 OK" + "\n" + response.getStatusLine());
+									System.out.println("Error. Received something other than 200 OK" + "\n" + response.getStatusLine());
+									return;
+								}
+									
 							}
 							portalPost.runCron();
 							Job job = new Job("Sharing...") {
@@ -130,29 +132,36 @@ public class ShareCommandHandler extends AbstractHandler {
 										}
 										else if (firstElement instanceof IFolder) {
 											S3 s3 = new S3();
-
-											s3.uploadFolder((IFolder) firstElement);
+											
+											// We are going to use GIT now. So, do not upload folder. We will add
+											// permission in the group policy now
+											// s3.uploadFolder((IFolder) firstElement);
+											
+											String workflowPath = null;
+											workflowPath = workflow.getPath().replaceFirst("/", "") + ".git";
+											s3.addWorkflowSharePolicy("cmac_collaborators", "shared_workflow", workflowPath);
+											
 											// We do not create a userfolder under community bucket directly
 											// if (!s3.userFolderExists(User.username, S3.communityBucketName))
 											// s3.uploadUserFolder(User.username, S3.communityBucketName);
-											s3.shareFolder((IFolder) firstElement);
-											try {
-												NavigatorView view = (NavigatorView) getPage().findView(
-													"edu.uah.itsc.cmac.NavigatorView");
-												view.refreshCommunityResource();
-											}
-											catch (Exception e) {
-												System.out.println("Errror while refreshCommunityResource "
-													+ e.toString());
-											}
-											IProject communityProject = ResourcesPlugin.getWorkspace().getRoot()
-												.getProject(s3.getCommunityBucketName());
-											try {
-												communityProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-											}
-											catch (CoreException e) {
-												e.printStackTrace();
-											}
+//											s3.shareFolder((IFolder) firstElement);
+//											try {
+//												NavigatorView view = (NavigatorView) getPage().findView(
+//													"edu.uah.itsc.cmac.NavigatorView");
+//												view.refreshCommunityResource();
+//											}
+//											catch (Exception e) {
+//												System.out.println("Errror while refreshCommunityResource "
+//													+ e.toString());
+//											}
+//											IProject communityProject = ResourcesPlugin.getWorkspace().getRoot()
+//												.getProject(s3.getCommunityBucketName());
+//											try {
+//												communityProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+//											}
+//											catch (CoreException e) {
+//												e.printStackTrace();
+//											}
 										}
 
 									}

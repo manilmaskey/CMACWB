@@ -22,6 +22,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -157,29 +158,44 @@ public class PortalPost {
 		HttpResponse response = null;
 		BasicHttpContext mHttpContext = getHttpContext();
 		try {
+			String csrf_token = getCSRF(PortalUtilities.getTokenURL(), mHttpContext);
 			if (action.equalsIgnoreCase("get")) {
 				HttpGet httpGet = new HttpGet(url);
+				httpGet.addHeader("X-CSRF-TOKEN", csrf_token);
 				response = httpClient.execute(httpGet, mHttpContext);
 			}
 			if (action.equalsIgnoreCase("put")) {
 				HttpPut httpPut = new HttpPut(url);
 				httpPut.setEntity(se);
+				httpPut.addHeader("X-CSRF-TOKEN", csrf_token);
 				response = httpClient.execute(httpPut, mHttpContext);
 
 			}
 			else if (action.equalsIgnoreCase("post")) {
 				HttpPost httpPost = new HttpPost(url);
 				httpPost.setEntity(se);
+				httpPost.addHeader("X-CSRF-TOKEN", csrf_token);
 				response = httpClient.execute(httpPost, mHttpContext);
 
 			}
 			else if (action.equalsIgnoreCase("delete")) {
 				HttpDelete httpDelete = new HttpDelete(url);
+				httpDelete.addHeader("X-CSRF-TOKEN", csrf_token);
 				response = httpClient.execute(httpDelete, mHttpContext);
 			}
 		}
 		catch (Exception e) {
+			System.out.println("Error executing");
+			e.printStackTrace();
 		}
 		return response;
+	}
+
+	private String getCSRF(String tokenURL, BasicHttpContext mHttpContext) throws ClientProtocolException, IOException {
+		HttpClient httpClient = new DefaultHttpClient();
+		HttpGet httpGet = new HttpGet(tokenURL);
+		HttpResponse response = httpClient.execute(httpGet, mHttpContext);
+		String csrf_token = EntityUtils.toString(response.getEntity());
+		return csrf_token;
 	}
 }

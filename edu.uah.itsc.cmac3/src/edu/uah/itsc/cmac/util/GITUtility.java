@@ -43,6 +43,7 @@ public class GITUtility {
 		command.setDirectory(new File(repoLocalPath));
 		command.setURI(repoCompleteRemotepath);
 		Git git = command.call();
+		git.getRepository().close();
 	}
 
 	public static void createLocalRepo(String repoName, String repoLocalPath) throws IOException {

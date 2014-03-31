@@ -32,6 +32,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.ui.NavigatorView;
+import edu.uah.itsc.cmac.util.GITUtility;
 
 /**
  * @author sshrestha
@@ -89,17 +90,25 @@ public class ImportWorkflowHandler extends AbstractHandler {
 			final String copyFolderPath = copyFromFolderPath;
 			final String folderCopy = folderToCopy;
 			final String bucketName = bucketFolder.getName();
-			Job job = new Job("Importing..") {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					buildTree(s3, copyFolderPath, folderCopy,
-						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName));
-					monitor.done();
-					return Status.OK_STATUS;
-				}
-			};
-			job.setUser(true);
-			job.schedule();
+			String remotePath = "amazon-s3://.jgit@" + copyFolderPath + ".git";
+			String localPath = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).getLocation()+ "/" + User.username + "/" + folderToCopy;
+			System.out.println(remotePath + "\n" + localPath);
+			
+			// We do not download folders now. We have to clone the repository locally
+			GITUtility.cloneRepository(localPath, remotePath);
+			IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).getFolder(User.username);
+			userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+//			Job job = new Job("Importing..") {
+//				@Override
+//				protected IStatus run(IProgressMonitor monitor) {
+//					buildTree(s3, copyFolderPath, folderCopy,
+//						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName));
+//					monitor.done();
+//					return Status.OK_STATUS;
+//				}
+//			};
+//			job.setUser(true);
+//			job.schedule();
 		}
 		catch (Exception e) {
 			e.printStackTrace();

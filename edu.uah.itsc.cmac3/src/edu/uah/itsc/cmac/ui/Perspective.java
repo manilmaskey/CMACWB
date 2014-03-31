@@ -25,11 +25,10 @@ public class Perspective implements IPerspectiveFactory {
 
 		IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, (float) 0.80, editorArea);
 
-		bottom.addView("org.eclipse.ecf.presence.ui.MultiRosterView");
 		bottom.addView("edu.uah.itsc.cmac.programview.views.ProgramView");
+		bottom.addView("org.eclipse.ecf.presence.ui.MultiRosterView");
 		bottom.addView("edu.uah.itsc.cmac.ami.views.AMIView");
 		bottom.addView("edu.uah.itsc.cmac.ec2instance.views.EC2InstanceView");
-		bottom.addView("edu.uah.itsc.cmac.s3jgitview.views.S3jgitView");
 		
 
 		// left.addPlaceholder(IPageLayout.ID_BOOKMARKS);

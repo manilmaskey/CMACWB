@@ -2,6 +2,7 @@ package edu.uah.itsc.cmac.ui;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -28,10 +29,15 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonViewer;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -39,13 +45,14 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
+import edu.uah.itsc.cmac.portal.PortalUtilities;
 
 public class NavigatorView extends CommonNavigator {
 
 	private CommonViewer		viewer;
 	private String				prefix	= "";
 	private edu.uah.itsc.aws.S3	s3;
-	private IProject			p1;
+	private IProject			cmacCommunity;
 	// private IProject p2;
 	public static final String	ID		= "edu.uah.itsc.cmac.NavigatorView";
 
@@ -81,12 +88,12 @@ public class NavigatorView extends CommonNavigator {
 				System.out.println("Workspace Location: "
 					+ ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
 
-				p1 = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
+				cmacCommunity = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
 
-				if (!p1.exists()) {
+				if (!cmacCommunity.exists()) {
 
-					p1.create(monitor);
-					p1.open(monitor);
+					cmacCommunity.create(monitor);
+					cmacCommunity.open(monitor);
 				}
 				System.out.println("Create Folder ------------ >");
 
@@ -104,7 +111,9 @@ public class NavigatorView extends CommonNavigator {
 				//
 				// }
 
-				refreshCommunityResource();
+				// refreshCommunityResource();
+				refreshCommunityResourceFromPortal();
+
 				// buildTree(s3.getRootFolder()+java.io.File.separator,
 				// p2,s3.getBucketName());
 
@@ -120,7 +129,7 @@ public class NavigatorView extends CommonNavigator {
 
 				buildAllBucketsAsProjects(monitor);
 
-				viewer.setInput(p1);
+				viewer.setInput(cmacCommunity);
 				// viewer.setInput(p2);
 			}
 			catch (CoreException e) {
@@ -129,11 +138,11 @@ public class NavigatorView extends CommonNavigator {
 		}
 
 		else {
-			p1 = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
+			cmacCommunity = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
 
-			if (p1.exists()) {
+			if (cmacCommunity.exists()) {
 				try {
-					p1.setHidden(true);
+					cmacCommunity.setHidden(true);
 				}
 				catch (CoreException e) {
 					// TODO Auto-generated catch block
@@ -153,6 +162,63 @@ public class NavigatorView extends CommonNavigator {
 		}
 	}
 
+	private void refreshCommunityResourceFromPortal() {
+		clearCommunityResource();
+		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getWorkflowFeedURL() + "?field_is_shared=1");
+		JSONParser parser = new JSONParser();
+		Object obj;
+		try {
+			obj = parser.parse(jsonText);
+			JSONObject workflows = (JSONObject) obj;
+
+			if (workflows == null)
+				return;
+			JSONArray workFlowArray = (JSONArray) workflows.get("workflows");
+			if (workFlowArray == null || workFlowArray.size() == 0)
+				return;
+			for (int i = 0; i < workFlowArray.size(); i++) {
+				JSONObject workflow = (JSONObject) workFlowArray.get(i);
+				workflow = (JSONObject) workflow.get("workflow");
+				HashMap<String, String> map = new HashMap<String, String>();
+				map.put("nid", workflow.get("nid").toString());
+				map.put("path", workflow.get("path").toString());
+				map.put("title", workflow.get("title").toString());
+				map.put("description", workflow.get("description").toString());
+				map.put("keywords", workflow.get("keywords").toString());
+				createSharedFolder(map);
+				map = null;
+			}
+			return;
+		}
+		catch (ParseException e) {
+			e.printStackTrace();
+			System.out.println("Unable to parse json object");
+			return;
+		}
+	}
+
+	private void createSharedFolder(HashMap<String, String> map) {
+		try {
+			if (!cmacCommunity.exists()){
+				cmacCommunity.create(null);
+				cmacCommunity.open(null);
+			}
+			IFolder sharedFolder = cmacCommunity.getFolder(map.get("path").replaceFirst("/", ""));
+			createFolder(sharedFolder);
+		}
+		catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void createFolder(IFolder sharedFolder) throws CoreException {
+		if (!sharedFolder.getParent().exists() && sharedFolder.getParent() != sharedFolder.getProject())
+			createFolder((IFolder) sharedFolder.getParent());
+		if (!sharedFolder.exists())
+			sharedFolder.create(true, true, null);
+	}
+
 	private void buildAllBucketsAsProjects(IProgressMonitor monitor) {
 		ArrayList<String> buckets = s3.getAllBuckets();
 		IProject project;
@@ -162,8 +228,8 @@ public class NavigatorView extends CommonNavigator {
 				if (project.exists() && (project.getName().equals(s3.getCommunityBucketName()))) {
 					continue;
 				}
-//				else if (project.exists())
-//					project.delete(true, monitor);
+				// else if (project.exists())
+				// project.delete(true, monitor);
 				if (!project.exists())
 					project.create(monitor);
 				buildTree(User.username + "_$folder$", project, bucket);
@@ -193,7 +259,7 @@ public class NavigatorView extends CommonNavigator {
 
 	public void clearCommunityResource() {
 		try {
-			p1.delete(true, null);
+			cmacCommunity.delete(true, null);
 		}
 		catch (CoreException e) {
 			// TODO Auto-generated catch block
@@ -205,12 +271,12 @@ public class NavigatorView extends CommonNavigator {
 		try {
 			clearCommunityResource();
 			IProgressMonitor monitor = new NullProgressMonitor();
-			p1 = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
-			if (!p1.exists()) {
-				p1.create(monitor);
-				p1.open(monitor);
+			cmacCommunity = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
+			if (!cmacCommunity.exists()) {
+				cmacCommunity.create(monitor);
+				cmacCommunity.open(monitor);
 			}
-			buildTree("", p1, s3.getCommunityBucketName());
+			buildTree("", cmacCommunity, s3.getCommunityBucketName());
 		}
 		catch (Exception e) {
 			System.out.println("Exception in NavigatorView.refreshCommunityResource: " + e.toString());
