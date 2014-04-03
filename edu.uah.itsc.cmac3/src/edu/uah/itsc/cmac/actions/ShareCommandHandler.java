@@ -35,6 +35,7 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
+import edu.uah.itsc.cmac.ui.NavigatorView;
 
 public class ShareCommandHandler extends AbstractHandler {
 	private IStructuredSelection	selection	= StructuredSelection.EMPTY;
@@ -132,7 +133,15 @@ public class ShareCommandHandler extends AbstractHandler {
 										}
 										else if (firstElement instanceof IFolder) {
 											S3 s3 = new S3();
-											
+											try {
+												NavigatorView view = (NavigatorView) getPage().findView(
+													"edu.uah.itsc.cmac.NavigatorView");
+												view.refreshCommunityResource();
+											}
+											catch (Exception e) {
+												System.out.println("Errror while refreshCommunityResource "
+													+ e.toString());
+											}
 											// We are going to use GIT now. So, do not upload folder. We will add
 											// permission in the group policy now
 											// s3.uploadFolder((IFolder) firstElement);

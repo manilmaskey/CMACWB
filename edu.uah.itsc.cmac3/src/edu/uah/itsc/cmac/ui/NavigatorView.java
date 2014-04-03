@@ -3,6 +3,7 @@ package edu.uah.itsc.cmac.ui;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -26,10 +27,12 @@ import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.navigator.CommonNavigator;
@@ -46,6 +49,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
+import edu.uah.itsc.cmac.util.GITUtility;
 
 public class NavigatorView extends CommonNavigator {
 
@@ -267,21 +271,25 @@ public class NavigatorView extends CommonNavigator {
 		}
 	}
 
-	public void refreshCommunityResource() {
-		try {
-			clearCommunityResource();
-			IProgressMonitor monitor = new NullProgressMonitor();
-			cmacCommunity = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
-			if (!cmacCommunity.exists()) {
-				cmacCommunity.create(monitor);
-				cmacCommunity.open(monitor);
-			}
-			buildTree("", cmacCommunity, s3.getCommunityBucketName());
-		}
-		catch (Exception e) {
-			System.out.println("Exception in NavigatorView.refreshCommunityResource: " + e.toString());
-		}
+	public void refreshCommunityResource(){
+		refreshCommunityResourceFromPortal();
 	}
+	
+//	public void refreshCommunityResource() {
+//		try {
+//			clearCommunityResource();
+//			IProgressMonitor monitor = new NullProgressMonitor();
+//			cmacCommunity = ResourcesPlugin.getWorkspace().getRoot().getProject(s3.getCommunityBucketName());
+//			if (!cmacCommunity.exists()) {
+//				cmacCommunity.create(monitor);
+//				cmacCommunity.open(monitor);
+//			}
+//			buildTree("", cmacCommunity, s3.getCommunityBucketName());
+//		}
+//		catch (Exception e) {
+//			System.out.println("Exception in NavigatorView.refreshCommunityResource: " + e.toString());
+//		}
+//	}
 
 	private void buildTree(String prefix, IResource tp, String bucket) {
 		ListObjectsRequest lor = new ListObjectsRequest();
@@ -315,11 +323,53 @@ public class NavigatorView extends CommonNavigator {
 		// tp1.create(false, true, null);
 		// }
 		//
+		
+		// If this is a git repository, objectsummaries would be empty and we need to check common prefixes
+		// to see if there are any git repositories inside
+		
+		if (filteredObjects.getObjectSummaries().isEmpty()){
+			List<String> commonPrefixes = filteredObjects.getCommonPrefixes();
+			for (String currentResource : commonPrefixes) {
+				// check if this resource is a .git repository
+				if (currentResource.endsWith(".git/") || currentResource.endsWith(".git")){
+					if (currentResource.endsWith(".git/")){
+						currentResource = currentResource.substring(0,currentResource.length() - 1);
+					}
+					String remotePath = "amazon-s3://.jgit@" + bucket + "/" + currentResource;
+					String localPath = tp.getProject().getLocation().toString() + "/" + currentResource.replace(".git", "");
+					try {
+						System.out.println(remotePath + "\n" + localPath);
+						GITUtility.cloneRepository(localPath, remotePath);
+						tp.getProject().getFolder(User.username).refreshLocal(IFolder.DEPTH_INFINITE, null);
+					}
+					catch (InvalidRemoteException e) {
+						System.out.println("InvalidRemoteException");
+						e.printStackTrace();
+					}
+					catch (TransportException e) {
+						System.out.println("TransportException");
+						e.printStackTrace();
+					}
+					catch (GitAPIException e) {
+						System.out.println("GitAPIException");
+						e.printStackTrace();
+					}
+					catch (Exception e){
+						System.out.println("All other exceptions");
+						continue;
+					}
+				}
+				
+			}
+		}
+		
 		for (S3ObjectSummary objectSummary : filteredObjects.getObjectSummaries()) {
 			String currentResource = objectSummary.getKey();
 			System.out.println("Prefix=" + prefix);
 			System.out.println("buildTree currentResource=" + currentResource);
 
+			
+			
 			// check if the resource is a folder
 			if (currentResource.indexOf("_$folder$") > 0) {
 				IFolder tp1;
