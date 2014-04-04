@@ -53,14 +53,19 @@ public class ShareCommandHandler extends AbstractHandler {
 			final Object firstElement = selection.getFirstElement();
 			if (firstElement instanceof IFile) {
 				MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Information",
-					"You can only share folders!");
+					"You can only share workflows!");
 			}
 			else if (firstElement instanceof IFolder) {
 				final IFolder selectedFolder = (IFolder) firstElement;
-
+				IFolder gitFolder = selectedFolder.getFolder(".git");
+				if (!gitFolder.exists()){
+					MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+						"You can only share tracking workflows!");
+					return null;
+				}
 				final String path = selectedFolder.getFullPath().toString();
 
-				final Shell shell = new Shell();
+				final Shell shell = new Shell(Display.getDefault().getActiveShell());
 				shell.setText("Workflow Settings");
 				shell.setLayout(new GridLayout(2, false));
 				Label title = new Label(shell, SWT.NONE);

@@ -3,16 +3,13 @@
  */
 package edu.uah.itsc.cmac.actions;
 
-import java.io.IOException;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.NoFilepatternException;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -34,16 +31,8 @@ public class SaveForTrackingWorkflowHandler extends AbstractHandler {
 		try {
 			GITUtility.commitLocalChanges(folder.getName(), parentPath, "Testing commit");
 		}
-		catch (NoFilepatternException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (GitAPIException e) {
-			MessageDialog.openError(new Shell(), "Error!!", "This workflow is not enabled to be tracked");
+		catch (Exception e) {
+			MessageDialog.openError(Display.getDefault().getActiveShell(), "Error!!", "This workflow is not enabled to be tracked");
 		}
 		return null;
 	}

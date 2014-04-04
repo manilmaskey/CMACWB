@@ -1,8 +1,5 @@
 package edu.uah.itsc.cmac.actions;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -12,11 +9,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.uah.itsc.aws.S3;
@@ -55,28 +52,13 @@ public class UploadCommandHandler extends AbstractHandler {
 						try {
 							GITUtility.push(repoName, repoLocalPath, repoRemotePath);
 						}
-						catch (InvalidRemoteException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							return Status.CANCEL_STATUS;
-						}
-						catch (TransportException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							return Status.CANCEL_STATUS;
-						}
-						catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							return Status.CANCEL_STATUS;
-						}
-						catch (URISyntaxException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							return Status.CANCEL_STATUS;
-						}
-						catch (GitAPIException e) {
-							// TODO Auto-generated catch block
+						catch (final Exception e) {
+							Display.getDefault().syncExec(new Runnable() {
+								@Override
+								public void run() {
+									MessageDialog.openError(Display.getDefault().getActiveShell(), "Error", e.getMessage());
+								}
+							});
 							e.printStackTrace();
 							return Status.CANCEL_STATUS;
 						}

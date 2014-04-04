@@ -31,6 +31,7 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.searchview.models.SearchResult;
 import edu.uah.itsc.cmac.searchview.models.SearchResultInterface;
+import edu.uah.itsc.cmac.util.GITUtility;
 
 /**
  * @author sshrestha
@@ -185,8 +186,18 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 						fromIndex = copyFromFolderPath.indexOf('/');
 						bucketName = copyFromFolderPath.substring(0, fromIndex);
 						System.out.println("folderpath: " + copyFromFolderPath);
-						buildTree(copyFromFolderPath, folderToCopy, ResourcesPlugin.getWorkspace().getRoot()
-							.getProject(bucketName));
+						
+						String remotePath = "amazon-s3://.jgit@" + copyFromFolderPath + ".git";
+						String localPath = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).getLocation()+ "/" + User.username + "/" + folderToCopy;
+						System.out.println(remotePath + "\n" + localPath);
+						
+						// We do not download folders now. We have to clone the repository locally
+						GITUtility.cloneRepository(localPath, remotePath);
+						IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).getFolder(User.username);
+						userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+						
+//						buildTree(copyFromFolderPath, folderToCopy, ResourcesPlugin.getWorkspace().getRoot()
+//							.getProject(bucketName));
 					}
 					catch (Exception e) {
 						e.printStackTrace();

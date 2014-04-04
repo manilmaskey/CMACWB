@@ -93,8 +93,7 @@ public class GITUtility {
 		System.out.println("Committed changes: " + commit.getFullMessage());
 	}
 
-	public static void push(String repoName, String repoLocalPath, String repoRemotePath) throws IOException,
-		URISyntaxException, InvalidRemoteException, TransportException, GitAPIException {
+	public static void push(String repoName, String repoLocalPath, String repoRemotePath) throws Exception {
 		FileRepositoryBuilder builder = new FileRepositoryBuilder();
 		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
 		Repository repository = builder.setGitDir(localPath).findGitDir().build();
@@ -103,7 +102,7 @@ public class GITUtility {
 
 		if (head == null) {
 			System.out.println("Nothing to push");
-			return;
+			throw new Exception("Not a valid tracking workflow");
 		}
 		RevWalk walk = new RevWalk(repository);
 		RevCommit commit = walk.parseCommit(head.getObjectId());

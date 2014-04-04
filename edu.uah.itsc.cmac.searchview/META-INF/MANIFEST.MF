@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.ui,
  edu.uah.itsc.cmac3;bundle-version="1.0.0",
  org.eclipse.ui.navigator;bundle-version="3.5.300",
  org.eclipse.core.resources,
- edu.uah.itsc.cmac.libs
+ edu.uah.itsc.cmac.libs,
+ org.eclipse.jgit;bundle-version="3.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Export-Package: edu.uah.itsc.cmac.searchview.models
