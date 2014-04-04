@@ -91,6 +91,7 @@ public class GITUtility {
 		RevCommit commit = git.commit().setMessage(commitMessage)
 			.setAuthor(User.username, User.username + "@itsc.uah.edu").call();
 		System.out.println("Committed changes: " + commit.getFullMessage());
+		repository.close();
 	}
 
 	public static void push(String repoName, String repoLocalPath, String repoRemotePath) throws Exception {
@@ -143,6 +144,7 @@ public class GITUtility {
 		PushResult result = resultIterable.iterator().next();
 		// TrackingRefUpdate trackingRefUpdate = result.getTrackingRefUpdate(trackingBranch);
 		System.out.println("Pushed local changes. " + result.getMessages());
+		repository.close();
 	}
 
 	public static void pull(String repoName, String repoLocalPath, String repoRemotePath) {
@@ -171,6 +173,8 @@ public class GITUtility {
 			}
 			else
 				System.out.println("Pulled remote changes\n");
+			
+			repository.close();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
