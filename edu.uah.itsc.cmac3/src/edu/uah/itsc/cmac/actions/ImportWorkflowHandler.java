@@ -12,6 +12,10 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -77,7 +81,7 @@ public class ImportWorkflowHandler extends AbstractHandler {
 
 			folderToCopy = copyFromFolderPath;
 
-			copyFromFolderPath = copyFromFolderPath.replaceFirst(s3.getCommunityBucketName(), "");
+//			copyFromFolderPath = copyFromFolderPath.replaceFirst(s3.getCommunityBucketName(), "");
 			copyFromFolderPath = copyFromFolderPath.replaceAll("^/+", "");
 			// Replace first three words separated by "/" with empty space
 			folderToCopy = folderToCopy.replaceFirst("^/[\\w|-]+/[\\w|-]+/[\\w|-]+/", "");
@@ -86,25 +90,39 @@ public class ImportWorkflowHandler extends AbstractHandler {
 			final String copyFolderPath = copyFromFolderPath;
 			final String folderCopy = folderToCopy;
 			final String bucketName = bucketFolder.getName();
-			String remotePath = "amazon-s3://.jgit@" + copyFolderPath + ".git";
-			String localPath = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).getLocation()+ "/" + User.username + "/" + folderToCopy;
+			final String remotePath = "amazon-s3://.jgit@" + copyFolderPath + ".git";
+			final String localPath = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).getLocation()
+				+ "/" + User.username + "/" + folderToCopy;
 			System.out.println(remotePath + "\n" + localPath);
-			
+
 			// We do not download folders now. We have to clone the repository locally
-			GITUtility.cloneRepository(localPath, remotePath);
-			IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).getFolder(User.username);
-			userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
-//			Job job = new Job("Importing..") {
-//				@Override
-//				protected IStatus run(IProgressMonitor monitor) {
-//					buildTree(s3, copyFolderPath, folderCopy,
-//						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName));
-//					monitor.done();
-//					return Status.OK_STATUS;
-//				}
-//			};
-//			job.setUser(true);
-//			job.schedule();
+			Job job = new Job("Importing..") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					// buildTree(s3, copyFolderPath, folderCopy,
+					// ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName));
+					try {
+						GITUtility.cloneRepository(localPath, remotePath);
+						IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
+							.getFolder(User.username);
+						userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+					}
+					catch (Exception e) {
+						Display.getDefault().asyncExec(new Runnable() {
+
+							@Override
+							public void run() {
+								MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+									"Error while importing");
+							}
+						});
+					}
+					monitor.done();
+					return Status.OK_STATUS;
+				}
+			};
+			job.setUser(true);
+			job.schedule();
 		}
 		catch (Exception e) {
 			e.printStackTrace();

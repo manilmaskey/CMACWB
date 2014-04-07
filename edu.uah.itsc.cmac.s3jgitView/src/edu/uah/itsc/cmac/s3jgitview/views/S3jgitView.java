@@ -125,6 +125,10 @@ public class S3jgitView extends ViewPart {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 		btnPushToS.setText("Push to S3");

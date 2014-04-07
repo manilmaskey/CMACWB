@@ -58,13 +58,13 @@ public class ShareCommandHandler extends AbstractHandler {
 			else if (firstElement instanceof IFolder) {
 				final IFolder selectedFolder = (IFolder) firstElement;
 				IFolder gitFolder = selectedFolder.getFolder(".git");
-				if (!gitFolder.exists()){
+				if (!gitFolder.exists()) {
 					MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
 						"You can only share tracking workflows!");
 					return null;
 				}
-				final String path = selectedFolder.getFullPath().toString();
-
+				final S3 s3 = new S3();
+				final String path = s3.getCommunityBucketName() + selectedFolder.getFullPath().toString();
 				final Shell shell = new Shell(Display.getDefault().getActiveShell());
 				shell.setText("Workflow Settings");
 				shell.setLayout(new GridLayout(2, false));
@@ -106,26 +106,32 @@ public class ShareCommandHandler extends AbstractHandler {
 						try {
 
 							System.out.println("Button clicked");
-							PortalPost portalPost = new PortalPost();
-
+							/****************************/
+							// PortalPost portalPost = new PortalPost();
+							//
 							final Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keywordText
 								.getText());
 							workflow.setPath(path);
 							workflow.setShared(true);
-							System.out.println(workflow.getJSON());
-							if (nodeID != null) {
-								portalPost.put(PortalUtilities.getNodeRestPoint() + nodeID, workflow.getJSON());
-							}
-							else {
-								HttpResponse response = portalPost.post(PortalUtilities.getNodeRestPoint(), workflow.getJSON());
-								if (response.getStatusLine().getStatusCode() != 200){
-									MessageDialog.openError(new Shell() , "Error", "Error. Received something other than 200 OK" + "\n" + response.getStatusLine());
-									System.out.println("Error. Received something other than 200 OK" + "\n" + response.getStatusLine());
-									return;
-								}
-									
-							}
-							portalPost.runCron();
+							// System.out.println(workflow.getJSON());
+							// if (nodeID != null) {
+							// portalPost.put(PortalUtilities.getNodeRestPoint() + nodeID, workflow.getJSON());
+							// }
+							// else {
+							// HttpResponse response = portalPost.post(PortalUtilities.getNodeRestPoint(),
+							// workflow.getJSON());
+							// if (response.getStatusLine().getStatusCode() != 200) {
+							// MessageDialog
+							// .openError(new Shell(), "Error", "Error. Received something other than 200 OK"
+							// + "\n" + response.getStatusLine());
+							// System.out.println("Error. Received something other than 200 OK" + "\n"
+							// + response.getStatusLine());
+							// return;
+							// }
+							//
+							// }
+							// portalPost.runCron();
+							/****************************/
 							Job job = new Job("Sharing...") {
 								protected IStatus run(IProgressMonitor monitor) {
 
@@ -137,45 +143,50 @@ public class ShareCommandHandler extends AbstractHandler {
 												"Information", "You can only share folders!");
 										}
 										else if (firstElement instanceof IFolder) {
-											S3 s3 = new S3();
-											try {
-												NavigatorView view = (NavigatorView) getPage().findView(
-													"edu.uah.itsc.cmac.NavigatorView");
-												view.refreshCommunityResource();
-											}
-											catch (Exception e) {
-												System.out.println("Errror while refreshCommunityResource "
-													+ e.toString());
-											}
+
+											/****************************/
+											// try {
+											// NavigatorView view = (NavigatorView) getPage().findView(
+											// "edu.uah.itsc.cmac.NavigatorView");
+											// view.refreshCommunityResource();
+											// }
+											// catch (Exception e) {
+											// System.out.println("Errror while refreshCommunityResource "
+											// + e.toString());
+											// }
+											/****************************/
+
 											// We are going to use GIT now. So, do not upload folder. We will add
 											// permission in the group policy now
 											// s3.uploadFolder((IFolder) firstElement);
-											
+
 											String workflowPath = null;
 											workflowPath = workflow.getPath().replaceFirst("/", "") + ".git";
-											s3.addWorkflowSharePolicy("cmac_collaborators", "shared_workflow", workflowPath);
-											
+											s3.shareGITFolder(selectedFolder);
+											// s3.addWorkflowSharePolicy("cmac_collaborators", "shared_workflow",
+											// workflowPath);
+
 											// We do not create a userfolder under community bucket directly
 											// if (!s3.userFolderExists(User.username, S3.communityBucketName))
 											// s3.uploadUserFolder(User.username, S3.communityBucketName);
-//											s3.shareFolder((IFolder) firstElement);
-//											try {
-//												NavigatorView view = (NavigatorView) getPage().findView(
-//													"edu.uah.itsc.cmac.NavigatorView");
-//												view.refreshCommunityResource();
-//											}
-//											catch (Exception e) {
-//												System.out.println("Errror while refreshCommunityResource "
-//													+ e.toString());
-//											}
-//											IProject communityProject = ResourcesPlugin.getWorkspace().getRoot()
-//												.getProject(s3.getCommunityBucketName());
-//											try {
-//												communityProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-//											}
-//											catch (CoreException e) {
-//												e.printStackTrace();
-//											}
+											// s3.shareFolder((IFolder) firstElement);
+											// try {
+											// NavigatorView view = (NavigatorView) getPage().findView(
+											// "edu.uah.itsc.cmac.NavigatorView");
+											// view.refreshCommunityResource();
+											// }
+											// catch (Exception e) {
+											// System.out.println("Errror while refreshCommunityResource "
+											// + e.toString());
+											// }
+											// IProject communityProject = ResourcesPlugin.getWorkspace().getRoot()
+											// .getProject(s3.getCommunityBucketName());
+											// try {
+											// communityProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+											// }
+											// catch (CoreException e) {
+											// e.printStackTrace();
+											// }
 										}
 
 									}

@@ -51,6 +51,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteBucketRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
@@ -131,12 +132,12 @@ public class S3 {
 					JSONArray resourceArray = (JSONArray) statementObject.getJSONArray("Resource");
 					resourceArray.put(resourceArray.length(), "arn:aws:s3:::" + bucketName);
 				}
-				else if (actionArray.length() == 3){
+				else if (actionArray.length() == 3) {
 					HashSet<String> set = new HashSet<String>(3);
 					set.add(actionArray.getString(0));
 					set.add(actionArray.getString(1));
 					set.add(actionArray.getString(2));
-					if (set.contains("s3:Get*") && set.contains("s3:Put*") && set.contains("s3:List*")){
+					if (set.contains("s3:Get*") && set.contains("s3:Put*") && set.contains("s3:List*")) {
 						JSONArray resourceArray = (JSONArray) statementObject.getJSONArray("Resource");
 						resourceArray.put(resourceArray.length(), "arn:aws:s3:::" + bucketName + "/${aws:username}/*");
 					}
@@ -175,18 +176,18 @@ public class S3 {
 			for (int i = 0; i < policyStatementsArray.length(); i++) {
 				JSONObject statementObject = (JSONObject) policyStatementsArray.get(i);
 				JSONArray actionArray = (JSONArray) statementObject.getJSONArray("Action");
-				if (actionArray.length() == 3){
+				if (actionArray.length() == 3) {
 					HashSet<String> set = new HashSet<String>(3);
 					set.add(actionArray.getString(0));
 					set.add(actionArray.getString(1));
 					set.add(actionArray.getString(2));
-					if (set.contains("s3:Get*") && set.contains("s3:Put*") && set.contains("s3:List*")){
+					if (set.contains("s3:Get*") && set.contains("s3:Put*") && set.contains("s3:List*")) {
 						JSONArray resourceArray = (JSONArray) statementObject.getJSONArray("Resource");
 						resourceArray.put(resourceArray.length(), "arn:aws:s3:::" + workflowPath + "/*");
 					}
 				}
 			}
-			
+
 			policyObject.put("Statement", policyStatementsArray);
 			policy = policyObject.toString(4);
 			// if (1 == 1 ) return;
@@ -196,12 +197,12 @@ public class S3 {
 		}
 		catch (JSONException e) {
 			e.printStackTrace();
-			
+
 		}
 		// Add new policy as required
 		PutGroupPolicyRequest pgpRequest = new PutGroupPolicyRequest(groupName, policyName, policy);
 		ami.putGroupPolicy(pgpRequest);
-		
+
 	}
 
 	public String getAccessKey() {
@@ -525,6 +526,56 @@ public class S3 {
 		catch (CoreException ce) {
 			ce.printStackTrace();
 		}
+	}
+
+	public void shareGITFolder(IFolder folder) {
+		String path = folder.getLocation().toString();
+
+		// TODO: Copy bucket contents of this workflow repo from private bucket to community bucket
+		String sourceBucketName = folder.getProject().getName();
+		String workflowPath = folder.getProjectRelativePath().toString().replaceFirst("^/", "");
+		String destBucketName = getCommunityBucketName();
+
+		copyFolderInS3(sourceBucketName, workflowPath, destBucketName);
+
+		// TODO: Modify remote reference in current local git directory
+	}
+
+	private void copyFolderInS3(String sourceBucketName, String sourceFolder, String destBucketName) {
+		ListObjectsRequest lor = new ListObjectsRequest();
+		lor.setBucketName(sourceBucketName);
+		lor.setDelimiter(getDelimiter());
+		lor.setPrefix(sourceFolder);
+
+		ObjectListing filteredObjects = null;
+		try {
+			filteredObjects = getService().listObjects(lor);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Exception listing filtered objects");
+			return;
+		}
+
+		List<String> commonPrefixes = filteredObjects.getCommonPrefixes();
+		for (String currentResource : commonPrefixes) {
+			System.out.println(currentResource);
+			copyFolderInS3(sourceBucketName, currentResource, destBucketName);
+		}
+		for (S3ObjectSummary objectSummary : filteredObjects.getObjectSummaries()) {
+			String currentResource = objectSummary.getKey();
+			String destResource = sourceBucketName + "/" + currentResource;
+			CopyObjectRequest copyRequest = new CopyObjectRequest(sourceBucketName, currentResource, destBucketName,
+				destResource);
+			try {
+				amazonS3Service.copyObject(copyRequest);
+			}
+			catch (AmazonClientException ace) {
+				System.out.println("shareFile: AmazonClientException " + ace.toString());
+			}
+
+		}
+
 	}
 
 	/**
