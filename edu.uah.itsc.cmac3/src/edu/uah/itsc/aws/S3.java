@@ -55,6 +55,8 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
+import edu.uah.itsc.cmac.util.GITUtility;
+
 public class S3 {
 	private static Properties	properties	= null;
 	private AmazonS3			amazonS3Service;
@@ -536,12 +538,23 @@ public class S3 {
 		String workflowPath = folder.getProjectRelativePath().toString().replaceFirst("^/", "");
 		String destBucketName = getCommunityBucketName();
 
-		copyFolderInS3(sourceBucketName, workflowPath, destBucketName);
+		copyFolderInS3(sourceBucketName, workflowPath, destBucketName, sourceBucketName);
 
 		// TODO: Modify remote reference in current local git directory
+		try {
+			folder.delete(true, null);
+			String repoCompleteRemotepath = "amazon-s3://.jgit@" + getCommunityBucketName()
+				+ folder.getFullPath().toString() + ".git";
+			GITUtility.cloneRepository(folder.getLocation().toString(), repoCompleteRemotepath);
+			folder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+		}
+		catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-	private void copyFolderInS3(String sourceBucketName, String sourceFolder, String destBucketName) {
+	private void copyFolderInS3(String sourceBucketName, String sourceFolder, String destBucketName, String destFolder) {
 		ListObjectsRequest lor = new ListObjectsRequest();
 		lor.setBucketName(sourceBucketName);
 		lor.setDelimiter(getDelimiter());
@@ -560,11 +573,11 @@ public class S3 {
 		List<String> commonPrefixes = filteredObjects.getCommonPrefixes();
 		for (String currentResource : commonPrefixes) {
 			System.out.println(currentResource);
-			copyFolderInS3(sourceBucketName, currentResource, destBucketName);
+			copyFolderInS3(sourceBucketName, currentResource, destBucketName, destFolder);
 		}
 		for (S3ObjectSummary objectSummary : filteredObjects.getObjectSummaries()) {
 			String currentResource = objectSummary.getKey();
-			String destResource = sourceBucketName + "/" + currentResource;
+			String destResource = destFolder + "/" + currentResource;
 			CopyObjectRequest copyRequest = new CopyObjectRequest(sourceBucketName, currentResource, destBucketName,
 				destResource);
 			try {

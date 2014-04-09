@@ -107,30 +107,30 @@ public class ShareCommandHandler extends AbstractHandler {
 
 							System.out.println("Button clicked");
 							/****************************/
-							// PortalPost portalPost = new PortalPost();
-							//
+							PortalPost portalPost = new PortalPost();
+
 							final Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keywordText
 								.getText());
 							workflow.setPath(path);
 							workflow.setShared(true);
-							// System.out.println(workflow.getJSON());
-							// if (nodeID != null) {
-							// portalPost.put(PortalUtilities.getNodeRestPoint() + nodeID, workflow.getJSON());
-							// }
-							// else {
-							// HttpResponse response = portalPost.post(PortalUtilities.getNodeRestPoint(),
-							// workflow.getJSON());
-							// if (response.getStatusLine().getStatusCode() != 200) {
-							// MessageDialog
-							// .openError(new Shell(), "Error", "Error. Received something other than 200 OK"
-							// + "\n" + response.getStatusLine());
-							// System.out.println("Error. Received something other than 200 OK" + "\n"
-							// + response.getStatusLine());
-							// return;
-							// }
-							//
-							// }
-							// portalPost.runCron();
+							System.out.println(workflow.getJSON());
+							if (nodeID != null) {
+								portalPost.put(PortalUtilities.getNodeRestPoint() + nodeID, workflow.getJSON());
+							}
+							else {
+								HttpResponse response = portalPost.post(PortalUtilities.getNodeRestPoint(),
+									workflow.getJSON());
+								if (response.getStatusLine().getStatusCode() != 200) {
+									MessageDialog
+										.openError(new Shell(), "Error", "Error. Received something other than 200 OK"
+											+ "\n" + response.getStatusLine());
+									System.out.println("Error. Received something other than 200 OK" + "\n"
+										+ response.getStatusLine());
+									return;
+								}
+
+							}
+							portalPost.runCron();
 							/****************************/
 							Job job = new Job("Sharing...") {
 								protected IStatus run(IProgressMonitor monitor) {
