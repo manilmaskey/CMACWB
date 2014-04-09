@@ -1,5 +1,8 @@
 package edu.uah.itsc.cmac.ui;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -208,6 +211,29 @@ public class LoginDialog {
 					// adminS3.uploadUserFolder(username, adminS3.getBucketName());
 					// }
 					shell.close();
+
+					String homeDir = System.getProperty("user.home");
+					File jgitFile = new File(homeDir + "/" + ".jgit");
+					if (jgitFile.exists()) {
+						jgitFile.delete();
+					}
+					try {
+						jgitFile.createNewFile();
+						String content = "accesskey: " + User.awsAccessKey + "\nsecretkey: " + User.awsSecretKey;
+						FileWriter fw = new FileWriter(jgitFile.getAbsoluteFile());
+						BufferedWriter bw = new BufferedWriter(fw);
+						bw.write(content);
+						bw.close();
+					}
+					catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+					if (!jgitFile.exists()) {
+						MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+							"Cannot load your credentials");
+					}
 
 					System.out.println("Connecting to XMPP-----------------------");
 					// XMPPClient xc = new XMPPClient(username,password);
