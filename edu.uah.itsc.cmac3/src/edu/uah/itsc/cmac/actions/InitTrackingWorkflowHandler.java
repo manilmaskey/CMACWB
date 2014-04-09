@@ -42,15 +42,30 @@ public class InitTrackingWorkflowHandler extends AbstractHandler {
 		final Shell shell = new Shell();
 		shell.setText("Enter workflow name");
 		shell.setLayout(new GridLayout(2, false));
-		shell.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
+		GridData gridData = new GridData();
+		gridData.heightHint = 400;
+		gridData.widthHint = 400;
+		
+		shell.setLayoutData(gridData);
+		Label space0 = new Label(shell, SWT.NONE);
+		space0.setLayoutData(gridData);
+		Label space01 = new Label(shell, SWT.NONE);
+		space01.setLayoutData(gridData);
 		Label workflowLabel = new Label(shell, SWT.NONE);
 		workflowLabel.setText("Workflow name");
 		final Text workflowText = new Text(shell, SWT.BORDER);
 		workflowText.setMessage("Enter new workflow name");
-
+		gridData.heightHint = 20;
+		gridData.widthHint = 200;
+		workflowText.setLayoutData(gridData);
+		Label space = new Label(shell, SWT.NONE);
+		space.setLayoutData(gridData);
+		Label space2 = new Label(shell, SWT.NONE);
+		space2.setLayoutData(gridData);
 		Button finishButton = new Button(shell, SWT.NONE);
 		finishButton.setText("Finish");
+		gridData.widthHint = 150;
+		finishButton.setLayoutData(gridData);
 		finishButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -84,6 +99,7 @@ public class InitTrackingWorkflowHandler extends AbstractHandler {
 		});
 
 		Button cancelButton = new Button(shell, SWT.NONE);
+		cancelButton.setLayoutData(gridData);
 		cancelButton.setText("Cancel");
 		cancelButton.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -92,7 +108,13 @@ public class InitTrackingWorkflowHandler extends AbstractHandler {
 				shell.close();
 			}
 		});
-		shell.setSize(250, 100);
+		Label space3 = new Label(shell, SWT.NONE);
+		space.setLayoutData(gridData);
+		Label space4 = new Label(shell, SWT.NONE);
+		space2.setLayoutData(gridData);
+		
+		shell.pack();
+//		shell.setSize(450, 200);
 		shell.open();
 
 		return null;

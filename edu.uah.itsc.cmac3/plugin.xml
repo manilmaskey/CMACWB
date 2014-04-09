@@ -647,9 +647,9 @@
 <!-- Shreedhan Added initLocal command-->
 <extension point="org.eclipse.ui.commands">
   <command
-        description="New tracking workflow"
+        description="New workflow"
         id="edu.uah.itsc.cmac.InitTrackingWorkflow"
-        name="New tracking Workflow">
+        name="New Workflow">
   </command>
 </extension>
 <!-- Shreedhan Added -->
@@ -702,9 +702,9 @@
 <!-- Shreedhan Added saveForTrackingWorkflow command-->
 <extension point="org.eclipse.ui.commands">
   <command
-        description="Save for tracking workflow"
+        description="Save a local version"
         id="edu.uah.itsc.cmac.SaveForTrackingWorkflow"
-        name="Save for tracking Workflow">
+        name="Save a local version">
   </command>
 </extension>
 <!-- Shreedhan Added -->
