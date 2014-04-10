@@ -110,7 +110,7 @@ public class AMIView extends ViewPart {
 			}
 		});
 
-		layoutData.widthHint = 400;
+		
 		addComposite.setLayoutData(layoutData);
 
 		Composite buttonComposite = new Composite(parent, SWT.NONE);
@@ -194,6 +194,7 @@ public class AMIView extends ViewPart {
 				refreshAMI(amazonEC2);
 			}
 		});
+		layoutData.widthHint = 500;
 		buttonComposite.setLayoutData(layoutData);
 
 		// Disable texts and buttons for non-admin users
