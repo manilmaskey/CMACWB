@@ -6,6 +6,7 @@ package edu.uah.itsc.cmac.util;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CloneCommand;
@@ -173,7 +174,7 @@ public class GITUtility {
 			}
 			else
 				System.out.println("Pulled remote changes\n");
-			
+
 			repository.close();
 		}
 		catch (Exception e) {
@@ -187,6 +188,23 @@ public class GITUtility {
 		}
 		else
 			return true;
+	}
+
+
+	public static Git getGit(String repoName, String repoLocalPath) {
+		if (!validRepoName(repoName))
+			return null;
+		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
+		FileRepositoryBuilder builder = new FileRepositoryBuilder();
+		try {
+			Repository repository = builder.setGitDir(localPath).findGitDir().build();
+			Git git = new Git(repository);
+			return git;
+		}
+		catch (Exception e) {
+			return null;
+
+		}
 	}
 
 }
