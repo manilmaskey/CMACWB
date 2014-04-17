@@ -11,6 +11,8 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -56,7 +58,7 @@ public class AMIView extends ViewPart {
 	 */
 	public void createPartControl(Composite parent) {
 		EC2 amazonEC2 = new EC2();
-		GridLayout layout = new GridLayout(2, false);
+		GridLayout layout = new GridLayout(1, false);
 		parent.setLayout(layout);
 		createWidgets(parent, amazonEC2);
 		createTable(parent, amazonEC2);
@@ -68,21 +70,31 @@ public class AMIView extends ViewPart {
 	 */
 	private void createWidgets(final Composite parent, final EC2 amazonEC2) {
 		GridData layoutData = new GridData();
-
 		Composite addComposite = new Composite(parent, SWT.NONE);
 		addComposite.setLayout(new GridLayout(5, false));
+		
+		GridData widgetLayoutData = new GridData();
+		widgetLayoutData.widthHint = 180;
+		if (System.getProperty("os.name").indexOf("mac") > 0)
+			widgetLayoutData.heightHint = 50;
 		Label nameLabel = new Label(addComposite, SWT.NONE);
-		nameLabel.setText("AMI Name");
+		FontData[] fontData = nameLabel.getFont().getFontData();
+		fontData[0].setHeight(10);
+		nameLabel.setFont(new Font(parent.getDisplay(), fontData[0]));
+		nameLabel.setText("New AMI Name");
 		final Text nameText = new Text(addComposite, SWT.BORDER);
-
+		nameText.setLayoutData(widgetLayoutData);
 		Label instanceLabel = new Label(addComposite, SWT.NONE);
 		instanceLabel.setText("Instance ID");
+		instanceLabel.setFont(new Font(parent.getDisplay(), fontData[0]));
 		final Text instanceText = new Text(addComposite, SWT.BORDER);
+		instanceText.setLayoutData(widgetLayoutData);
 		Button submitButton = new Button(addComposite, SWT.PUSH);
 		submitButton.setText("Submit AMI");
 		org.eclipse.swt.graphics.Image image = new org.eclipse.swt.graphics.Image(parent.getDisplay(), getClass()
 			.getClassLoader().getResourceAsStream("icons/submit.gif"));
 		submitButton.setImage(image);
+		submitButton.setLayoutData(widgetLayoutData);
 		submitButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -117,15 +129,17 @@ public class AMIView extends ViewPart {
 		buttonComposite.setLayout(new GridLayout(5, false));
 
 		Label runInstanceLabel = new Label(buttonComposite, SWT.NONE);
-		runInstanceLabel.setText("Instance name");
+		runInstanceLabel.setText("New Instance name");
+		runInstanceLabel.setFont(new Font(parent.getDisplay(), fontData[0]));
 		final Text runInstanceText = new Text(buttonComposite, SWT.BORDER);
-
+		runInstanceText.setLayoutData(widgetLayoutData);
 		runButton = new Button(buttonComposite, SWT.PUSH);
 		runButton.setText("Run instance using AMI");
 		image = new org.eclipse.swt.graphics.Image(parent.getDisplay(), getClass().getClassLoader()
 			.getResourceAsStream("icons/start.png"));
 		runButton.setImage(image);
 		runButton.setEnabled(false);
+		runButton.setLayoutData(widgetLayoutData);
 		runButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -163,6 +177,7 @@ public class AMIView extends ViewPart {
 			.getResourceAsStream("icons/delete.png"));
 		deleteButton.setImage(image);
 		deleteButton.setEnabled(false);
+		deleteButton.setLayoutData(widgetLayoutData);
 		deleteButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -187,6 +202,7 @@ public class AMIView extends ViewPart {
 		image = new org.eclipse.swt.graphics.Image(parent.getDisplay(), getClass().getClassLoader()
 			.getResourceAsStream("icons/refresh.png"));
 		refreshButton.setImage(image);
+		refreshButton.setLayoutData(widgetLayoutData);
 		refreshButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -194,7 +210,6 @@ public class AMIView extends ViewPart {
 				refreshAMI(amazonEC2);
 			}
 		});
-		layoutData.widthHint = 500;
 		buttonComposite.setLayoutData(layoutData);
 
 		// Disable texts and buttons for non-admin users
@@ -220,8 +235,8 @@ public class AMIView extends ViewPart {
 		table.setLinesVisible(true);
 
 		layoutData.horizontalSpan = 2;
-		layoutData.grabExcessVerticalSpace = true;
-		layoutData.verticalAlignment = SWT.TOP;
+		layoutData.grabExcessVerticalSpace = false;
+		layoutData.verticalAlignment = SWT.CENTER;
 		table.setLayoutData(layoutData);
 
 		viewer.setContentProvider(new ArrayContentProvider());
@@ -242,7 +257,7 @@ public class AMIView extends ViewPart {
 
 	public void createColumns(final TableViewer viewer) {
 		String[] titles = { "Name", "Owner", "Description", "AMI ID", "Source", "Status", "Platform", "Root Device" };
-		int[] bounds = { 100, 100, 200, 100, 150, 75, 100, 100 };
+		int[] bounds = { 100, 100, 200, 100, 150, 75, 100, 120 };
 
 		// Name
 		TableViewerColumn column = createTableViewerColumn(titles[0], bounds[0], 0);
