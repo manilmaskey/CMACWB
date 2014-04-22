@@ -72,21 +72,16 @@ public class AMIView extends ViewPart {
 		GridData layoutData = new GridData();
 		Composite addComposite = new Composite(parent, SWT.NONE);
 		addComposite.setLayout(new GridLayout(5, false));
-		
+
 		GridData widgetLayoutData = new GridData();
 		widgetLayoutData.widthHint = 180;
-		if (System.getProperty("os.name").indexOf("mac") > 0)
-			widgetLayoutData.heightHint = 50;
 		Label nameLabel = new Label(addComposite, SWT.NONE);
-		FontData[] fontData = nameLabel.getFont().getFontData();
-		fontData[0].setHeight(10);
-		nameLabel.setFont(new Font(parent.getDisplay(), fontData[0]));
+
 		nameLabel.setText("New AMI Name");
 		final Text nameText = new Text(addComposite, SWT.BORDER);
 		nameText.setLayoutData(widgetLayoutData);
 		Label instanceLabel = new Label(addComposite, SWT.NONE);
 		instanceLabel.setText("Instance ID");
-		instanceLabel.setFont(new Font(parent.getDisplay(), fontData[0]));
 		final Text instanceText = new Text(addComposite, SWT.BORDER);
 		instanceText.setLayoutData(widgetLayoutData);
 		Button submitButton = new Button(addComposite, SWT.PUSH);
@@ -122,7 +117,10 @@ public class AMIView extends ViewPart {
 			}
 		});
 
-		
+		FontData[] fontData = submitButton.getFont().getFontData();
+		nameLabel.setFont(new Font(parent.getDisplay(), fontData[0]));
+		instanceLabel.setFont(new Font(parent.getDisplay(), fontData[0]));
+
 		addComposite.setLayoutData(layoutData);
 
 		Composite buttonComposite = new Composite(parent, SWT.NONE);
@@ -134,7 +132,7 @@ public class AMIView extends ViewPart {
 		final Text runInstanceText = new Text(buttonComposite, SWT.BORDER);
 		runInstanceText.setLayoutData(widgetLayoutData);
 		runButton = new Button(buttonComposite, SWT.PUSH);
-		runButton.setText("Run instance using AMI");
+		runButton.setText("Launch Instance");
 		image = new org.eclipse.swt.graphics.Image(parent.getDisplay(), getClass().getClassLoader()
 			.getResourceAsStream("icons/start.png"));
 		runButton.setImage(image);

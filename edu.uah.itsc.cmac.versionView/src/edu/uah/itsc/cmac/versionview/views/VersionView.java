@@ -1,7 +1,5 @@
 package edu.uah.itsc.cmac.versionview.views;
 
-import java.io.IOException;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -19,8 +17,6 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.DepthWalk.RevWalk;
@@ -39,19 +35,23 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.uah.itsc.cmac.models.VersionViewInterface;
 import edu.uah.itsc.cmac.util.GITUtility;
 
-public class VersionView extends ViewPart {
+public class VersionView extends ViewPart implements VersionViewInterface {
 
 	/**
 	 * The ID of the view as specified by the extension.
 	 */
 	public static final String	ID	= "edu.uah.itsc.cmac.versionview.views.VersionView";
 
+	private String				repoName;
+	private String				repoPath;
 	private TableViewer			viewer;
 	private Action				action1;
 	private Action				action2;
 	private Action				doubleClickAction;
+	private Composite			parent;
 
 	/**
 	 * The constructor.
@@ -59,10 +59,23 @@ public class VersionView extends ViewPart {
 	public VersionView() {
 	}
 
+	@Override
+	public void createPartControl(Composite parent) {
+		this.parent = parent;
+	}
+
+	@Override
+	public void accept(String repoName, String repoPath) {
+		this.repoName = repoName;
+		this.repoPath = repoPath;
+		destroyTable();
+		createVersionView(parent);
+	}
+
 	/**
 	 * This is a callback that will allow us to create the viewer and initialize it.
 	 */
-	public void createPartControl(Composite parent) {
+	public void createVersionView(Composite parent) {
 		try {
 			createTable(parent);
 		}
@@ -75,11 +88,15 @@ public class VersionView extends ViewPart {
 		contributeToActionBars();
 	}
 
+	private void destroyTable(){
+		viewer = null;
+	}
+	
 	private void createTable(Composite parent) throws GitAPIException {
 		GridData layoutData = new GridData();
 		viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-		String repoName = "testTag";
-		String repoPath = "c:\\projects";
+		// String repoName = "testTag";
+		// String repoPath = "c:\\projects";
 		Git git = GITUtility.getGit(repoName, repoPath);
 
 		createColumns(viewer, git);
@@ -276,4 +293,5 @@ public class VersionView extends ViewPart {
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
+
 }

@@ -7,18 +7,18 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import edu.uah.itsc.cmac.util.GITUtility;
+import edu.uah.itsc.cmac.models.VersionViewInterface;
 
 /**
  * @author sshrestha
- *
+ * 
  */
-public class SaveForTrackingWorkflowHandler extends AbstractHandler {
+public class ShowVersionListHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -27,11 +27,15 @@ public class SaveForTrackingWorkflowHandler extends AbstractHandler {
 
 		final IFolder folder = (IFolder) firstElement;
 		final String parentPath = folder.getParent().getLocation().toString();
+
 		try {
-			GITUtility.commitLocalChanges(folder.getName(), parentPath, "Testing commit");
+			VersionViewInterface versionViewInterface = (VersionViewInterface) PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage().showView("edu.uah.itsc.cmac.versionview.views.VersionView");
+			versionViewInterface.accept(folder.getName(), parentPath);
+
 		}
-		catch (Exception e) {
-			MessageDialog.openError(Display.getDefault().getActiveShell(), "Error!!", "This workflow is not enabled to be tracked");
+		catch (PartInitException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}

@@ -28,6 +28,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.transport.URIish;
 
 import edu.uah.itsc.aws.User;
@@ -50,6 +51,7 @@ public class GITUtility {
 		Repository repository = git.getRepository();
 		final StoredConfig config = repository.getConfig();
 		RemoteConfig remoteConfig = new RemoteConfig(config, remote);
+		remoteConfig.setTagOpt(TagOpt.FETCH_TAGS);
 		RefSpec pushRefSpec = new RefSpec(branch + ":" + branch);
 		URIish uri = new URIish(repoCompleteRemotepath);
 		remoteConfig.addURI(uri);
@@ -123,6 +125,7 @@ public class GITUtility {
 
 		final StoredConfig config = repository.getConfig();
 		RemoteConfig remoteConfig = new RemoteConfig(config, remote);
+		remoteConfig.setTagOpt(TagOpt.FETCH_TAGS);
 
 		int numRefSpec = remoteConfig.getPushRefSpecs().size();
 
@@ -140,6 +143,7 @@ public class GITUtility {
 			pushCommand.setRemote(remote).setRefSpecs(pushRefSpec);
 		}
 
+		pushCommand.setPushTags();
 		// RevCommit commit2 = git.commit().setMessage("Commit to push").call();
 		Iterable<PushResult> resultIterable = pushCommand.call();
 		PushResult result = resultIterable.iterator().next();
@@ -204,6 +208,22 @@ public class GITUtility {
 		catch (Exception e) {
 			return null;
 
+		}
+	}
+	
+	public static Ref createTag(String repoName, String repoLocalPath, String versionName, String comments){
+		if (!validRepoName(repoName))
+			return null;
+		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
+		FileRepositoryBuilder builder = new FileRepositoryBuilder();
+		try {
+			Repository repository = builder.setGitDir(localPath).findGitDir().build();
+			Git git = new Git(repository);
+			return git.tag().setName(versionName).setMessage(comments).call(); 
+		}
+		catch (Exception e) {
+			return null;
+			
 		}
 	}
 
