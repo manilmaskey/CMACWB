@@ -6,7 +6,6 @@ package edu.uah.itsc.cmac.util;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
 
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CloneCommand;
@@ -89,7 +88,7 @@ public class GITUtility {
 		Repository repository;
 		repository = builder.setGitDir(localPath).findGitDir().build();
 		Git git = new Git(repository);
-		git.rm().addFilepattern(".").call();
+		// git.rm().addFilepattern(".").call();
 		git.add().addFilepattern(".").call();
 		RevCommit commit = git.commit().setMessage(commitMessage)
 			.setAuthor(User.username, User.username + "@itsc.uah.edu").call();
@@ -194,7 +193,6 @@ public class GITUtility {
 			return true;
 	}
 
-
 	public static Git getGit(String repoName, String repoLocalPath) {
 		if (!validRepoName(repoName))
 			return null;
@@ -210,8 +208,8 @@ public class GITUtility {
 
 		}
 	}
-	
-	public static Ref createTag(String repoName, String repoLocalPath, String versionName, String comments){
+
+	public static Ref createTag(String repoName, String repoLocalPath, String versionName, String comments) {
 		if (!validRepoName(repoName))
 			return null;
 		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
@@ -219,12 +217,12 @@ public class GITUtility {
 		try {
 			Repository repository = builder.setGitDir(localPath).findGitDir().build();
 			Git git = new Git(repository);
-			return git.tag().setName(versionName).setMessage(comments).call(); 
+			return git.tag().setName(versionName).setMessage(comments).call();
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 			return null;
-			
+
 		}
 	}
-
 }
