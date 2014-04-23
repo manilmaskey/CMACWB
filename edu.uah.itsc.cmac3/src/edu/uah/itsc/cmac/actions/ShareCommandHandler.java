@@ -1,5 +1,6 @@
 package edu.uah.itsc.cmac.actions;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import org.apache.http.HttpResponse;
@@ -15,6 +16,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -36,9 +39,11 @@ import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
 import edu.uah.itsc.cmac.ui.NavigatorView;
+import edu.uah.itsc.cmac.util.GITUtility;
 
 public class ShareCommandHandler extends AbstractHandler {
 	private IStructuredSelection	selection	= StructuredSelection.EMPTY;
+	private static final String		REMOTE_URL	= "amazon-s3://.jgit@";
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -64,7 +69,7 @@ public class ShareCommandHandler extends AbstractHandler {
 					return null;
 				}
 				final S3 s3 = new S3();
-				final String path = s3.getCommunityBucketName() + selectedFolder.getFullPath().toString();
+				final String path = selectedFolder.getFullPath().toString();
 				final Shell shell = new Shell(Display.getDefault().getActiveShell());
 				shell.setText("Workflow Settings");
 				shell.setLayout(new GridLayout(2, false));
@@ -162,6 +167,22 @@ public class ShareCommandHandler extends AbstractHandler {
 
 											String workflowPath = null;
 											workflowPath = workflow.getPath().replaceFirst("/", "") + ".git";
+
+											// commit and push before sharing
+											String repoName = selectedFolder.getName();
+											String repoLocalPath = selectedFolder.getParent().getLocation().toString();
+											String repoRemotePath = REMOTE_URL + s3.getCommunityBucketName()
+												+ selectedFolder.getFullPath().toString();
+											try {
+												GITUtility.commitLocalChanges(repoName, repoLocalPath,
+													"Commit for share");
+												GITUtility.push(repoName, repoLocalPath, repoRemotePath);
+											}
+											catch (Exception e) {
+												System.out.println("cannot commit before share: " + e.getMessage());
+												e.printStackTrace();
+												return Status.CANCEL_STATUS;
+											}
 											s3.shareGITFolder(selectedFolder);
 											// s3.addWorkflowSharePolicy("cmac_collaborators", "shared_workflow",
 											// workflowPath);

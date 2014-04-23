@@ -86,7 +86,7 @@ public class GITUtility {
 		Repository repository;
 		repository = builder.setGitDir(localPath).findGitDir().build();
 		Git git = new Git(repository);
-		git.rm().addFilepattern(".").call();
+		// git.rm().addFilepattern(".").call();
 		git.add().addFilepattern(".").call();
 		RevCommit commit = git.commit().setMessage(commitMessage)
 			.setAuthor(User.username, User.username + "@itsc.uah.edu").call();
@@ -173,7 +173,7 @@ public class GITUtility {
 			}
 			else
 				System.out.println("Pulled remote changes\n");
-			
+
 			repository.close();
 		}
 		catch (Exception e) {
