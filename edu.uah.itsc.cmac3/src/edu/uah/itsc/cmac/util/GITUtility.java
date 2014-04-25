@@ -13,6 +13,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
@@ -222,6 +223,18 @@ public class GITUtility {
 		catch (Exception e) {
 			e.printStackTrace();
 			return null;
+
+		}
+	}
+	
+	public static void hardReset(String repoName, String repoLocalPath, String ref) {
+		Git git = getGit(repoName, repoLocalPath);
+		try {
+			// Ref resultRef = git.reset().setRef(ref).addPath(".").setMode(ResetType.HARD).call();
+			Ref resultRef = git.reset().setRef(ref).setMode(ResetType.HARD).call();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 
 		}
 	}

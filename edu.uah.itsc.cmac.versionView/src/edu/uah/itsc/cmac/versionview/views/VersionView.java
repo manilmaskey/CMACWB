@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -48,8 +49,7 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 	private String				repoName;
 	private String				repoPath;
 	private TableViewer			viewer;
-	private Action				action1;
-	private Action				action2;
+	private Action				replaceWithTag;
 	private Action				doubleClickAction;
 	private Composite			parent;
 
@@ -89,6 +89,7 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 	}
 
 	private void destroyTable(){
+//		viewer.getTable().clearAll();
 		viewer = null;
 	}
 	
@@ -229,43 +230,36 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 	}
 
 	private void fillLocalPullDown(IMenuManager manager) {
-		manager.add(action1);
+		manager.add(replaceWithTag);
 		manager.add(new Separator());
-		manager.add(action2);
 	}
 
 	private void fillContextMenu(IMenuManager manager) {
-		manager.add(action1);
-		manager.add(action2);
+		manager.add(replaceWithTag);
 		// Other plug-ins can contribute there actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
 
 	private void fillLocalToolBar(IToolBarManager manager) {
-		manager.add(action1);
-		manager.add(action2);
+		manager.add(replaceWithTag);
 	}
 
 	private void makeActions() {
-		action1 = new Action() {
+		replaceWithTag = new Action() {
 			public void run() {
 				showMessage("Action 1 executed");
+				Table table = viewer.getTable();
+				TableItem selectedItem = table.getSelection()[0];
+				Ref ref = (Ref) selectedItem.getData();
+				String stringRef = ref.getTarget().getName();
+				GITUtility.hardReset(repoName, repoPath, stringRef);
 			}
 		};
-		action1.setText("Action 1");
-		action1.setToolTipText("Action 1 tooltip");
-		action1.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
+		replaceWithTag.setText("Replace with tag");
+		replaceWithTag.setToolTipText("Replace current source with the source from the selected tag");
+		replaceWithTag.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
 			.getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 
-		action2 = new Action() {
-			public void run() {
-				showMessage("Action 2 executed");
-			}
-		};
-		action2.setText("Action 2");
-		action2.setToolTipText("Action 2 tooltip");
-		action2.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
-			.getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
 		doubleClickAction = new Action() {
 			public void run() {
 				ISelection selection = viewer.getSelection();
