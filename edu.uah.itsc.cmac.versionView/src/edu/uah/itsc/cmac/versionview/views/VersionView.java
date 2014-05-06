@@ -247,15 +247,15 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 	private void makeActions() {
 		replaceWithTag = new Action() {
 			public void run() {
-				showMessage("Action 1 executed");
 				Table table = viewer.getTable();
 				TableItem selectedItem = table.getSelection()[0];
 				Ref ref = (Ref) selectedItem.getData();
 				String stringRef = ref.getTarget().getName();
 				GITUtility.hardReset(repoName, repoPath, stringRef);
+				showMessage("Replaced local workflow with selected version");
 			}
 		};
-		replaceWithTag.setText("Replace with tag");
+		replaceWithTag.setText("Replace with this version");
 		replaceWithTag.setToolTipText("Replace current source with the source from the selected tag");
 		replaceWithTag.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
 			.getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
