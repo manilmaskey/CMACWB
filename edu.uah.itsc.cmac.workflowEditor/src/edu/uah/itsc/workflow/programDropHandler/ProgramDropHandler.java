@@ -59,12 +59,14 @@ public class ProgramDropHandler {
 	}
 
 	public void handleDrop(int x, int y, Object obj) throws Exception {
-		
-		
-		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
-		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(editorName));
-		
-//		VariablePoJo instance = VariablePoJo.getInstance();
+
+		String editorName = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage().getActiveEditor()
+				.getTitle();
+		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance()
+				.getEditorsmap().get(editorName));
+
+		// VariablePoJo instance = VariablePoJo.getInstance();
 		List<ProgramPOJO> programsList = dataobj.getProgram_List();
 
 		for (int i = 0; i < programsList.size(); i++) {
@@ -83,13 +85,16 @@ public class ProgramDropHandler {
 				method.addListener(SWT.MouseDown, new Listener() {
 					public void handleEvent(Event e) {
 						MethodCompositeTracker methodTrackerObject = new MethodCompositeTracker();
-						methodTrackerObject.setCompositeList(dataobj.getCompositeList());
+						methodTrackerObject.setCompositeList(dataobj
+								.getCompositeList());
 						methodTrackerObject.setMethodComposite(method);
-						methodTrackerObject
-								.setChildComposite_WorkSpace(dataobj.getChildCreatorObject()
-										.getChildComposite_WorkSpace());
-						methodTrackerObject.setParentComposite(dataobj.getParentComposite());
-						methodTrackerObject.setConnectorList(dataobj.getConnectorList());
+						methodTrackerObject.setChildComposite_WorkSpace(dataobj
+								.getChildCreatorObject()
+								.getChildComposite_WorkSpace());
+						methodTrackerObject.setParentComposite(dataobj
+								.getParentComposite());
+						methodTrackerObject.setConnectorList(dataobj
+								.getConnectorList());
 						methodTrackerObject.methodTracker();
 					}
 				});
@@ -103,6 +108,26 @@ public class ProgramDropHandler {
 					}
 				});
 
+				method.addListener(SWT.MouseDoubleClick, new Listener() {
+
+					@Override
+					public void handleEvent(Event event) {
+						// TODO Auto-generated method stub
+						System.out
+								.println("\n\nNEW MOUSE DOUBLE CLICK LISTNER...\n\n");
+					}
+				});
+
+				method.addListener(SWT.MouseDown, new Listener() {
+
+					@Override
+					public void handleEvent(Event event) {
+						// TODO Auto-generated method stub
+						System.out
+								.println("\n\nNEW MOUSE DOWN CLICK LISTNER...\n\n");
+					}
+				});
+
 				method.addMouseListener(new MouseListener() {
 
 					@Override
@@ -111,75 +136,109 @@ public class ProgramDropHandler {
 
 					@Override
 					public void mouseDown(MouseEvent e) {
-						
-						RelayComposites rc = new RelayComposites();
-						rc.reDraw();
+						System.out.println("CLICK COUNT = " + e.count);
+						if (e.count < 2) {
+							RelayComposites rc = new RelayComposites();
+							rc.reDraw();
 
-						if (dataobj.getSelected_composite() != null) {
+							if (dataobj.getSelected_composite() != null) {
 
-							if (dataobj.getSelected_composite().getCompositeID()
-									.equals(method.getCompositeID())) {
-								CompositeWrapper composite = dataobj.getSelected_composite();
-								composite
-										.setBackground(dataobj.getChildCreatorObject()
-												.getChildComposite_WorkSpace()
-												.getDisplay()
-												.getSystemColor(
-														SWT.COLOR_WIDGET_NORMAL_SHADOW));
-								dataobj.setSelected_composite(null);
-							} else {
-								if (!(dataobj.getSelected_composite().isDisposed())) {
+								if (dataobj.getSelected_composite()
+										.getCompositeID()
+										.equals(method.getCompositeID())) {
 									CompositeWrapper composite = dataobj
 											.getSelected_composite();
 									composite
-											.setBackground(dataobj.getChildCreatorObject()
+											.setBackground(dataobj
+													.getChildCreatorObject()
 													.getChildComposite_WorkSpace()
 													.getDisplay()
 													.getSystemColor(
 															SWT.COLOR_WIDGET_NORMAL_SHADOW));
+									dataobj.setSelected_composite(null);
+								} else {
+									if (!(dataobj.getSelected_composite()
+											.isDisposed())) {
+										CompositeWrapper composite = dataobj
+												.getSelected_composite();
+										composite
+												.setBackground(dataobj
+														.getChildCreatorObject()
+														.getChildComposite_WorkSpace()
+														.getDisplay()
+														.getSystemColor(
+																SWT.COLOR_WIDGET_NORMAL_SHADOW));
+									}
 								}
 							}
-						}
 
-						method.forceFocus();
-						if (method.forceFocus() == true) {
-							System.out.println("force focus = " + true);
+							method.forceFocus();
+							if (method.forceFocus() == true) {
+								System.out.println("force focus = " + true);
+							} else {
+								System.out.println("force focus = " + false);
+							}
+
+							method.setBackground(dataobj
+									.getChildCreatorObject()
+									.getChildComposite_WorkSpace()
+									.getDisplay()
+									.getSystemColor(
+											SWT.COLOR_TITLE_INACTIVE_BACKGROUND));
+
+							dataobj.setSelected_composite(method);
+							dataobj.setTitleLabel(method.getTitleLabel());
 						} else {
-							System.out.println("force focus = " + false);
+							int a = e.x;
+							int b = e.y;
+
+							System.out.println("a=" + a);
+							System.out.println("b=" + b);
+
+							Point cursor_location = e.display
+									.getCursorLocation();
+
+							CompositeClickHandler handlerObject = new CompositeClickHandler();
+
+							try {
+								for (int i = 0; i < dataobj.getCompositeList()
+										.size(); i++) {
+									if (dataobj.getCompositeList().get(i)
+											.getCompositeID()
+											.equals(method.getCompositeID())) {
+										handlerObject.handleCompositeClick(i,
+												cursor_location);
+									}
+								}
+							} catch (Exception e1) {
+								e1.printStackTrace();
+							}
+
 						}
-
-						method.setBackground(dataobj
-								.getChildCreatorObject()
-								.getChildComposite_WorkSpace()
-								.getDisplay()
-								.getSystemColor(
-										SWT.COLOR_TITLE_INACTIVE_BACKGROUND));
-
-						dataobj.setSelected_composite(method);
-						dataobj.setTitleLabel(
-								method.getTitleLabel());
 
 					}
 
 					@Override
 					public void mouseDoubleClick(MouseEvent e) {
-						
+
 						int a = e.x;
 						int b = e.y;
-						
+
 						System.out.println("a=" + a);
 						System.out.println("b=" + b);
-						
+
 						Point cursor_location = e.display.getCursorLocation();
-						
+
 						CompositeClickHandler handlerObject = new CompositeClickHandler();
 
 						try {
-							for (int i = 0; i < dataobj.getCompositeList().size(); i++) {
+							for (int i = 0; i < dataobj.getCompositeList()
+									.size(); i++) {
 								if (dataobj.getCompositeList().get(i)
 										.getCompositeID()
 										.equals(method.getCompositeID())) {
-									handlerObject.handleCompositeClick(i,cursor_location);
+									handlerObject.handleCompositeClick(i,
+											cursor_location);
 								}
 							}
 						} catch (Exception e1) {

@@ -27,7 +27,7 @@ import edu.uah.itsc.workflow.wrapperClasses.CompositeWrapper;
  * @author Rohith Samudrala
  * 
  */
-public class RecreateProgramHandler {
+public class RecreateProgramHandler implements MouseListener {
 
 	CompositeWrapper method;
 	Label in;
@@ -57,13 +57,15 @@ public class RecreateProgramHandler {
 		this.method = method;
 	}
 
-	public void handleDrop(int x, int y, Object obj, final String filename) throws Exception {
-		
-		
-//		String editorName = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
-		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance().getEditorsmap().get(filename));
-		
-//		VariablePoJo instance = VariablePoJo.getInstance();
+	public void handleDrop(int x, int y, Object obj, final String filename)
+			throws Exception {
+
+		// String editorName =
+		// PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getTitle();
+		final CopyOfVariablePoJo dataobj = (POJOHolder.getInstance()
+				.getEditorsmap().get(filename));
+
+		// VariablePoJo instance = VariablePoJo.getInstance();
 		List<ProgramPOJO> programsList = dataobj.getProgram_List();
 
 		for (int i = 0; i < programsList.size(); i++) {
@@ -82,13 +84,16 @@ public class RecreateProgramHandler {
 				method.addListener(SWT.MouseDown, new Listener() {
 					public void handleEvent(Event e) {
 						MethodCompositeTracker methodTrackerObject = new MethodCompositeTracker();
-						methodTrackerObject.setCompositeList(dataobj.getCompositeList());
+						methodTrackerObject.setCompositeList(dataobj
+								.getCompositeList());
 						methodTrackerObject.setMethodComposite(method);
-						methodTrackerObject
-								.setChildComposite_WorkSpace(dataobj.getChildCreatorObject()
-										.getChildComposite_WorkSpace());
-						methodTrackerObject.setParentComposite(dataobj.getParentComposite());
-						methodTrackerObject.setConnectorList(dataobj.getConnectorList());
+						methodTrackerObject.setChildComposite_WorkSpace(dataobj
+								.getChildCreatorObject()
+								.getChildComposite_WorkSpace());
+						methodTrackerObject.setParentComposite(dataobj
+								.getParentComposite());
+						methodTrackerObject.setConnectorList(dataobj
+								.getConnectorList());
 						methodTrackerObject.methodTracker();
 					}
 				});
@@ -110,53 +115,77 @@ public class RecreateProgramHandler {
 
 					@Override
 					public void mouseDown(MouseEvent e) {
-						
-						RelayComposites rc = new RelayComposites();
-						rc.reDraw();
 
-						if (dataobj.getSelected_composite() != null) {
+						System.out.println("CLICK COUNT = " + e.count);
+						if (e.count < 2) { // if less than 2 clicks then
+							RelayComposites rc = new RelayComposites();
+							rc.reDraw();
 
-							if (dataobj.getSelected_composite().getCompositeID()
-									.equals(method.getCompositeID())) {
-								CompositeWrapper composite = dataobj.getSelected_composite();
-								composite
-										.setBackground(dataobj.getChildCreatorObject()
-												.getChildComposite_WorkSpace()
-												.getDisplay()
-												.getSystemColor(
-														SWT.COLOR_WIDGET_NORMAL_SHADOW));
-								dataobj.setSelected_composite(null);
-							} else {
-								if (!(dataobj.getSelected_composite().isDisposed())) {
+							if (dataobj.getSelected_composite() != null) {
+
+								if (dataobj.getSelected_composite()
+										.getCompositeID()
+										.equals(method.getCompositeID())) {
 									CompositeWrapper composite = dataobj
 											.getSelected_composite();
 									composite
-											.setBackground(dataobj.getChildCreatorObject()
+											.setBackground(dataobj
+													.getChildCreatorObject()
 													.getChildComposite_WorkSpace()
 													.getDisplay()
 													.getSystemColor(
 															SWT.COLOR_WIDGET_NORMAL_SHADOW));
+									dataobj.setSelected_composite(null);
+								} else {
+									if (!(dataobj.getSelected_composite()
+											.isDisposed())) {
+										CompositeWrapper composite = dataobj
+												.getSelected_composite();
+										composite
+												.setBackground(dataobj
+														.getChildCreatorObject()
+														.getChildComposite_WorkSpace()
+														.getDisplay()
+														.getSystemColor(
+																SWT.COLOR_WIDGET_NORMAL_SHADOW));
+									}
 								}
 							}
-						}
 
-						method.forceFocus();
-						if (method.forceFocus() == true) {
-							System.out.println("force focus = " + true);
+							method.forceFocus();
+							if (method.forceFocus() == true) {
+								System.out.println("force focus = " + true);
+							} else {
+								System.out.println("force focus = " + false);
+							}
+
+							method.setBackground(dataobj
+									.getChildCreatorObject()
+									.getChildComposite_WorkSpace()
+									.getDisplay()
+									.getSystemColor(
+											SWT.COLOR_TITLE_INACTIVE_BACKGROUND));
+
+							dataobj.setSelected_composite(method);
+							dataobj.setTitleLabel(method.getTitleLabel());
 						} else {
-							System.out.println("force focus = " + false);
+							// mouse double click detected
+							CompositeClickHandler handlerObject = new CompositeClickHandler();
+							try {
+								for (int i = 0; i < dataobj.getCompositeList()
+										.size(); i++) {
+									if (dataobj.getCompositeList().get(i)
+											.getCompositeID()
+											.equals(method.getCompositeID())) {
+										handlerObject.handleCompositeClick(i,
+												e.display.getCursorLocation());
+									}
+								}
+							} catch (Exception e1) {
+								e1.printStackTrace();
+							}
+
 						}
-
-						method.setBackground(dataobj
-								.getChildCreatorObject()
-								.getChildComposite_WorkSpace()
-								.getDisplay()
-								.getSystemColor(
-										SWT.COLOR_TITLE_INACTIVE_BACKGROUND));
-
-						dataobj.setSelected_composite(method);
-						dataobj.setTitleLabel(
-								method.getTitleLabel());
 
 					}
 
@@ -164,11 +193,13 @@ public class RecreateProgramHandler {
 					public void mouseDoubleClick(MouseEvent e) {
 						CompositeClickHandler handlerObject = new CompositeClickHandler();
 						try {
-							for (int i = 0; i < dataobj.getCompositeList().size(); i++) {
+							for (int i = 0; i < dataobj.getCompositeList()
+									.size(); i++) {
 								if (dataobj.getCompositeList().get(i)
 										.getCompositeID()
 										.equals(method.getCompositeID())) {
-									handlerObject.handleCompositeClick(i,e.display.getCursorLocation());
+									handlerObject.handleCompositeClick(i,
+											e.display.getCursorLocation());
 								}
 							}
 						} catch (Exception e1) {
@@ -181,6 +212,24 @@ public class RecreateProgramHandler {
 			}
 
 		}
+
+	}
+
+	@Override
+	public void mouseDoubleClick(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseDown(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseUp(MouseEvent e) {
+		// TODO Auto-generated method stub
 
 	}
 
