@@ -88,11 +88,11 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 		contributeToActionBars();
 	}
 
-	private void destroyTable(){
-//		viewer.getTable().clearAll();
+	private void destroyTable() {
+		// viewer.getTable().clearAll();
 		viewer = null;
 	}
-	
+
 	private void createTable(Composite parent) throws GitAPIException {
 		GridData layoutData = new GridData();
 		viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
@@ -252,6 +252,8 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 				Ref ref = (Ref) selectedItem.getData();
 				String stringRef = ref.getTarget().getName();
 				GITUtility.hardReset(repoName, repoPath, stringRef);
+				// GITUtility.revert(repoName, repoPath, ref);
+
 				showMessage("Replaced local workflow with selected version");
 			}
 		};
