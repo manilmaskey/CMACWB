@@ -102,12 +102,16 @@ public class GITUtility {
 		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
 		Repository repository = builder.setGitDir(localPath).findGitDir().build();
 		Git git = new Git(repository);
+		
+		// Get reference of head in master branch
 		Ref head = repository.getRef("refs/heads/master");
 
 		if (head == null) {
 			System.out.println("Nothing to push");
 			throw new Exception("Not a valid tracking workflow");
 		}
+		
+		// Get commit object from the head of the master branch
 		RevWalk walk = new RevWalk(repository);
 		RevCommit commit = walk.parseCommit(head.getObjectId());
 
@@ -115,6 +119,7 @@ public class GITUtility {
 		String branch = "refs/heads/master";
 		String trackingBranch = "refs/remotes/" + remote + "/master";
 
+		// Update heads of both local and remote master branch
 		RefUpdate branchRefUpdate = repository.updateRef(branch);
 		branchRefUpdate.setNewObjectId(commit.getId());
 		branchRefUpdate.update();
@@ -123,15 +128,19 @@ public class GITUtility {
 		trackingBranchRefUpdate.setNewObjectId(commit.getId());
 		trackingBranchRefUpdate.update();
 
+		// Get the config file and remote config for 'origin' remote from the config
 		final StoredConfig config = repository.getConfig();
 		RemoteConfig remoteConfig = new RemoteConfig(config, remote);
 		remoteConfig.setTagOpt(TagOpt.FETCH_TAGS);
 
+		// Get number of remote config
 		int numRefSpec = remoteConfig.getPushRefSpecs().size();
 
 		RefSpec pushRefSpec = new RefSpec(branch + ":" + branch);
 
 		PushCommand pushCommand = git.push();
+		
+		// if there are no remote config(s) create a new remote config for amazon S3
 		if (numRefSpec <= 0) {
 			// cmac-test-experiment/shree/test_s3jgit.git
 			URIish uri = new URIish(repoRemotePath + "/" + repoName + ".git");
@@ -140,10 +149,14 @@ public class GITUtility {
 			remoteConfig.addPushRefSpec(pushRefSpec);
 			remoteConfig.update(config);
 			config.save();
-			pushCommand.setRemote(remote).setRefSpecs(pushRefSpec);
 		}
-
+		
+		
+		pushCommand.setRemote(remote).setRefSpecs(pushRefSpec);
+		
+		// Push tags as well and set force push
 		pushCommand.setPushTags();
+		pushCommand.setForce(true);
 		// RevCommit commit2 = git.commit().setMessage("Commit to push").call();
 		Iterable<PushResult> resultIterable = pushCommand.call();
 		PushResult result = resultIterable.iterator().next();
@@ -236,6 +249,16 @@ public class GITUtility {
 		catch (Exception e) {
 			e.printStackTrace();
 
+		}
+	}
+	
+	public static void revert(String repoName, String repoLocalPath, Ref commit){
+		Git git = getGit(repoName, repoLocalPath);
+		try {
+			RevCommit revertCommand  = git.revert().include(commit).call();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }
