@@ -31,7 +31,7 @@ public class ShowVersionListHandler extends AbstractHandler {
 		try {
 			VersionViewInterface versionViewInterface = (VersionViewInterface) PlatformUI.getWorkbench()
 				.getActiveWorkbenchWindow().getActivePage().showView("edu.uah.itsc.cmac.versionview.views.VersionView");
-			versionViewInterface.accept(folder.getName(), parentPath);
+			versionViewInterface.accept(folder, folder.getName(), parentPath);
 
 		}
 		catch (PartInitException e) {

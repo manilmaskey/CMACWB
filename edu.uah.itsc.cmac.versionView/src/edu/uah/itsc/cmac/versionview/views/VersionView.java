@@ -1,39 +1,26 @@
 package edu.uah.itsc.cmac.versionview.views;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
+import java.util.List;
+
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.revwalk.DepthWalk.RevWalk;
 import org.eclipse.jgit.revwalk.RevTag;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.widgets.ExpandBar;
+import org.eclipse.swt.widgets.ExpandItem;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.uah.itsc.cmac.models.VersionViewInterface;
@@ -45,80 +32,103 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 	 * The ID of the view as specified by the extension.
 	 */
 	public static final String	ID	= "edu.uah.itsc.cmac.versionview.views.VersionView";
-
-	private String				repoName;
-	private String				repoPath;
-	private TableViewer			viewer;
-	private Action				replaceWithTag;
-	private Action				doubleClickAction;
-	private Composite			parent;
-
-	/**
-	 * The constructor.
-	 */
-	public VersionView() {
-	}
+	private ExpandBar			bar;
 
 	@Override
 	public void createPartControl(Composite parent) {
-		this.parent = parent;
+		bar = new ExpandBar(parent, SWT.V_SCROLL | SWT.H_SCROLL);
+		bar.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 	}
 
 	@Override
-	public void accept(String repoName, String repoPath) {
-		this.repoName = repoName;
-		this.repoPath = repoPath;
-		destroyTable();
-		createVersionView(parent);
-	}
+	public void accept(IFolder selectedFolder, String repoName, String repoPath) {
+		/*
+		 * Get all expand items currently in the bar. Dispose all the items. Note that the item should set expanded
+		 * value to false, otherwise you will notice weird problems when the items are disposed
+		 */
 
-	/**
-	 * This is a callback that will allow us to create the viewer and initialize it.
-	 */
-	public void createVersionView(Composite parent) {
-		try {
-			createTable(parent);
+		ExpandItem[] items = bar.getItems();
+		for (ExpandItem item : items) {
+			item.setExpanded(false);
+			item.dispose();
 		}
-		catch (Exception e) {
+
+		Git git = GITUtility.getGit(repoName, repoPath);
+		List<Ref> tags = null;
+		try {
+			tags = git.tagList().call();
+		}
+		catch (GitAPIException e) {
 			e.printStackTrace();
 		}
-		makeActions();
-		hookContextMenu();
-		hookDoubleClickAction();
-		contributeToActionBars();
+		if (tags == null || tags.isEmpty())
+			createNoVersion();
+		else {
+			for (Ref ref : tags) {
+				createVersionBar(git, ref, selectedFolder);
+			}
+		}
+
 	}
 
-	private void destroyTable() {
-		// viewer.getTable().clearAll();
-		viewer = null;
+	private void createNoVersion() {
+		Composite composite = new Composite(bar, SWT.NONE);
+		composite.setLayout(new GridLayout(1, true));
+		Label noVersionLabel = new Label(composite, SWT.NONE);
+		noVersionLabel.setText("There are no versions for the selected workflow");
+		ExpandItem item = new ExpandItem(bar, SWT.NONE, 0);
+		item.setText("No versions available");
+		item.setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		item.setControl(composite);
 	}
 
-	private void createTable(Composite parent) throws GitAPIException {
-		GridData layoutData = new GridData();
-		viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
-		// String repoName = "testTag";
-		// String repoPath = "c:\\projects";
-		Git git = GITUtility.getGit(repoName, repoPath);
+	private void createVersionBar(final Git git, final Ref ref, final IFolder selectedFolder) {
+		Composite composite = new Composite(bar, SWT.FILL);
+		GridLayout gridLayout = new GridLayout(4, false);
+		gridLayout.horizontalSpacing = 30;
+		gridLayout.verticalSpacing = 20;
+		composite.setLayout(gridLayout);
 
-		createColumns(viewer, git);
-		Table table = viewer.getTable();
-		table.setHeaderVisible(true);
-		table.setLinesVisible(true);
+		RevTag tag = getTag(git, ref);
 
-		layoutData.horizontalSpan = 2;
-		layoutData.grabExcessVerticalSpace = true;
-		layoutData.verticalAlignment = SWT.TOP;
-		table.setLayoutData(layoutData);
+		Label versionLabel = new Label(composite, SWT.NONE);
+		versionLabel.setText("Version: " + tag.getTagName());
 
-		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setInput(git.tagList().call());
+		Label creatorLabel = new Label(composite, SWT.NONE);
+		creatorLabel.setText("Creator: " + tag.getTaggerIdent().getName());
 
-		table.addSelectionListener(new SelectionAdapter() {
+		Label dateLabel = new Label(composite, SWT.NONE);
+		dateLabel.setText("Created At: " + tag.getTaggerIdent().getWhen().toString());
+
+		Button resetButton = new Button(composite, SWT.PUSH);
+		resetButton.setText("Get this version");
+		resetButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				Ref ref = (Ref) e.item.getData();
+				super.widgetSelected(e);
+				String stringRef = ref.getTarget().getName();
+				GITUtility.hardReset(git, stringRef);
+				try {
+					selectedFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+				}
+				catch (CoreException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
+
+		GridData gData = new GridData();
+		gData.horizontalSpan = 4;
+
+		Text description = new Text(composite, SWT.NONE | SWT.WRAP);
+		description.setEditable(false);
+		description.setText("Comment: \n" + tag.getFullMessage());
+		description.setLayoutData(gData);
+
+		ExpandItem item = new ExpandItem(bar, SWT.NONE, 0);
+		item.setText("Version: " + tag.getTagName() + " - " + tag.getTaggerIdent().getName());
+		item.setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+		item.setControl(composite);
 	}
 
 	/**
@@ -126,7 +136,8 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 	 * @param ref
 	 * @return
 	 */
-	private RevTag getTag(final RevWalk revWalk, Ref ref) {
+	private RevTag getTag(Git git, Ref ref) {
+		RevWalk revWalk = new RevWalk(git.getRepository());
 		ObjectId id = ref.getObjectId();
 		try {
 			RevTag tag = revWalk.parseTag(id);
@@ -138,156 +149,9 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 		}
 	}
 
-	public void createColumns(final TableViewer viewer, Git git) {
-		String[] titles = { "Version", "Created By", "Comments", "Created At" };
-		int[] bounds = { 100, 200, 400, 200 };
-		final RevWalk revWalk = new RevWalk(git.getRepository(), 0);
-
-		// Tag Name
-		TableViewerColumn column = createTableViewerColumn(titles[0], bounds[0], 0);
-		column.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				Ref ref = (Ref) element;
-				RevTag tag = getTag(revWalk, ref);
-				if (tag != null)
-					return tag.getTagName();
-				else
-					return null;
-			}
-		});
-
-		// Tagger Name
-		column = createTableViewerColumn(titles[1], bounds[1], 1);
-		column.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				Ref ref = (Ref) element;
-				RevTag tag = getTag(revWalk, ref);
-				if (tag != null)
-					return tag.getTaggerIdent().getName();
-				else
-					return null;
-			}
-		});
-
-		// Tag message
-		column = createTableViewerColumn(titles[2], bounds[2], 2);
-		column.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				Ref ref = (Ref) element;
-				RevTag tag = getTag(revWalk, ref);
-				if (tag != null)
-					return tag.getShortMessage();
-				else
-					return null;
-			}
-		});
-
-		// Tagged date
-		column = createTableViewerColumn(titles[3], bounds[3], 3);
-		column.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				Ref ref = (Ref) element;
-				RevTag tag = getTag(revWalk, ref);
-				if (tag != null)
-					return tag.getTaggerIdent().getWhen().toString();
-				else
-					return null;
-			}
-		});
-	}
-
-	private TableViewerColumn createTableViewerColumn(String title, int bound, final int colNumber) {
-		final TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
-		final TableColumn column = viewerColumn.getColumn();
-		column.setText(title);
-		column.setWidth(bound);
-		column.setResizable(true);
-		column.setMoveable(true);
-		return viewerColumn;
-	}
-
-	private void hookContextMenu() {
-		MenuManager menuMgr = new MenuManager("#PopupMenu");
-		menuMgr.setRemoveAllWhenShown(true);
-		menuMgr.addMenuListener(new IMenuListener() {
-			public void menuAboutToShow(IMenuManager manager) {
-				VersionView.this.fillContextMenu(manager);
-			}
-		});
-		Menu menu = menuMgr.createContextMenu(viewer.getControl());
-		viewer.getControl().setMenu(menu);
-		getSite().registerContextMenu(menuMgr, viewer);
-	}
-
-	private void contributeToActionBars() {
-		IActionBars bars = getViewSite().getActionBars();
-		fillLocalPullDown(bars.getMenuManager());
-		fillLocalToolBar(bars.getToolBarManager());
-	}
-
-	private void fillLocalPullDown(IMenuManager manager) {
-		manager.add(replaceWithTag);
-		manager.add(new Separator());
-	}
-
-	private void fillContextMenu(IMenuManager manager) {
-		manager.add(replaceWithTag);
-		// Other plug-ins can contribute there actions here
-		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-	}
-
-	private void fillLocalToolBar(IToolBarManager manager) {
-		manager.add(replaceWithTag);
-	}
-
-	private void makeActions() {
-		replaceWithTag = new Action() {
-			public void run() {
-				Table table = viewer.getTable();
-				TableItem selectedItem = table.getSelection()[0];
-				Ref ref = (Ref) selectedItem.getData();
-				String stringRef = ref.getTarget().getName();
-				GITUtility.hardReset(repoName, repoPath, stringRef);
-				// GITUtility.revert(repoName, repoPath, ref);
-
-				showMessage("Replaced local workflow with selected version");
-			}
-		};
-		replaceWithTag.setText("Replace with this version");
-		replaceWithTag.setToolTipText("Replace current source with the source from the selected tag");
-		replaceWithTag.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages()
-			.getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-
-		doubleClickAction = new Action() {
-			public void run() {
-				ISelection selection = viewer.getSelection();
-				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				showMessage("Double-click detected on " + obj.toString());
-			}
-		};
-	}
-
-	private void hookDoubleClickAction() {
-		viewer.addDoubleClickListener(new IDoubleClickListener() {
-			public void doubleClick(DoubleClickEvent event) {
-				doubleClickAction.run();
-			}
-		});
-	}
-
-	private void showMessage(String message) {
-		MessageDialog.openInformation(viewer.getControl().getShell(), "Versions View", message);
-	}
-
-	/**
-	 * Passing the focus request to the viewer's control.
-	 */
+	@Override
 	public void setFocus() {
-		viewer.getControl().setFocus();
+
 	}
 
 }

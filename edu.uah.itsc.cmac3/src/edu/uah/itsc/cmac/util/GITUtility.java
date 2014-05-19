@@ -200,7 +200,7 @@ public class GITUtility {
 	}
 
 	private static boolean validRepoName(String repoName) {
-		if (repoName.isEmpty()) {
+		if (repoName == null || repoName.isEmpty()) {
 			return false;
 		}
 		else
@@ -215,6 +215,7 @@ public class GITUtility {
 		try {
 			Repository repository = builder.setGitDir(localPath).findGitDir().build();
 			Git git = new Git(repository);
+			repository.close();
 			return git;
 		}
 		catch (Exception e) {
@@ -242,16 +243,21 @@ public class GITUtility {
 
 	public static void hardReset(String repoName, String repoLocalPath, String ref) {
 		Git git = getGit(repoName, repoLocalPath);
+		hardReset(git, ref);
+	}
+	
+	public static void hardReset(Git git, String ref) {
 		try {
 			// Ref resultRef = git.reset().setRef(ref).addPath(".").setMode(ResetType.HARD).call();
 			Ref resultRef = git.reset().setRef(ref).setMode(ResetType.HARD).call();
+			git.getRepository().close();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 
-		}
+		}		
 	}
-
+	
 	public static void revert(String repoName, String repoLocalPath, Ref commit) {
 		Git git = getGit(repoName, repoLocalPath);
 		try {
@@ -263,12 +269,25 @@ public class GITUtility {
 	}
 
 	public static Collection<Ref> getTagList(String repoRemotePath) {
+		Repository repository = null;
 		try {
-			return Git.lsRemoteRepository().setTags(true).setRemote(repoRemotePath).call();
+			File localPath = File.createTempFile("EmptyRepository", "");
+			localPath.delete();
+			
+			repository = FileRepositoryBuilder.create(new File(localPath, ".git"));
+			repository.create();
+			
+			Collection<Ref> tagList= Git.wrap(repository).lsRemote().setTags(true).setRemote(repoRemotePath).call();
+			repository.close();
+			localPath.delete();
+			return tagList;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+			repository.close();
 			return null;
 		}
 	}
+
+
 }

@@ -520,6 +520,14 @@
             relative="org.eclipse.ui.editorss"
             visible="false">
       </view>
+      <view
+            id="edu.uah.itsc.cmac.versionview.views.VersionView"
+            minimized="false"
+            ratio="0.95f"
+            relationship="stack"
+            relative="org.eclipse.ui.editorss"
+            visible="false">
+      </view>
    </perspectiveExtension>
 </extension>
 

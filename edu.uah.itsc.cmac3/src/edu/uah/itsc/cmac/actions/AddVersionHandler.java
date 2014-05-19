@@ -46,7 +46,13 @@ public class AddVersionHandler extends AbstractHandler {
 		/* Version Name Text */
 		final Text versionNameText = new Text(shell, SWT.BORDER);
 		versionNameText.setLayoutData(new GridData(SWT.FILL, 20, true, false));
-
+		
+		Label spaceLabel = new Label(shell, SWT.NONE);
+		spaceLabel.setText("");
+		
+		Label noteLabel = new Label(shell, SWT.NONE);
+		noteLabel.setText("(Note: username will be added to the version name during search)");
+		
 		/* Comment Label */
 		Label versionCommentLabel = new Label(shell, SWT.NONE);
 		versionCommentLabel.setText("Comments");
@@ -71,7 +77,7 @@ public class AddVersionHandler extends AbstractHandler {
 				IFolder selectedFolder = (IFolder) firstElement;
 				String parentPath = selectedFolder.getParent().getLocation().toString();
 				String repoName = selectedFolder.getName();
-				Ref ref = GITUtility.createTag(repoName, parentPath, versionName, comments);
+				Ref ref = GITUtility.createTag(repoName, parentPath, User.username + "." + versionName, comments);
 				String project = selectedFolder.getProject().getName();
 				String repoRemotePath = REMOTE_URL + project + "/" + User.username;
 				if (ref != null)
