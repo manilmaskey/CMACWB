@@ -66,9 +66,11 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 		else {
 			for (Ref ref : tags) {
 				createVersionBar(git, ref, selectedFolder);
+				git.close();
 			}
 		}
-
+		git.getRepository().close();
+		git.close();
 	}
 
 	private void createNoVersion() {
@@ -129,6 +131,7 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 		item.setText("Version: " + tag.getTagName() + " - " + tag.getTaggerIdent().getName());
 		item.setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		item.setControl(composite);
+		tag = null;
 	}
 
 	/**
@@ -138,15 +141,24 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 	 */
 	private RevTag getTag(Git git, Ref ref) {
 		RevWalk revWalk = new RevWalk(git.getRepository());
+		RevTag tag = null;
 		ObjectId id = ref.getObjectId();
+
 		try {
-			RevTag tag = revWalk.parseTag(id);
-			return tag;
+			// The call to parseTag seems to lock the pack files in the objects db of git directory.
+			// Have not been able to find any way to release those locks.
+			// The eclipse instance has to be restarted to be able to remove these locks
+			// There is no documentation on how to release lock yet.
+			tag = revWalk.parseTag(id);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
+		revWalk.release();
+		revWalk.dispose();
+		revWalk = null;
+		return tag;
 	}
 
 	@Override

@@ -127,7 +127,7 @@ public class PortalUtilities {
 
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
 		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getWorkflowFeedURL()
-			+ "?field_could_path_value=" + path);
+			+ "?field_is_shared=All&field_could_path_value=" + path);
 		JSONParser parser = new JSONParser();
 		Object obj;
 		try {

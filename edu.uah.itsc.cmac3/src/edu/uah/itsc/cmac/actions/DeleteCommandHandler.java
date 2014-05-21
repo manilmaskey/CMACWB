@@ -5,6 +5,7 @@ package edu.uah.itsc.cmac.actions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.apache.http.HttpResponse;
 import org.eclipse.core.commands.AbstractHandler;
@@ -57,10 +58,8 @@ public class DeleteCommandHandler extends AbstractHandler {
 				amazonS3Service = s3.getAmazonS3Service();
 				final IStructuredSelection selection = (IStructuredSelection) HandlerUtil
 					.getCurrentSelectionChecked(event);
-				ArrayList<String> allFiles = getAllFiles(selection);
-				System.out.println(allFiles);
+				deleteFromS3(selection);
 				String bucketName = getBucketName(selection);
-				deleteFiles(allFiles, bucketName);
 				Object[] selectedObjects = selection.toArray();
 
 				for (Object selectedObject : selectedObjects) {
@@ -86,6 +85,20 @@ public class DeleteCommandHandler extends AbstractHandler {
 			}
 			return null;
 		}
+	}
+
+	/**
+	 * @param selection
+	 * @return
+	 */
+	private void deleteFromS3(final IStructuredSelection selection) {
+		ArrayList<String> allFiles = getAllFiles(selection);
+		System.out.println(allFiles);
+		String bucketName = getBucketName(selection);
+		s3.deleteFilesFromBucket(allFiles, bucketName);
+		allFiles = getAllFilesCommunity(selection);
+		System.out.println(allFiles);
+		s3.deleteFilesFromBucket(allFiles, s3.getCommunityBucketName());
 	}
 
 	private void deleteBucketFromPortal(String bucketName) {
@@ -147,37 +160,6 @@ public class DeleteCommandHandler extends AbstractHandler {
 
 	}
 
-	private void deleteFiles(ArrayList<String> selectedFiles, String bucketName) {
-		DeleteObjectsRequest deleteRequest = new DeleteObjectsRequest(bucketName);
-		DeleteObjectsRequest deleteCommunityRequest = new DeleteObjectsRequest(s3.getCommunityBucketName());
-		ArrayList<KeyVersion> keys = new ArrayList<KeyVersion>();
-		ArrayList<KeyVersion> communityKeys = new ArrayList<KeyVersion>();
-		for (String selectedFile : selectedFiles) {
-			KeyVersion keyVersion = new KeyVersion(selectedFile);
-			keys.add(keyVersion);
-		}
-		deleteRequest.setKeys(keys);
-		for (String selectedFile : selectedFiles) {
-			KeyVersion keyVersion = new KeyVersion(bucketName + "/" + selectedFile);
-			communityKeys.add(keyVersion);
-		}
-		deleteCommunityRequest.setKeys(communityKeys);
-		try {
-			DeleteObjectsResult deleteResult = amazonS3Service.deleteObjects(deleteRequest);
-			System.out.format("Successfully deleted %s items\n", deleteResult.getDeletedObjects().size());
-			DeleteObjectsResult deleteCommunityResult = amazonS3Service.deleteObjects(deleteCommunityRequest);
-			System.out.format("Successfully deleted %s items from cmac community\n", deleteCommunityResult
-				.getDeletedObjects().size());
-		}
-		catch (MultiObjectDeleteException e) {
-			e.printStackTrace();
-			for (DeleteError deleteError : e.getErrors()) {
-				System.out.format("Object Key: %s\t%s\t%s\n", deleteError.getKey(), deleteError.getCode(),
-					deleteError.getMessage());
-			}
-		}
-	}
-
 	private ArrayList<String> getAllFiles(IResource resource) {
 		ArrayList<String> files = new ArrayList<String>();
 		if (resource instanceof IFile) {
@@ -206,14 +188,48 @@ public class DeleteCommandHandler extends AbstractHandler {
 		return files;
 	}
 
+	// private ArrayList<String> getAllFiles(IStructuredSelection selection) {
+	// ArrayList<String> allFiles = new ArrayList<String>();
+	// Object[] selectedObjects = selection.toArray();
+	// for (Object selectedObject : selectedObjects) {
+	// ArrayList<String> files = getAllFiles((IResource) selectedObject);
+	// allFiles.addAll(files);
+	// }
+	//
+	// return allFiles;
+	// }
+
 	private ArrayList<String> getAllFiles(IStructuredSelection selection) {
 		ArrayList<String> allFiles = new ArrayList<String>();
 		Object[] selectedObjects = selection.toArray();
-		for (Object selectedObject : selectedObjects) {
-			ArrayList<String> files = getAllFiles((IResource) selectedObject);
-			allFiles.addAll(files);
-		}
 
+		for (Object selectedObject : selectedObjects) {
+			if (selectedObject instanceof IFolder) {
+				IFolder selectedFolder = (IFolder) selectedObject;
+				String bucketName = selectedFolder.getProject().getName();
+				String path = selectedFolder.getFullPath().toString().replaceFirst(bucketName, "").replace("//", "");
+				// Since we are only dealing with git repository, add ".git" at the end
+				allFiles.addAll(s3.getAllFiles(bucketName, path + ".git"));
+
+			}
+		}
+		return allFiles;
+	}
+
+	private ArrayList<String> getAllFilesCommunity(IStructuredSelection selection) {
+		ArrayList<String> allFiles = new ArrayList<String>();
+		Object[] selectedObjects = selection.toArray();
+
+		for (Object selectedObject : selectedObjects) {
+			if (selectedObject instanceof IFolder) {
+				IFolder selectedFolder = (IFolder) selectedObject;
+				String bucketName = selectedFolder.getProject().getName();
+				String path = selectedFolder.getFullPath().toString().replaceFirst(bucketName, "").replace("//", "");
+				// Since we are only dealing with git repository, add ".git" at the end
+				allFiles.addAll(s3.getAllFiles(s3.getCommunityBucketName(), bucketName + "/" + path + ".git"));
+
+			}
+		}
 		return allFiles;
 	}
 }

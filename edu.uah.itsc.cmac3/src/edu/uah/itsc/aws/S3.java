@@ -51,9 +51,14 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteBucketRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.MultiObjectDeleteException;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.MultiObjectDeleteException.DeleteError;
 
 import edu.uah.itsc.cmac.util.GITUtility;
 
@@ -537,10 +542,15 @@ public class S3 {
 		String sourceBucketName = folder.getProject().getName();
 		String workflowPath = folder.getProjectRelativePath().toString().replaceFirst("^/", "");
 		String destBucketName = getCommunityBucketName();
+		String prefix = folder.getFullPath().toString().replaceFirst(sourceBucketName, "").replace("//", "");
 
 		copyFolderInS3(sourceBucketName, workflowPath, destBucketName, sourceBucketName);
 
 		// TODO: Modify remote reference in current local git directory
+		// Delete files from bucket and clone back. Need to replace with better solution, i.e try to refer to repository
+		// in community bucket directly
+		deleteFilesFromBucket(getAllFiles(sourceBucketName, prefix), sourceBucketName);
+
 		try {
 			folder.delete(true, null);
 			String repoCompleteRemotepath = "amazon-s3://.jgit@" + getCommunityBucketName()
@@ -636,4 +646,53 @@ public class S3 {
 		}
 		return properties.getProperty(key);
 	}
+
+	public ArrayList<String> getAllFiles(String bucket, String prefix) {
+		ObjectListing listing = amazonS3Service.listObjects(bucket, prefix);
+		ArrayList<String> allFilesString = new ArrayList<String>();
+		extractKeys(listing, allFilesString);
+		while (listing.isTruncated()) {
+			listing = amazonS3Service.listNextBatchOfObjects(listing);
+			extractKeys(listing, allFilesString);
+		}
+		return allFilesString;
+	}
+
+	private void extractKeys(ObjectListing listing, ArrayList<String> allFilesString) {
+		List<S3ObjectSummary> list = listing.getObjectSummaries();
+		for (S3ObjectSummary s3ObjectSummary : list) {
+			allFilesString.add(s3ObjectSummary.getKey());
+		}
+	}
+
+	/**
+	 * This method deletes files from a bucket. Array list of string of files to be deleted and bucket should be
+	 * provided
+	 * 
+	 * @param selectedFiles
+	 * @param bucketName
+	 */
+	public void deleteFilesFromBucket(ArrayList<String> selectedFiles, String bucketName) {
+		if (selectedFiles.isEmpty())
+			return;
+		DeleteObjectsRequest deleteRequest = new DeleteObjectsRequest(bucketName);
+		ArrayList<KeyVersion> keys = new ArrayList<KeyVersion>();
+		for (String selectedFile : selectedFiles) {
+			KeyVersion keyVersion = new KeyVersion(selectedFile);
+			keys.add(keyVersion);
+		}
+		deleteRequest.setKeys(keys);
+		try {
+			DeleteObjectsResult deleteResult = amazonS3Service.deleteObjects(deleteRequest);
+			System.out.format("Successfully deleted %s items\n", deleteResult.getDeletedObjects().size());
+		}
+		catch (MultiObjectDeleteException e) {
+			e.printStackTrace();
+			for (DeleteError deleteError : e.getErrors()) {
+				System.out.format("Object Key: %s\t%s\t%s\n", deleteError.getKey(), deleteError.getCode(),
+					deleteError.getMessage());
+			}
+		}
+	}
+
 }

@@ -19,6 +19,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.lib.Repository;
@@ -227,12 +228,12 @@ public class GITUtility {
 	public static Ref createTag(String repoName, String repoLocalPath, String versionName, String comments) {
 		if (!validRepoName(repoName))
 			return null;
-		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
-		FileRepositoryBuilder builder = new FileRepositoryBuilder();
 		try {
-			Repository repository = builder.setGitDir(localPath).findGitDir().build();
-			Git git = new Git(repository);
-			return git.tag().setName(versionName).setMessage(comments).call();
+			Git git = getGit(repoName, repoLocalPath);
+			Ref tagRef = git.tag().setName(versionName).setMessage(comments).call();
+			git.getRepository().close();
+			git.close();
+			return tagRef;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -244,6 +245,8 @@ public class GITUtility {
 	public static void hardReset(String repoName, String repoLocalPath, String ref) {
 		Git git = getGit(repoName, repoLocalPath);
 		hardReset(git, ref);
+		git.getRepository().close();
+		git.close();
 	}
 	
 	public static void hardReset(Git git, String ref) {
@@ -262,6 +265,8 @@ public class GITUtility {
 		Git git = getGit(repoName, repoLocalPath);
 		try {
 			RevCommit revertCommand = git.revert().include(commit).call();
+			git.getRepository().close();
+			git.close();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -287,6 +292,13 @@ public class GITUtility {
 			repository.close();
 			return null;
 		}
+	}
+	
+	public static DirCache delete(String repoName, String repoLocalPath, String pattern) throws NoFilepatternException, GitAPIException{
+		Git git = getGit(repoName, repoLocalPath);
+		DirCache cache = git.rm().addFilepattern(pattern).call();
+		git.close();
+		return cache;
 	}
 
 
