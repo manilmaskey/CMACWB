@@ -50,6 +50,7 @@ public class UploadCommandHandler extends AbstractHandler {
 						String repoRemotePath = REMOTE_URL + project + "/" + User.username;
 
 						try {
+							GITUtility.commitLocalChanges(repoName, repoLocalPath, "Commit for push");
 							GITUtility.push(repoName, repoLocalPath, repoRemotePath);
 						}
 						catch (final Exception e) {

@@ -35,6 +35,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.TagOpt;
+import org.eclipse.jgit.transport.URIish;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,13 +59,13 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteBucketRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.MultiObjectDeleteException;
+import com.amazonaws.services.s3.model.MultiObjectDeleteException.DeleteError;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import com.amazonaws.services.s3.model.MultiObjectDeleteException.DeleteError;
 
 import edu.uah.itsc.cmac.util.GITUtility;
 
@@ -544,24 +551,40 @@ public class S3 {
 		String destBucketName = getCommunityBucketName();
 		String prefix = folder.getFullPath().toString().replaceFirst(sourceBucketName, "").replace("//", "");
 
-		copyFolderInS3(sourceBucketName, workflowPath, destBucketName, sourceBucketName);
+		// Move repository from private bucket to community bucket and delete repository from private bucket
 
-		// TODO: Modify remote reference in current local git directory
-		// Delete files from bucket and clone back. Need to replace with better solution, i.e try to refer to repository
-		// in community bucket directly
+		copyFolderInS3(sourceBucketName, workflowPath, destBucketName, sourceBucketName);
 		deleteFilesFromBucket(getAllFiles(sourceBucketName, prefix), sourceBucketName);
 
-		try {
-			folder.delete(true, null);
+		// Modify remote reference in current local git directory
+
+		Git git = GITUtility.getGit(folder.getName(), folder.getParent().getLocation().toString());
+		if (git != null) {
+			Repository repository = git.getRepository();
+			// Get the config file, reset origin section with community bucket repository location
+			StoredConfig config = repository.getConfig();
+			config.unsetSection("remote", "origin");
 			String repoCompleteRemotepath = "amazon-s3://.jgit@" + getCommunityBucketName()
 				+ folder.getFullPath().toString() + ".git";
-			GITUtility.cloneRepository(folder.getLocation().toString(), repoCompleteRemotepath);
-			folder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+			config.setString("remote", "origin", "url", repoCompleteRemotepath);
+
+			try {
+				RemoteConfig remoteConfig = new RemoteConfig(config, "origin");
+				remoteConfig.addFetchRefSpec(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
+				remoteConfig.addPushRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
+				remoteConfig.setTagOpt(TagOpt.FETCH_TAGS);
+				remoteConfig.update(config);
+				config.save();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+			catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 	}
 
 	private void copyFolderInS3(String sourceBucketName, String sourceFolder, String destBucketName, String destFolder) {

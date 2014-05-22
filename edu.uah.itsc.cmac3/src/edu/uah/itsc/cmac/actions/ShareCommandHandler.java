@@ -1,6 +1,5 @@
 package edu.uah.itsc.cmac.actions;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 import org.apache.http.HttpResponse;
@@ -9,6 +8,10 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -16,8 +19,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -120,7 +121,7 @@ public class ShareCommandHandler extends AbstractHandler {
 							workflow.setShared(true);
 							System.out.println(workflow.getJSON());
 							if (nodeID != null) {
-								portalPost.put(PortalUtilities.getNodeRestPoint() + nodeID, workflow.getJSON());
+								portalPost.put(PortalUtilities.getNodeRestPoint() + "/" +  nodeID, workflow.getJSON());
 							}
 							else {
 								HttpResponse response = portalPost.post(PortalUtilities.getNodeRestPoint(),
@@ -165,9 +166,6 @@ public class ShareCommandHandler extends AbstractHandler {
 											// permission in the group policy now
 											// s3.uploadFolder((IFolder) firstElement);
 
-											String workflowPath = null;
-											workflowPath = workflow.getPath().replaceFirst("/", "") + ".git";
-
 											// commit and push before sharing
 											String repoName = selectedFolder.getName();
 											String repoLocalPath = selectedFolder.getParent().getLocation().toString();
@@ -184,6 +182,25 @@ public class ShareCommandHandler extends AbstractHandler {
 												return Status.CANCEL_STATUS;
 											}
 											s3.shareGITFolder(selectedFolder);
+
+											try {
+												NavigatorView view = (NavigatorView) getPage().findView(
+													"edu.uah.itsc.cmac.NavigatorView");
+												view.refreshCommunityResource();
+											}
+											catch (Exception e) {
+												System.out.println("Errror while refreshCommunityResource "
+													+ e.toString());
+											}
+											IProject communityProject = ResourcesPlugin.getWorkspace().getRoot()
+												.getProject(s3.getCommunityBucketName());
+											try {
+												communityProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+											}
+											catch (CoreException e) {
+												e.printStackTrace();
+											}
+
 											// s3.addWorkflowSharePolicy("cmac_collaborators", "shared_workflow",
 											// workflowPath);
 
@@ -191,23 +208,7 @@ public class ShareCommandHandler extends AbstractHandler {
 											// if (!s3.userFolderExists(User.username, S3.communityBucketName))
 											// s3.uploadUserFolder(User.username, S3.communityBucketName);
 											// s3.shareFolder((IFolder) firstElement);
-											// try {
-											// NavigatorView view = (NavigatorView) getPage().findView(
-											// "edu.uah.itsc.cmac.NavigatorView");
-											// view.refreshCommunityResource();
-											// }
-											// catch (Exception e) {
-											// System.out.println("Errror while refreshCommunityResource "
-											// + e.toString());
-											// }
-											// IProject communityProject = ResourcesPlugin.getWorkspace().getRoot()
-											// .getProject(s3.getCommunityBucketName());
-											// try {
-											// communityProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-											// }
-											// catch (CoreException e) {
-											// e.printStackTrace();
-											// }
+
 										}
 
 									}
