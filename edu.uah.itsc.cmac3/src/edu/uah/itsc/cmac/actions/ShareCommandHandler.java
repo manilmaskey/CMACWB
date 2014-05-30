@@ -36,6 +36,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.uah.itsc.aws.S3;
+import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
@@ -121,7 +122,7 @@ public class ShareCommandHandler extends AbstractHandler {
 							workflow.setShared(true);
 							System.out.println(workflow.getJSON());
 							if (nodeID != null) {
-								portalPost.put(PortalUtilities.getNodeRestPoint() + "/" +  nodeID, workflow.getJSON());
+								portalPost.put(PortalUtilities.getNodeRestPoint() + "/" + nodeID, workflow.getJSON());
 							}
 							else {
 								HttpResponse response = portalPost.post(PortalUtilities.getNodeRestPoint(),
@@ -173,7 +174,7 @@ public class ShareCommandHandler extends AbstractHandler {
 												+ selectedFolder.getFullPath().toString();
 											try {
 												GITUtility.commitLocalChanges(repoName, repoLocalPath,
-													"Commit for share");
+													"Commit for share", User.username, User.userEmail);
 												GITUtility.push(repoName, repoLocalPath, repoRemotePath);
 											}
 											catch (Exception e) {

@@ -8,11 +8,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 
-import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.MergeCommand;
 import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -32,8 +31,6 @@ import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.transport.URIish;
-
-import edu.uah.itsc.aws.User;
 
 /**
  * @author sshrestha
@@ -81,8 +78,8 @@ public class GITUtility {
 		repository.close();
 	}
 
-	public static void commitLocalChanges(String repoName, String repoLocalPath, String commitMessage)
-		throws IOException, NoFilepatternException, GitAPIException {
+	public static void commitLocalChanges(String repoName, String repoLocalPath, String commitMessage, String userName,
+		String userEmail) throws IOException, NoFilepatternException, GitAPIException {
 		if (!validRepoName(repoName))
 			return;
 		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
@@ -93,8 +90,8 @@ public class GITUtility {
 		Git git = new Git(repository);
 		// git.rm().addFilepattern(".").call();
 		git.add().addFilepattern(".").call();
-		RevCommit commit = git.commit().setMessage(commitMessage)
-			.setAuthor(User.username, User.username + "@itsc.uah.edu").call();
+		RevCommit commit = git.commit().setMessage(commitMessage).setAuthor(userName, userEmail)
+			.call();
 		System.out.println("Committed changes: " + commit.getFullMessage());
 		repository.close();
 	}
@@ -175,20 +172,12 @@ public class GITUtility {
 		try {
 			Repository repository = builder.setGitDir(localPath).findGitDir().build();
 			Git git = new Git(repository);
-			git.fetch().call();
+			PullResult pullResult = git.pull().call();
+			
+			MergeResult mergeResult = pullResult.getMergeResult();
 
-			CheckoutCommand coCmd = git.checkout();
-			coCmd.setName("master");
-			coCmd.setCreateBranch(false);
-			coCmd.call();
-
-			MergeCommand mgCmd = git.merge();
-			Ref originHead = repository.getRef("refs/remotes/origin/master");
-			mgCmd.include(originHead.getObjectId());
-			MergeResult res = mgCmd.call();
-
-			if (res.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
-				System.out.println("Conflict occurred. Merge failed " + res.getConflicts().toString());
+			if (mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
+				System.out.println("Conflict occurred. Merge failed " + mergeResult.getConflicts().toString());
 			}
 			else
 				System.out.println("Pulled remote changes\n");
@@ -248,7 +237,7 @@ public class GITUtility {
 		git.getRepository().close();
 		git.close();
 	}
-	
+
 	public static void hardReset(Git git, String ref) {
 		try {
 			// Ref resultRef = git.reset().setRef(ref).addPath(".").setMode(ResetType.HARD).call();
@@ -258,9 +247,9 @@ public class GITUtility {
 		catch (Exception e) {
 			e.printStackTrace();
 
-		}		
+		}
 	}
-	
+
 	public static void revert(String repoName, String repoLocalPath, Ref commit) {
 		Git git = getGit(repoName, repoLocalPath);
 		try {
@@ -278,11 +267,11 @@ public class GITUtility {
 		try {
 			File localPath = File.createTempFile("EmptyRepository", "");
 			localPath.delete();
-			
+
 			repository = FileRepositoryBuilder.create(new File(localPath, ".git"));
 			repository.create();
-			
-			Collection<Ref> tagList= Git.wrap(repository).lsRemote().setTags(true).setRemote(repoRemotePath).call();
+
+			Collection<Ref> tagList = Git.wrap(repository).lsRemote().setTags(true).setRemote(repoRemotePath).call();
 			repository.close();
 			localPath.delete();
 			return tagList;
@@ -293,13 +282,13 @@ public class GITUtility {
 			return null;
 		}
 	}
-	
-	public static DirCache delete(String repoName, String repoLocalPath, String pattern) throws NoFilepatternException, GitAPIException{
+
+	public static DirCache delete(String repoName, String repoLocalPath, String pattern) throws NoFilepatternException,
+		GitAPIException {
 		Git git = getGit(repoName, repoLocalPath);
 		DirCache cache = git.rm().addFilepattern(pattern).call();
 		git.close();
 		return cache;
 	}
-
 
 }

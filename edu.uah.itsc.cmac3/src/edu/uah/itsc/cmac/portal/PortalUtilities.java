@@ -147,6 +147,7 @@ public class PortalUtilities {
 			map.put("title", workflow.get("title").toString());
 			map.put("description", workflow.get("description").toString());
 			map.put("keywords", workflow.get("keywords").toString());
+			map.put("isShared", workflow.get("isShared").toString());
 			return map;
 		}
 		catch (ParseException e) {

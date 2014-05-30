@@ -89,15 +89,19 @@ public class ExecuteDialog {
 		}
 
 		final String nodeID;
+		final boolean isShared;
 		HashMap<String, String> nodeMap = PortalUtilities.getPortalWorkflowDetails(path);
 		if (nodeMap != null) {
 			nodeID = nodeMap.get("nid");
+			isShared = Integer.parseInt(nodeMap.get("isShared")) > 0 ? true : false ;
 			titleText.setText((String) nodeMap.get("title"));
 			keywordText.setText((String) nodeMap.get("keywords"));
 			descText.setText(((String) nodeMap.get("description")).replaceAll("\\<.*?\\>", ""));
 		}
-		else
+		else{
 			nodeID = null;
+			isShared = false;
+		}
 		ok.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				try {
@@ -121,7 +125,7 @@ public class ExecuteDialog {
 						portalPost.post(PortalUtilities.getNodeRestPoint(), workflow.getJSON());
 					portalPost.runCron();
 					new ProgressMonitorDialog(shell).run(true, true, new LongRunningOperation(true,
-						titleText.getText(), descText.getText(), file, folder, bucket, folderResource, page, publicURL));
+						titleText.getText(), descText.getText(), file, folder, bucket, folderResource, page, publicURL, isShared));
 					shell.close();
 				}
 				catch (Exception e) {

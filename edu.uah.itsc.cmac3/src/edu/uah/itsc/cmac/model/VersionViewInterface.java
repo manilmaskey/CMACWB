@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.uah.itsc.cmac.models;
+package edu.uah.itsc.cmac.model;
 
 import org.eclipse.core.resources.IFolder;
 

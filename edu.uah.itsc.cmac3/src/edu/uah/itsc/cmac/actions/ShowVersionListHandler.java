@@ -12,7 +12,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import edu.uah.itsc.cmac.models.VersionViewInterface;
+import edu.uah.itsc.cmac.model.VersionViewInterface;
 
 /**
  * @author sshrestha

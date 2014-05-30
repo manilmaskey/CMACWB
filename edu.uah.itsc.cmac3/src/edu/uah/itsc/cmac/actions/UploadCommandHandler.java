@@ -50,14 +50,16 @@ public class UploadCommandHandler extends AbstractHandler {
 						String repoRemotePath = REMOTE_URL + project + "/" + User.username;
 
 						try {
-							GITUtility.commitLocalChanges(repoName, repoLocalPath, "Commit for push");
+							GITUtility.commitLocalChanges(repoName, repoLocalPath, "Commit for push", User.username,
+								User.userEmail);
 							GITUtility.push(repoName, repoLocalPath, repoRemotePath);
 						}
 						catch (final Exception e) {
 							Display.getDefault().syncExec(new Runnable() {
 								@Override
 								public void run() {
-									MessageDialog.openError(Display.getDefault().getActiveShell(), "Error", e.getMessage());
+									MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+										e.getMessage());
 								}
 							});
 							e.printStackTrace();

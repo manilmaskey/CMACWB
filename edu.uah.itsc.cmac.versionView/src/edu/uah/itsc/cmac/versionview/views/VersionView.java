@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
-import edu.uah.itsc.cmac.models.VersionViewInterface;
+import edu.uah.itsc.cmac.model.VersionViewInterface;
 import edu.uah.itsc.cmac.util.GITUtility;
 
 public class VersionView extends ViewPart implements VersionViewInterface {

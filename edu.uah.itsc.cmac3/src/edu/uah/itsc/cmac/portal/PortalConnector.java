@@ -59,6 +59,7 @@ public class PortalConnector {
 			// Shreedhan - Store portal's User ID as well
 			jsonUser = jsonObject.getJSONObject("user");
 			User.portalUserID = jsonUser.getString("uid");
+			User.userEmail = jsonUser.getString("mail");
 
 			JSONObject jsonRoles = jsonUser.getJSONObject("roles");
 			Iterator<String> roleKeys = jsonRoles.keys();

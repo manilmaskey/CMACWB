@@ -1,11 +1,20 @@
 package edu.uah.itsc.cmac.actions;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HTTP;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -24,9 +33,9 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 
-import edu.uah.itsc.aws.RubyClient;
-import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
+import edu.uah.itsc.cmac.model.ExecuteCommand;
+import edu.uah.itsc.cmac.util.GITUtility;
 
 public class ScriptAction extends Action {
 	protected static String	ID	= "Action.script";
@@ -136,8 +145,10 @@ class LongRunningOperation implements IRunnableWithProgress {
 
 	private String				publicURL;
 
+	private boolean				isSharedRepo;
+
 	public LongRunningOperation(boolean indeterminate, String title, String desc, String file, String folder,
-		String bucket, IFolder folderResource, IWorkbenchPage page, String publicURL) {
+		String bucket, IFolder folderResource, IWorkbenchPage page, String publicURL, boolean isSharedRepo) {
 		this.indeterminate = indeterminate;
 		this.title = title;
 		this.desc = desc;
@@ -147,21 +158,38 @@ class LongRunningOperation implements IRunnableWithProgress {
 		this.folderResource = folderResource;
 		this.page = page;
 		this.publicURL = publicURL;
+		this.isSharedRepo = isSharedRepo;
 	}
 
 	public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 		monitor.beginTask("Executing workflow...", indeterminate ? IProgressMonitor.UNKNOWN : TOTAL_TIME);
-		new RubyClient(title, desc, bucket, folder, file, publicURL);
 
+		String repoName = folderResource.getName();
+		String repoLocalPath = folderResource.getParent().getLocation().toString();
 		try {
+			GITUtility.commitLocalChanges(repoName, repoLocalPath, "", User.username, User.userEmail);
+			/* repoRemotePath - Sending empty string here, need to fix it later */
+			GITUtility.push(repoName, repoLocalPath, "");
 
-			// NavigatorView view = (NavigatorView) page.findView("edu.uah.itsc.cmac.NavigatorView");
-			S3 s3 = new S3(User.awsAccessKey, User.awsSecretKey);
-			// folderResource.delete(true, monitor);
+			ExecuteCommand execCommand = new ExecuteCommand.Builder(bucket, repoName, file).shared(isSharedRepo)
+				.name(User.username).mail(User.userEmail).accessKey(User.awsAccessKey).secretKey(User.awsSecretKey)
+				.build();
+			StringEntity seData = new StringEntity(execCommand.toJSONString());
+			seData.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+			HttpResponse response = postData("http://54.208.76.40:8080/cmacBackend/services/action/execute", seData);
+			if (response.getStatusLine().getStatusCode() == 200) {
+				String repoRemotePath = "amazon-s3://.jgit@";
+				if (isSharedRepo) {
+					repoRemotePath = repoRemotePath + "cmac-community/";
+				}
+				repoRemotePath = repoRemotePath + bucket + "/" + User.username + "/" + repoName + ".git";
+				GITUtility.pull(repoName, repoLocalPath, repoRemotePath);
+				folderResource.refreshLocal(IFolder.DEPTH_INFINITE, null);
+			}
+			else {
+				
+			}
 
-			s3.downloadFolder(s3.getBucketName(folderResource.getFullPath().toOSString()),
-				s3.getS3ResourceName(folderResource.getFullPath().toOSString()));
-			folderResource.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -171,4 +199,14 @@ class LongRunningOperation implements IRunnableWithProgress {
 		if (monitor.isCanceled())
 			throw new InterruptedException("The long running operation was cancelled");
 	}
+
+	private HttpResponse postData(String url, StringEntity seData) throws ClientProtocolException, IOException {
+		HttpPost httpPost = new HttpPost(url);
+		HttpClient httpClient = new DefaultHttpClient();
+		BasicHttpContext mHttpContext = new BasicHttpContext();
+		httpPost.setEntity(seData);
+		HttpResponse response = httpClient.execute(httpPost, mHttpContext);
+		return response;
+	}
+
 }

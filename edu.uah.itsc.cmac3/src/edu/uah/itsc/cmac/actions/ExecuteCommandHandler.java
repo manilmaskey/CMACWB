@@ -69,7 +69,8 @@ public class ExecuteCommandHandler extends AbstractHandler {
 				// myeditor.doSaveAs();
 
 				String bucket = selectedFolder.getProject().getName();
-				String file = selectedFile.getLocation().toOSString();
+				// String file = selectedFile.getLocation().toOSString();
+				String file = selectedFile.getName();
 				System.out.println("Selected Folder:" + selectedFolder.getName());
 				String path = selectedFolder.getFullPath().toString();
 

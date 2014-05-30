@@ -12,11 +12,12 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.util.GITUtility;
 
 /**
  * @author sshrestha
- *
+ * 
  */
 public class SaveForTrackingWorkflowHandler extends AbstractHandler {
 
@@ -28,10 +29,12 @@ public class SaveForTrackingWorkflowHandler extends AbstractHandler {
 		final IFolder folder = (IFolder) firstElement;
 		final String parentPath = folder.getParent().getLocation().toString();
 		try {
-			GITUtility.commitLocalChanges(folder.getName(), parentPath, "Testing commit");
+			GITUtility
+				.commitLocalChanges(folder.getName(), parentPath, "Testing commit", User.username, User.userEmail);
 		}
 		catch (Exception e) {
-			MessageDialog.openError(Display.getDefault().getActiveShell(), "Error!!", "This workflow is not enabled to be tracked");
+			MessageDialog.openError(Display.getDefault().getActiveShell(), "Error!!",
+				"This workflow is not enabled to be tracked");
 		}
 		return null;
 	}
