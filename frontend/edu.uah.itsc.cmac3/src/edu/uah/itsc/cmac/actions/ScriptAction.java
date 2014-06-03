@@ -167,9 +167,13 @@ class LongRunningOperation implements IRunnableWithProgress {
 		String repoName = folderResource.getName();
 		String repoLocalPath = folderResource.getParent().getLocation().toString();
 		try {
+			String repoRemotePath = "amazon-s3://.jgit@";
+			if (isSharedRepo) {
+				repoRemotePath = repoRemotePath + "cmac-community/";
+			}
+			repoRemotePath = repoRemotePath + bucket + "/" + User.username;
 			GITUtility.commitLocalChanges(repoName, repoLocalPath, "", User.username, User.userEmail);
-			/* repoRemotePath - Sending empty string here, need to fix it later */
-			GITUtility.push(repoName, repoLocalPath, "");
+			GITUtility.push(repoName, repoLocalPath, repoRemotePath);
 
 			ExecuteCommand execCommand = new ExecuteCommand.Builder(bucket, repoName, file).shared(isSharedRepo)
 				.name(User.username).mail(User.userEmail).accessKey(User.awsAccessKey).secretKey(User.awsSecretKey)
@@ -178,12 +182,7 @@ class LongRunningOperation implements IRunnableWithProgress {
 			seData.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 			HttpResponse response = postData("http://54.208.76.40:8080/cmacBackend/services/action/execute", seData);
 			if (response.getStatusLine().getStatusCode() == 200) {
-				String repoRemotePath = "amazon-s3://.jgit@";
-				if (isSharedRepo) {
-					repoRemotePath = repoRemotePath + "cmac-community/";
-				}
-				repoRemotePath = repoRemotePath + bucket + "/" + User.username + "/" + repoName + ".git";
-				GITUtility.pull(repoName, repoLocalPath, repoRemotePath);
+				GITUtility.pull(repoName, repoLocalPath, repoRemotePath  + "/" + repoName + ".git");
 				folderResource.refreshLocal(IFolder.DEPTH_INFINITE, null);
 			}
 			else {

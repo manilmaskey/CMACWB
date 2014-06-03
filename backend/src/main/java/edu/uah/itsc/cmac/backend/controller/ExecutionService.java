@@ -62,7 +62,7 @@ public class ExecutionService {
 			repoRemotePath = repoRemotePath + "cmac-community/";
 		}
 		userDirPath = userDirPath + bucketName + "/" + userName;
-		repoRemotePath = repoRemotePath + bucketName + "/" + userName + "/" + repoName + ".git";
+		repoRemotePath = repoRemotePath + bucketName + "/" + userName;
 
 		// Steps
 		// 0. Delete .jgit file if it exists and create it based upon new credentials
@@ -93,12 +93,12 @@ public class ExecutionService {
 		// 2. Check if the workflow is cloned already. If not clone the workflow otherwise pull the latest changes here
 		File workflowDirectory = new File(userDirPath + "/" + repoName);
 		if (workflowDirectory.exists()) {
-			GITUtility.pull(repoName, userDirPath, repoRemotePath);
+			GITUtility.pull(repoName, userDirPath, repoRemotePath + "/" + repoName + ".git");
 			System.out.println("Make local repositories upto date");
 		}
 		else {
 			try {
-				GITUtility.cloneRepository(workflowDirectory.getAbsolutePath(), repoRemotePath);
+				GITUtility.cloneRepository(workflowDirectory.getAbsolutePath(), repoRemotePath + "/" + repoName + ".git");
 				System.out.println("Clone remote repository at workflow directory: "
 					+ workflowDirectory.getAbsolutePath());
 

@@ -97,6 +97,7 @@ public class GITUtility {
 	}
 
 	public static void push(String repoName, String repoLocalPath, String repoRemotePath) throws Exception {
+		System.out.println("Pushing from " + repoLocalPath + " to " + repoRemotePath);
 		FileRepositoryBuilder builder = new FileRepositoryBuilder();
 		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
 		Repository repository = builder.setGitDir(localPath).findGitDir().build();
