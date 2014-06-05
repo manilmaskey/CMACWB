@@ -68,19 +68,19 @@ public class ExecutionService {
 		// 0. Delete .jgit file if it exists and create it based upon new credentials
 		String userHomeDirectory = System.getProperty("user.home");
 		File jgitFile = new File(userHomeDirectory + "/.jgit");
-		if (jgitFile.exists())
-			jgitFile.delete();
-		try {
-			String fileContent = "accesskey: " + accessKey + "\n" + "secretkey: " + secretKey;
-			jgitFile.createNewFile();
-			FileUtility.writeTextFile(jgitFile.getAbsolutePath(), fileContent);
-			System.out.println("Creating jgit file at JGIT path: " + jgitFile.getAbsolutePath() + "\nfor user name: "
-				+ System.getProperty("user.name"));
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-			return buildResponse(500, "IOException during execution of file " + fileName + ".\n" + e.getMessage(),
-				execCommand.toJSON());
+		if (!jgitFile.exists()){
+			try {
+				String fileContent = "accesskey: " + accessKey + "\n" + "secretkey: " + secretKey;
+				jgitFile.createNewFile();
+				FileUtility.writeTextFile(jgitFile.getAbsolutePath(), fileContent);
+				System.out.println("Creating jgit file at JGIT path: " + jgitFile.getAbsolutePath() + "\nfor user name: "
+					+ System.getProperty("user.name"));
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+				return buildResponse(500, "IOException during execution of file " + fileName + ".\n" + e.getMessage(),
+					execCommand.toJSON());
+			}
 		}
 
 		// 1. Check if directory for this user exists. If not create one similar to the bucket structure
@@ -114,11 +114,19 @@ public class ExecutionService {
 		File fileToExecute = new File(workflowDirectory.getAbsolutePath() + "/" + fileName);
 		if (!fileToExecute.exists()) {
 			System.out.println("Unable to find file: " + fileToExecute.getAbsolutePath());
+			return buildResponse(500,
+				"File not found while trying to execute file " + fileName, execCommand.toJSON());
 		}
 
 		// 4. Execute the file
 		System.out.println("We execute actual program here");
-		String cmd = "python " + fileName;
+		String cmd = getSystemCommand(fileName);
+		
+		if (cmd == null || cmd.isEmpty()){
+			return buildResponse(500,
+				"Execution of this file type is not yet supported." + fileName, execCommand.toJSON());
+		}
+		
 		Process process = null;
 		try {
 			process = Runtime.getRuntime().exec(cmd, null, workflowDirectory);
@@ -148,6 +156,19 @@ public class ExecutionService {
 
 		// 7. Return successful message
 		return buildResponse(200, "Executed " + fileName + " successfully", execCommand.toJSON());
+	}
+
+	private String getSystemCommand(String fileName) {
+		String command = null;
+		String[] fileParts = fileName.split("\\.");
+		String extension = fileParts[fileParts.length - 1];
+		if (extension.equalsIgnoreCase("py")){
+			command = "python " + fileName;
+		}
+		else if (extension.equalsIgnoreCase("pro")){
+			command = "idl " + fileName;
+		}
+		return command;
 	}
 
 	private Response buildResponse(int code, String message, JSONObject responseObject) {
