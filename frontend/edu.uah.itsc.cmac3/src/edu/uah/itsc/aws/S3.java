@@ -41,7 +41,6 @@ import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.TagOpt;
-import org.eclipse.jgit.transport.URIish;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -654,7 +653,7 @@ public class S3 {
 		amazonS3Service.deleteBucket(deleteRequest);
 	}
 
-	private static String getKeyValueFromProperties(String key) {
+	public static String getKeyValueFromProperties(String key) {
 		if (properties != null && properties.containsKey(key)) {
 			return properties.getProperty(key);
 		}

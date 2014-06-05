@@ -33,6 +33,7 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 
+import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.model.ExecuteCommand;
 import edu.uah.itsc.cmac.util.GITUtility;
@@ -174,19 +175,20 @@ class LongRunningOperation implements IRunnableWithProgress {
 			repoRemotePath = repoRemotePath + bucket + "/" + User.username;
 			GITUtility.commitLocalChanges(repoName, repoLocalPath, "", User.username, User.userEmail);
 			GITUtility.push(repoName, repoLocalPath, repoRemotePath);
-
+			S3 s3 = new S3();
 			ExecuteCommand execCommand = new ExecuteCommand.Builder(bucket, repoName, file).shared(isSharedRepo)
-				.name(User.username).mail(User.userEmail).accessKey(User.awsAccessKey).secretKey(User.awsSecretKey)
-				.build();
+				.name(User.username).mail(User.userEmail)
+				.accessKey(s3.getKeyValueFromProperties("aws_admin_access_key"))
+				.secretKey(s3.getKeyValueFromProperties("aws_admin_secret_key")).build();
 			StringEntity seData = new StringEntity(execCommand.toJSONString());
 			seData.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 			HttpResponse response = postData("http://54.208.76.40:8080/cmacBackend/services/action/execute", seData);
 			if (response.getStatusLine().getStatusCode() == 200) {
-				GITUtility.pull(repoName, repoLocalPath, repoRemotePath  + "/" + repoName + ".git");
+				GITUtility.pull(repoName, repoLocalPath, repoRemotePath + "/" + repoName + ".git");
 				folderResource.refreshLocal(IFolder.DEPTH_INFINITE, null);
 			}
 			else {
-				
+
 			}
 
 		}
