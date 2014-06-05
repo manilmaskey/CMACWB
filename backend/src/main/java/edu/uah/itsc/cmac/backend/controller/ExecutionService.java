@@ -166,7 +166,7 @@ public class ExecutionService {
 			command = "python " + fileName;
 		}
 		else if (extension.equalsIgnoreCase("pro")){
-			command = "idl " + fileName;
+			command = "idl -e " + fileName.substring(0, fileName.length() - 4);
 		}
 		return command;
 	}
