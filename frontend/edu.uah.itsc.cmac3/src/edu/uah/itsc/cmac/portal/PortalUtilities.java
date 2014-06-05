@@ -15,10 +15,6 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -125,6 +121,14 @@ public class PortalUtilities {
 		return getKeyValueFromProperties("token_url");
 	}
 
+	public static String getPortalUserURL() {
+		return getKeyValueFromProperties("portal_user_url");
+	}
+
+	public static String getPortalLoginURL() {
+		return getKeyValueFromProperties("portal_login_url");
+	}
+	
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
 		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getWorkflowFeedURL()
 			+ "?field_is_shared=All&field_could_path_value=" + path);
@@ -187,4 +191,5 @@ public class PortalUtilities {
 			return null;
 		}
 	}
+
 }

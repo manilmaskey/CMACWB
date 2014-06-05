@@ -33,7 +33,7 @@ public class PortalConnector {
 		JSONObject jsonObject = null;
 		HttpClient httpclient = new DefaultHttpClient();
 
-		HttpPost httppost = new HttpPost("http://wwwdev.itsc.uah.edu/cmac/rest/user/login");
+		HttpPost httppost = new HttpPost(PortalUtilities.getPortalLoginURL());
 		try {
 			JSONObject json = new JSONObject();
 
@@ -106,7 +106,7 @@ public class PortalConnector {
 		JSONObject jsonObject = connectAdmin();
 		HttpClient httpclient = new DefaultHttpClient();
 
-		HttpPost httppost = new HttpPost("http://wwwdev.itsc.uah.edu/cmac/rest/user");
+		HttpPost httppost = new HttpPost(PortalUtilities.getPortalUserURL());
 
 		try {
 			String session_name = jsonObject.getString("session_name");
