@@ -120,11 +120,13 @@ public class ShareCommandHandler extends AbstractHandler {
 								.getText());
 							workflow.setPath(path);
 							workflow.setShared(true);
+							workflow.setSubmittor(User.username);
 							System.out.println(workflow.getJSON());
 							if (nodeID != null) {
 								portalPost.put(PortalUtilities.getNodeRestPoint() + "/" + nodeID, workflow.getJSON());
 							}
 							else {
+								workflow.setCreator(User.username);
 								HttpResponse response = portalPost.post(PortalUtilities.getNodeRestPoint(),
 									workflow.getJSON());
 								if (response.getStatusLine().getStatusCode() != 200) {

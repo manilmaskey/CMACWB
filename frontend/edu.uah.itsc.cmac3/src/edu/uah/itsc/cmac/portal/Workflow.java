@@ -50,15 +50,15 @@ public class Workflow {
 		JSONObject jsonData = new JSONObject();
 		jsonData.put("title", title);
 		jsonData.put("type", "workflow");
-		jsonData.put("field_is_shared", isShared ? getComplexObject("1") : new JSONArray());
+		jsonData.put("field_is_shared", isShared ? getComplexObject("value", "1") : new JSONArray());
 		if (description != null && !description.isEmpty())
-			jsonData.put("body", getComplexObject(description));
+			jsonData.put("body", getComplexObject("value", description));
 		if (creator != null && !creator.isEmpty())
-			jsonData.put("field_creator", getComplexObject(creator));
+			jsonData.put("field_creator", getComplexObject("uid", creator));
 		if (submittor != null && !submittor.isEmpty())
-			jsonData.put("field_submittor", getComplexObject(submittor));
+			jsonData.put("field_submittor", getComplexObject("uid", submittor));
 		if (path != null && !path.isEmpty())
-			jsonData.put("field_could_path", getComplexObject(path));
+			jsonData.put("field_could_path", getComplexObject("value", path));
 		if (keywords != null && !keywords.isEmpty())
 			jsonData.put("field_keywords", new JSONObject("{'und':'" + keywords + "'}"));
 		// jsonData.put("field_keywords", getComplexObject(keywords));
@@ -67,11 +67,11 @@ public class Workflow {
 		// getComplexObject(startTime.toString()));
 		// jsonData.put("field_end_time", getComplexObject(description));
 		if (resourceUsageInfo != null && !resourceUsageInfo.isEmpty())
-			jsonData.put("field_resource_usage_info", getComplexObject(resourceUsageInfo));
+			jsonData.put("field_resource_usage_info", getComplexObject("value", resourceUsageInfo));
 		return jsonData;
 	}
 
-	private JSONObject getComplexObject(String value) throws JSONException {
+	private JSONObject getComplexObject(String key, String value) throws JSONException {
 
 		JSONObject undObject = new JSONObject();
 		JSONArray undArray = new JSONArray();
@@ -81,7 +81,7 @@ public class Workflow {
 		 * This method will return a JSONObject similar to "field_is_shared": { "und": [ { "value": "1" } ] }
 		 */
 
-		undArrayObject.put("value", value);
+		undArrayObject.put(key, value);
 		undArray.put(undArrayObject);
 		undObject.put("und", undArray);
 		return undObject;

@@ -151,6 +151,30 @@ public class SearchView extends ViewPart {
 				jsonObject = (JSONObject) jsonObject.get("node");
 				searchResult.setNode(Integer.parseInt(jsonObject.get("nid").toString()));
 
+				Object creatorObject = jsonObject.get("field_creator");
+				String creator = "";
+				if (creatorObject instanceof JSONObject) {
+					JSONObject jsonCreatorObject = (JSONObject) creatorObject;
+					JSONArray creatorObjectArray = (JSONArray) jsonCreatorObject.get("und");
+					if (creatorObjectArray.size() > 0) {
+						creator = ((JSONObject) ((JSONObject) creatorObjectArray.get(0)).get("user")).get("name")
+							.toString();
+					}
+				}
+				searchResult.setCreator(creator);
+				
+				Object submittorObject = jsonObject.get("field_submittor");
+				String submittor = "";
+				if (submittorObject instanceof JSONObject) {
+					JSONObject jsonSubmittorObject = (JSONObject) submittorObject;
+					JSONArray submittorObjectArray = (JSONArray) jsonSubmittorObject.get("und");
+					if (submittorObjectArray.size() > 0) {
+						submittor = ((JSONObject) ((JSONObject) submittorObjectArray.get(0)).get("user")).get("name")
+							.toString();
+					}
+				}
+				searchResult.setSubmittor(submittor);
+
 				Object object = jsonObject.get("body");
 				String description = "";
 				if (object instanceof JSONObject) {

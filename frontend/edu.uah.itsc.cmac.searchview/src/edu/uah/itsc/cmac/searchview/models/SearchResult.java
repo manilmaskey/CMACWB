@@ -19,6 +19,8 @@ public class SearchResult {
 	private String	user;
 	private String	description;
 	private String	folderPath;
+	private String	creator;
+	private String	submittor;
 
 	/**
 	 * @return the created
@@ -161,6 +163,22 @@ public class SearchResult {
 	 */
 	public void setFolderPath(String folderPath) {
 		this.folderPath = folderPath;
+	}
+
+	public String getCreator() {
+		return creator;
+	}
+
+	public void setCreator(String creator) {
+		this.creator = creator;
+	}
+
+	public String getSubmittor() {
+		return submittor;
+	}
+
+	public void setSubmittor(String submittor) {
+		this.submittor = submittor;
 	}
 
 	public SearchResult() {

@@ -78,7 +78,10 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 			composite.setLayout(new GridLayout(2, false));
 
 			Text description = new Text(composite, SWT.NONE | SWT.WRAP);
-			description.setText(searchResult.getDescription().trim());
+			String descriptionString = "Title: " + searchResult.getTitle() + "\nOwner: " + searchResult.getCreator() + "\nLast submitted by: "
+				+ searchResult.getSubmittor() + "\nDescription:\n"
+				+ searchResult.getDescription().trim();
+			description.setText(descriptionString);
 			description.setEditable(false);
 
 			HashMap<String, String> paths = getPaths(searchResult);
@@ -124,7 +127,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 			});
 
 			ExpandItem item = new ExpandItem(bar, SWT.NONE, 0);
-			item.setText(searchResult.getTitle());
+			item.setText(searchResult.getTitle() + " by " + searchResult.getCreator());
 			item.setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 			item.setControl(composite);
 
