@@ -3,6 +3,8 @@
  */
 package edu.uah.itsc.cmac.searchview.views;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,7 +33,9 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.searchview.models.SearchResult;
 import edu.uah.itsc.cmac.searchview.models.SearchResultInterface;
+import edu.uah.itsc.cmac.util.FileUtility;
 import edu.uah.itsc.cmac.util.GITUtility;
+import edu.uah.itsc.cmac.util.PropertyUtility;
 
 /**
  * @author sshrestha
@@ -78,8 +82,8 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 			composite.setLayout(new GridLayout(2, false));
 
 			Text description = new Text(composite, SWT.NONE | SWT.WRAP);
-			String descriptionString = "Title: " + searchResult.getTitle() + "\nOwner: " + searchResult.getCreator() + "\nLast submitted by: "
-				+ searchResult.getSubmittor() + "\nDescription:\n"
+			String descriptionString = "Title: " + searchResult.getTitle() + "\nOwner: " + searchResult.getCreator()
+				+ "\nLast submitted by: " + searchResult.getSubmittor() + "\nDescription:\n"
 				+ searchResult.getDescription().trim();
 			description.setText(descriptionString);
 			description.setEditable(false);
@@ -88,7 +92,6 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 			final String remotePath = (String) paths.get("remotePath");
 			final String localPath = (String) paths.get("localPath");
 			final String bucketName = (String) paths.get("bucketName");
-			final String workflow = (String) paths.get("workflow");
 
 			GridData textGridData = new GridData(GridData.FILL_HORIZONTAL);
 			textGridData.widthHint = 400;
@@ -111,7 +114,9 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 					try {
 
 						// We do not download folders now. We have to clone the repository locally
-						GITUtility.cloneRepository(localPath + "/" + workflow, remotePath);
+						GITUtility.cloneRepository(localPath, remotePath);
+						setOwnerProperty(localPath, searchResult.getCreator());
+
 						IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
 							.getFolder(User.username);
 						userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
@@ -133,6 +138,23 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 
 		}
 
+	}
+
+	private void setOwnerProperty(final String localPath, final String repoOwner) throws IOException {
+		String workflowPropertyFileName = localPath + "/.cmacworkflow";
+		String gitIgnoreFileName = localPath + "/.gitignore";
+		File propFile = new File(workflowPropertyFileName);
+		if (!propFile.exists())
+			propFile.createNewFile();
+
+		File gitIgnoreFile = new File(gitIgnoreFileName);
+		if (!gitIgnoreFile.exists()) {
+			gitIgnoreFile.createNewFile();
+			FileUtility.writeTextFile(gitIgnoreFileName, ".cmacworkflow");
+		}
+
+		PropertyUtility propUtil = new PropertyUtility(workflowPropertyFileName);
+		propUtil.setValue("owner", repoOwner);
 	}
 
 	private HashMap<String, String> getPaths(SearchResult searchResult) {
@@ -158,7 +180,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 		String bucketName = copyFromFolderPath.substring(0, fromIndex);
 		String remotePath = "amazon-s3://.jgit@" + s3.getCommunityBucketName() + "/" + copyFromFolderPath + ".git";
 		String localPath = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).getLocation() + "/"
-			+ User.username;
+			+ User.username + "/" + folderToCopy;
 		System.out.println(remotePath + "\n" + localPath);
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put("localPath", localPath);

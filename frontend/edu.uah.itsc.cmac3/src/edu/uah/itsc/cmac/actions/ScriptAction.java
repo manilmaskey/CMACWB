@@ -125,31 +125,22 @@ public class ScriptAction extends Action {
 
 class LongRunningOperation implements IRunnableWithProgress {
 	private static final int	TOTAL_TIME	= 10000;
-
 	private static final int	INCREMENT	= 500;
-
 	private boolean				indeterminate;
-
 	private String				file;
-
 	private String				bucket;
-
 	private String				folder;
-
 	private String				title;
-
 	private String				desc;
-
 	private IFolder				folderResource;
-
 	private IWorkbenchPage		page;
-
 	private String				publicURL;
-
+	private String				repoOwner;
 	private boolean				isSharedRepo;
 
 	public LongRunningOperation(boolean indeterminate, String title, String desc, String file, String folder,
-		String bucket, IFolder folderResource, IWorkbenchPage page, String publicURL, boolean isSharedRepo) {
+		String bucket, IFolder folderResource, IWorkbenchPage page, String publicURL, String repoOwner,
+		boolean isSharedRepo) {
 		this.indeterminate = indeterminate;
 		this.title = title;
 		this.desc = desc;
@@ -159,6 +150,7 @@ class LongRunningOperation implements IRunnableWithProgress {
 		this.folderResource = folderResource;
 		this.page = page;
 		this.publicURL = publicURL;
+		this.repoOwner = repoOwner;
 		this.isSharedRepo = isSharedRepo;
 	}
 
@@ -175,20 +167,21 @@ class LongRunningOperation implements IRunnableWithProgress {
 			repoRemotePath = repoRemotePath + bucket + "/" + User.username;
 			GITUtility.commitLocalChanges(repoName, repoLocalPath, "", User.username, User.userEmail);
 			GITUtility.push(repoName, repoLocalPath, repoRemotePath);
-			S3 s3 = new S3();
 			ExecuteCommand execCommand = new ExecuteCommand.Builder(bucket, repoName, file).shared(isSharedRepo)
-				.name(User.username).mail(User.userEmail)
-				.accessKey(s3.getKeyValueFromProperties("aws_admin_access_key"))
-				.secretKey(s3.getKeyValueFromProperties("aws_admin_secret_key")).build();
+				.name(User.username).mail(User.userEmail).repoOwner(repoOwner)
+				.accessKey(S3.getKeyValueFromProperties("aws_admin_access_key"))
+				.secretKey(S3.getKeyValueFromProperties("aws_admin_secret_key")).build();
 			StringEntity seData = new StringEntity(execCommand.toJSONString());
 			seData.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 			HttpResponse response = postData("http://54.208.76.40:8080/cmacBackend/services/action/execute", seData);
+			// HttpResponse response = postData("http://localhost:8080/cmacBackend/services/action/execute", seData);
 			if (response.getStatusLine().getStatusCode() == 200) {
 				GITUtility.pull(repoName, repoLocalPath, repoRemotePath + "/" + repoName + ".git");
 				folderResource.refreshLocal(IFolder.DEPTH_INFINITE, null);
 			}
 			else {
-
+				System.out.println("Error" + response.getStatusLine() + "\n"
+					+ response.getEntity().getContent().toString());
 			}
 
 		}

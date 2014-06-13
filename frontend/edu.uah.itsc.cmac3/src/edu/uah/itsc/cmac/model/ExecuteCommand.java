@@ -19,6 +19,7 @@ public class ExecuteCommand implements JSONCommunication {
 	private final String	comment;
 	private final String	accessKey;
 	private final String	secretKey;
+	private final String	repoOwner;
 	private final boolean	isSharedRepo;
 
 	/**
@@ -37,6 +38,7 @@ public class ExecuteCommand implements JSONCommunication {
 		private String			comment			= "Execute a program";
 		private String			accessKey;
 		private String			secretKey;
+		private String			repoOwner;
 		private boolean			isSharedRepo	= false;
 
 		public Builder(String bucketName, String repoName, String fileName) {
@@ -70,6 +72,11 @@ public class ExecuteCommand implements JSONCommunication {
 			return this;
 		}
 
+		public Builder repoOwner(String repoOwner) {
+			this.repoOwner = repoOwner;
+			return this;
+		}
+
 		public Builder shared(boolean isSharedRepo) {
 			this.isSharedRepo = isSharedRepo;
 			return this;
@@ -91,6 +98,7 @@ public class ExecuteCommand implements JSONCommunication {
 		isSharedRepo = builder.isSharedRepo;
 		accessKey = builder.accessKey;
 		secretKey = builder.secretKey;
+		repoOwner = builder.repoOwner;
 	}
 
 	public String toJSONString() {
@@ -102,7 +110,8 @@ public class ExecuteCommand implements JSONCommunication {
 		try {
 			jsonECmd.put("userName", userName).put("userEmail", userEmail).put("bucketName", bucketName)
 				.put("repoName", repoName).put("fileName", fileName).put("comment", comment)
-				.put("isSharedRepo", isSharedRepo).put("accessKey", accessKey).put("secretKey", secretKey);
+				.put("repoOwner", repoOwner).put("isSharedRepo", isSharedRepo).put("accessKey", accessKey)
+				.put("secretKey", secretKey);
 		}
 		catch (JSONException e) {
 			e.printStackTrace();
@@ -121,6 +130,7 @@ public class ExecuteCommand implements JSONCommunication {
 		String comment = null;
 		String accessKey = null;
 		String secretKey = null;
+		String repoOwner = null;
 		boolean isSharedRepo = false;
 
 		try {
@@ -134,14 +144,15 @@ public class ExecuteCommand implements JSONCommunication {
 			isSharedRepo = jsonEcmd.getBoolean("isSharedRepo");
 			accessKey = jsonEcmd.getString("accessKey");
 			secretKey = jsonEcmd.getString("secretKey");
+			repoOwner = jsonEcmd.getString("repoOwner");
 
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		ExecuteCommand eCmd = new ExecuteCommand.Builder(bucketName, repoName, fileName).mail(userEmail).name(userName)
-			.comment(comment).shared(isSharedRepo).accessKey(accessKey).secretKey(secretKey).build();
+			.comment(comment).repoOwner(repoOwner).shared(isSharedRepo).accessKey(accessKey).secretKey(secretKey)
+			.build();
 		return eCmd;
 	}
 
@@ -179,6 +190,10 @@ public class ExecuteCommand implements JSONCommunication {
 
 	public boolean isSharedRepo() {
 		return isSharedRepo;
+	}
+
+	public String getRepoOwner() {
+		return repoOwner;
 	}
 
 }

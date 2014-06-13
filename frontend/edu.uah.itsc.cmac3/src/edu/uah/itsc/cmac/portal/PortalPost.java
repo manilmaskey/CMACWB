@@ -99,7 +99,7 @@ public class PortalPost {
 
 		BasicClientCookie cookie = new BasicClientCookie(session_name, session_id);
 		cookie.setVersion(0);
-		cookie.setDomain(".itsc.uah.edu");
+		cookie.setDomain("54.208.76.40");
 		cookie.setPath("/");
 		mCookieStore.addCookie(cookie);
 
@@ -176,7 +176,8 @@ public class PortalPost {
 				httpPost.setEntity(se);
 				httpPost.addHeader("X-CSRF-TOKEN", csrf_token);
 				response = httpClient.execute(httpPost, mHttpContext);
-
+				System.out.println(response.getEntity().toString());
+				System.out.println("");
 			}
 			else if (action.equalsIgnoreCase("delete")) {
 				HttpDelete httpDelete = new HttpDelete(url);

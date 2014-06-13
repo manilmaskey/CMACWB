@@ -1,34 +1,20 @@
 package edu.uah.itsc.cmac.actions;
 
 import java.io.File;
-import java.net.URI;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -36,8 +22,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
+import edu.uah.itsc.cmac.util.PropertyUtility;
 
 public class ExecuteCommandHandler extends AbstractHandler {
 	private IStructuredSelection	selection	= StructuredSelection.EMPTY;
@@ -72,11 +58,18 @@ public class ExecuteCommandHandler extends AbstractHandler {
 				// String file = selectedFile.getLocation().toOSString();
 				String file = selectedFile.getName();
 				System.out.println("Selected Folder:" + selectedFolder.getName());
-				String path = selectedFolder.getFullPath().toString();
+				// String path = selectedFolder.getFullPath().toString();
+				String workflowOwner = User.username;
+				File workflowPropertyFile = new File(selectedFolder.getLocation().toString() + "/.cmacworkflow");
+				if (workflowPropertyFile.exists()) {
+					PropertyUtility propUtil = new PropertyUtility(workflowPropertyFile.getAbsolutePath());
+					workflowOwner = propUtil.getValue("owner");
+				}
+				String path = "/" + bucket + "/" + workflowOwner + "/" + selectedFolder.getName();
 
 				try {
 					ExecuteDialog executeDialog = new ExecuteDialog(path, file, folder, bucket, selectedFolder,
-						getPage());
+						getPage(), workflowOwner);
 				}
 				catch (Exception e) {
 					// TODO Auto-generated catch block

@@ -27,6 +27,7 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
 
 import edu.uah.itsc.aws.EC2;
+import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
@@ -43,7 +44,7 @@ public class ExecuteDialog {
 	}
 
 	public ExecuteDialog(final String path, final String file, final String folder, final String bucket,
-		final IFolder folderResource, final IWorkbenchPage page) {
+		final IFolder folderResource, final IWorkbenchPage page, final String repoOwner) {
 		final Shell shell = new Shell();
 		shell.setText("Workflow Settings");
 		shell.setLayout(new GridLayout(2, false));
@@ -93,12 +94,12 @@ public class ExecuteDialog {
 		HashMap<String, String> nodeMap = PortalUtilities.getPortalWorkflowDetails(path);
 		if (nodeMap != null) {
 			nodeID = nodeMap.get("nid");
-			isShared = Integer.parseInt(nodeMap.get("isShared")) > 0 ? true : false ;
+			isShared = Integer.parseInt(nodeMap.get("isShared")) > 0 ? true : false;
 			titleText.setText((String) nodeMap.get("title"));
 			keywordText.setText((String) nodeMap.get("keywords"));
 			descText.setText(((String) nodeMap.get("description")).replaceAll("\\<.*?\\>", ""));
 		}
-		else{
+		else {
 			nodeID = null;
 			isShared = false;
 		}
@@ -115,17 +116,22 @@ public class ExecuteDialog {
 					System.out.println(publicURL);
 					Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keywordText.getText());
 					workflow.setPath(path);
-					workflow.setShared(false);
+					workflow.setSubmittor(User.username);
+					// workflow.setShared(false);
 					System.out.println(workflow.getJSON());
+
 					if (nodeID != null) {
 						portalPost.put(PortalUtilities.getNodeRestPoint() + "/" + nodeID, workflow.getJSON());
-
 					}
-					else
+					else {
+						workflow.setCreator(User.username);
 						portalPost.post(PortalUtilities.getNodeRestPoint(), workflow.getJSON());
+					}
+
 					portalPost.runCron();
 					new ProgressMonitorDialog(shell).run(true, true, new LongRunningOperation(true,
-						titleText.getText(), descText.getText(), file, folder, bucket, folderResource, page, publicURL, isShared));
+						titleText.getText(), descText.getText(), file, folder, bucket, folderResource, page, publicURL,
+						repoOwner, isShared));
 					shell.close();
 				}
 				catch (Exception e) {

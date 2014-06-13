@@ -53,28 +53,34 @@ public class ExecutionService {
 		String accessKey = execCommand.getAccessKey();
 		String secretKey = execCommand.getSecretKey();
 		String fileName = execCommand.getFileName();
+		String repoOwner = execCommand.getRepoOwner();
 		boolean isSharedRepo = execCommand.isSharedRepo();
 
 		String repoRemotePath = "amazon-s3://.jgit@";
 		String userDirPath = "/home/ubuntu/cmac_backend_environment/s3/";
+		// String userDirPath = "C:/cmac_backend_environment/s3/";
 		if (isSharedRepo) {
 			userDirPath = userDirPath + "cmac-community/";
 			repoRemotePath = repoRemotePath + "cmac-community/";
 		}
 		userDirPath = userDirPath + bucketName + "/" + userName;
-		repoRemotePath = repoRemotePath + bucketName + "/" + userName;
+		repoRemotePath = repoRemotePath + bucketName + "/";
+		if (repoOwner != null && !repoOwner.isEmpty())
+			repoRemotePath = repoRemotePath + repoOwner;
+		else
+			repoRemotePath = repoRemotePath + userName;
 
 		// Steps
 		// 0. Delete .jgit file if it exists and create it based upon new credentials
 		String userHomeDirectory = System.getProperty("user.home");
 		File jgitFile = new File(userHomeDirectory + "/.jgit");
-		if (!jgitFile.exists()){
+		if (!jgitFile.exists()) {
 			try {
 				String fileContent = "accesskey: " + accessKey + "\n" + "secretkey: " + secretKey;
 				jgitFile.createNewFile();
 				FileUtility.writeTextFile(jgitFile.getAbsolutePath(), fileContent);
-				System.out.println("Creating jgit file at JGIT path: " + jgitFile.getAbsolutePath() + "\nfor user name: "
-					+ System.getProperty("user.name"));
+				System.out.println("Creating jgit file at JGIT path: " + jgitFile.getAbsolutePath()
+					+ "\nfor user name: " + System.getProperty("user.name"));
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -98,7 +104,8 @@ public class ExecutionService {
 		}
 		else {
 			try {
-				GITUtility.cloneRepository(workflowDirectory.getAbsolutePath(), repoRemotePath + "/" + repoName + ".git");
+				GITUtility.cloneRepository(workflowDirectory.getAbsolutePath(), repoRemotePath + "/" + repoName
+					+ ".git");
 				System.out.println("Clone remote repository at workflow directory: "
 					+ workflowDirectory.getAbsolutePath());
 
@@ -109,24 +116,23 @@ public class ExecutionService {
 					"GIT Exception during execution of file " + fileName + ".\n" + e.getMessage(), execCommand.toJSON());
 			}
 		}
-		
+
 		// 3. Find the specified file
 		File fileToExecute = new File(workflowDirectory.getAbsolutePath() + "/" + fileName);
 		if (!fileToExecute.exists()) {
 			System.out.println("Unable to find file: " + fileToExecute.getAbsolutePath());
-			return buildResponse(500,
-				"File not found while trying to execute file " + fileName, execCommand.toJSON());
+			return buildResponse(500, "File not found while trying to execute file " + fileName, execCommand.toJSON());
 		}
 
 		// 4. Execute the file
 		System.out.println("We execute actual program here");
 		String cmd = getSystemCommand(fileName);
-		
-		if (cmd == null || cmd.isEmpty()){
-			return buildResponse(500,
-				"Execution of this file type is not yet supported." + fileName, execCommand.toJSON());
+
+		if (cmd == null || cmd.isEmpty()) {
+			return buildResponse(500, "Execution of this file type is not yet supported." + fileName,
+				execCommand.toJSON());
 		}
-		
+
 		Process process = null;
 		try {
 			process = Runtime.getRuntime().exec(cmd, null, workflowDirectory);
@@ -162,10 +168,10 @@ public class ExecutionService {
 		String command = null;
 		String[] fileParts = fileName.split("\\.");
 		String extension = fileParts[fileParts.length - 1];
-		if (extension.equalsIgnoreCase("py")){
+		if (extension.equalsIgnoreCase("py")) {
 			command = "python " + fileName;
 		}
-		else if (extension.equalsIgnoreCase("pro")){
+		else if (extension.equalsIgnoreCase("pro")) {
 			command = "idl -e " + fileName.substring(0, fileName.length() - 4);
 		}
 		return command;
