@@ -13,7 +13,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.uah.itsc.aws.S3;
@@ -50,6 +49,7 @@ public class UploadCommandHandler extends AbstractHandler {
 						String repoRemotePath = REMOTE_URL + project + "/" + User.username;
 
 						try {
+							GITUtility.pull(repoName, repoLocalPath, repoRemotePath);
 							GITUtility.commitLocalChanges(repoName, repoLocalPath, "Commit for push", User.username,
 								User.userEmail);
 							GITUtility.push(repoName, repoLocalPath, repoRemotePath);

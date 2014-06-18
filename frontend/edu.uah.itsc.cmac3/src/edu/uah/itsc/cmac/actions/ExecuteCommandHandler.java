@@ -10,11 +10,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -34,10 +30,6 @@ public class ExecuteCommandHandler extends AbstractHandler {
 
 		Object object = selection.getFirstElement();
 
-		final Shell shell = new Shell();
-		// In production code, you should always externalize strings, but this
-		// is an example.
-		// monitor.beginTask("Converting GSF file...",100);
 		if (selection.size() == 1) {
 
 			Object firstElement = selection.getFirstElement();
@@ -79,12 +71,6 @@ public class ExecuteCommandHandler extends AbstractHandler {
 		}
 
 		return object;
-	}
-
-	private void addSpanData(Control comp) {
-		GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
-		data.horizontalSpan = 2;
-		comp.setLayoutData(data);
 	}
 
 	/**

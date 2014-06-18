@@ -165,6 +165,7 @@ class LongRunningOperation implements IRunnableWithProgress {
 				repoRemotePath = repoRemotePath + "cmac-community/";
 			}
 			repoRemotePath = repoRemotePath + bucket + "/" + User.username;
+			GITUtility.pull(repoName, repoLocalPath, repoRemotePath);
 			GITUtility.commitLocalChanges(repoName, repoLocalPath, "", User.username, User.userEmail);
 			GITUtility.push(repoName, repoLocalPath, repoRemotePath);
 			ExecuteCommand execCommand = new ExecuteCommand.Builder(bucket, repoName, file).shared(isSharedRepo)

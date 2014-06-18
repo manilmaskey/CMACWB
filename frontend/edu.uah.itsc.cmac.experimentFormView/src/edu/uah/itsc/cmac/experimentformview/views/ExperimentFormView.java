@@ -252,7 +252,7 @@ public class ExperimentFormView extends ViewPart {
 	}
 
 	private void createFolderInCommunity(String title, S3 adminS3) {
-		IProject cmacCommunity = ResourcesPlugin.getWorkspace().getRoot().getProject(adminS3.getCommunityBucketName());
+		IProject cmacCommunity = ResourcesPlugin.getWorkspace().getRoot().getProject(S3.getCommunityBucketName());
 		try {
 			if (!cmacCommunity.exists())
 				cmacCommunity.create(null);
@@ -262,7 +262,6 @@ public class ExperimentFormView extends ViewPart {
 			adminS3.uploadFolderName(experimentFolder);
 		}
 		catch (CoreException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

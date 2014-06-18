@@ -69,10 +69,10 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.uah.itsc.cmac.util.GITUtility;
 
 public class S3 {
-	private static Properties	properties	= null;
+	private static Properties	properties			= null;
 	private AmazonS3			amazonS3Service;
-	public static String		delimiter	= "/";
-	private String				communityBucketName;
+	public static String		delimiter			= "/";
+	private static String		communityBucketName	= getKeyValueFromProperties("community_bucket_name");
 	private String				awsAdminAccessKey;
 	private String				awsAdminSecretKey;
 	private String				awsAccessKey;
@@ -81,7 +81,6 @@ public class S3 {
 	public S3(String aKey, String sKey) {
 		awsAccessKey = aKey;
 		awsSecretKey = sKey;
-		communityBucketName = getKeyValueFromProperties("community_bucket_name");
 		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
 		amazonS3Service = new AmazonS3Client(credentials);
 	}
@@ -91,7 +90,6 @@ public class S3 {
 		awsAdminSecretKey = getKeyValueFromProperties("aws_admin_secret_key");
 		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAdminAccessKey, awsAdminSecretKey);
 		amazonS3Service = new AmazonS3Client(credentials);
-		communityBucketName = getKeyValueFromProperties("community_bucket_name");
 	}
 
 	public void addGroupPolicy(String groupName, String policyName, String policyToAdd) {
@@ -238,7 +236,7 @@ public class S3 {
 	// return bucketName;
 	// }
 
-	public String getCommunityBucketName() {
+	public static String getCommunityBucketName() {
 		return communityBucketName;
 	}
 

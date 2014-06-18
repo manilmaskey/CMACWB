@@ -98,31 +98,12 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 			else
 				return false;
 		}
-		
-		else if (expectedValue.equals("saveForTrackingWorkflow")) {
+
+		else if (expectedValue.equals("saveForTrackingWorkflow") || expectedValue.equals("ShowVersionList")
+			|| expectedValue.equals("AddVersion") || expectedValue.equals("UpdateCommand")) {
 			if (receiver instanceof IFolder) {
 				IFolder folder = (IFolder) receiver;
-				if (folder.getParent() instanceof IFolder){
-					IFolder parent = (IFolder) folder.getParent();
-					if (!parent.getName().equalsIgnoreCase(User.username))
-						return false;
-					if (!(parent.getParent() instanceof IProject))
-						return false;
-					if (parent.getProject().getName().equalsIgnoreCase(s3.getCommunityBucketName()))
-						return false;
-					return true;
-				}
-				else
-					return false;
-			}
-			else
-				return false;
-		}
-		
-		else if (expectedValue.equals("ShowVersionList")) {
-			if (receiver instanceof IFolder) {
-				IFolder folder = (IFolder) receiver;
-				if (folder.getParent() instanceof IFolder){
+				if (folder.getParent() instanceof IFolder) {
 					IFolder parent = (IFolder) folder.getParent();
 					if (!parent.getName().equalsIgnoreCase(User.username))
 						return false;
@@ -139,26 +120,6 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 				return false;
 		}
 
-		else if (expectedValue.equals("AddVersion")) {
-			if (receiver instanceof IFolder) {
-				IFolder folder = (IFolder) receiver;
-				if (folder.getParent() instanceof IFolder){
-					IFolder parent = (IFolder) folder.getParent();
-					if (!parent.getName().equalsIgnoreCase(User.username))
-						return false;
-					if (!(parent.getParent() instanceof IProject))
-						return false;
-					if (parent.getProject().getName().equalsIgnoreCase(s3.getCommunityBucketName()))
-						return false;
-					return true;
-				}
-				else
-					return false;
-			}
-			else
-				return false;
-		}
-		
 		else if (expectedValue.equals("delete")) {
 			// Disable deleting project/bucket/experiment for now
 			/*

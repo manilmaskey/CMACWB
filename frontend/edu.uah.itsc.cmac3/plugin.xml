@@ -874,4 +874,62 @@
 </extension>
 <!-- Shreedhan Add AddVersion in the menu -->
 
+
+<!-- Shreedhan Added Update command-->
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Update"
+        id="edu.uah.itsc.cmac.UpdateCommand"
+        name="Update">
+  </command>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan Added Update handler -->
+<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.UpdateCommandHandler"
+        commandId="edu.uah.itsc.cmac.UpdateCommand">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="UpdateCommand">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan AddVersion in the menu -->
+<extension point="org.eclipse.ui.menus">
+  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+     <command
+           commandId="edu.uah.itsc.cmac.UpdateCommand"
+           style="push"
+           icon="icons/import.png">
+        <visibleWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="UpdateCommand">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+  </menuContribution>
+</extension>
+<!-- Shreedhan Add AddVersion in the menu -->
+
+
+
 </plugin>
