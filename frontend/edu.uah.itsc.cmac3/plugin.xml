@@ -22,6 +22,19 @@
             id="edu.uah.itsc.cmac.NavigatorView">
       </view>
 </extension>
+
+<extension
+	point="org.eclipse.ui.views">
+	<category
+	id="edu.uah.itsc.cmac.cmacwb.category"
+	name="CMACWB" />
+	<view
+		allowMultiple="false"
+		name="Shared Workflow"
+		class="edu.uah.itsc.cmac.ui.SharedWorkflowView"
+		id="edu.uah.itsc.cmac.ui.SharedWorkflowView">
+	</view>
+</extension>
 <extension point="org.eclipse.ui.navigator.viewer">
    <viewerContentBinding 
         viewerId="edu.uah.itsc.cmac.NavigatorView">

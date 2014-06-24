@@ -3,16 +3,13 @@ package edu.uah.itsc.cmac.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -26,8 +23,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.uah.itsc.aws.S3;
-import edu.uah.itsc.aws.User;
-import edu.uah.itsc.cmac.ui.NavigatorView;
+import edu.uah.itsc.cmac.ui.SharedWorkflowView;
 
 public class RefreshCommandHandler extends AbstractHandler {
 	private IStructuredSelection	selection	= StructuredSelection.EMPTY;
@@ -49,7 +45,7 @@ public class RefreshCommandHandler extends AbstractHandler {
 					else if (firstElement instanceof IProject) {
 						S3 s3 = new S3();
 						try {
-							NavigatorView view = (NavigatorView) getPage().findView("edu.uah.itsc.cmac.NavigatorView");
+							SharedWorkflowView view = (SharedWorkflowView) getPage().findView("edu.uah.itsc.cmac.SharedWorkflowView");
 							view.refreshCommunityResource();
 						}
 						catch (Exception e) {
