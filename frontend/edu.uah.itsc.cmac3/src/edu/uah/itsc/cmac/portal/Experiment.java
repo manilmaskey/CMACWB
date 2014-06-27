@@ -18,6 +18,7 @@ public class Experiment {
 	private String	title;
 	private String	description;
 	private String	creator;
+	private String	creatorID;
 	private String	workflows;
 
 	public Experiment(String title, String description, String userID, String workflows) {
@@ -107,6 +108,14 @@ public class Experiment {
 	 */
 	public void setCreator(String creator) {
 		this.creator = creator;
+	}
+
+	public String getCreatorID() {
+		return creatorID;
+	}
+
+	public void setCreatorID(String creatorID) {
+		this.creatorID = creatorID;
 	}
 
 	/**

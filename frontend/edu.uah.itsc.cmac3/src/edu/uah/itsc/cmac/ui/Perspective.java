@@ -13,38 +13,22 @@ public class Perspective implements IPerspectiveFactory {
 		layout.setEditorAreaVisible(true);
 		layout.setFixed(true);
 
-		// layout.addStandaloneView("example.view", true /* show title */,
-		// IPageLayout.LEFT, 0.25f, editorArea);
-		// IFolderLayout left = layout.createFolder("left",
-		// IPageLayout.LEFT, (float) 0.26, editorArea);
-		IFolderLayout left = layout.createFolder("left", IPageLayout.LEFT, (float) 0.35, editorArea);
-		// IFolderLayout left2 = layout.createFolder("left",
-		// IPageLayout.LEFT, (float) 0.35, editorArea);
-		left.addView("edu.uah.itsc.cmac.NavigatorView");
-		// left2.addView("edu.uah.itsc.cmac.PersonalNavigatorView");
+		IFolderLayout left = layout.createFolder("left", IPageLayout.LEFT, (float) 0.30, editorArea);
+		IFolderLayout leftTop = layout.createFolder("leftTop", IPageLayout.TOP, (float) 0.125, "left");
+		IFolderLayout leftMiddle = layout.createFolder("leftMiddle", IPageLayout.BOTTOM, (float) 0.30, "left");
+		IFolderLayout leftBottom = layout.createFolder("leftBottom", IPageLayout.BOTTOM, (float) 0.50, "leftMiddle");
+
+		leftTop.addView("edu.uah.itsc.cmac.searchview.views.SearchView");
+		left.addView("edu.uah.itsc.cmac.ui.SharedWorkflowView");
+		leftMiddle.addView("edu.uah.itsc.cmac.NavigatorView");
+		leftBottom.addView("edu.uah.itsc.cmac.ui.OtherWorkflowView");
 
 		IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, (float) 0.80, editorArea);
-
 		bottom.addView("edu.uah.itsc.cmac.programview.views.ProgramView");
 		bottom.addView("org.eclipse.ecf.presence.ui.MultiRosterView");
 		bottom.addView("edu.uah.itsc.cmac.ami.views.AMIView");
 		bottom.addView("edu.uah.itsc.cmac.ec2instance.views.EC2InstanceView");
-		
 
-		// left.addPlaceholder(IPageLayout.ID_BOOKMARKS);
-		// left.addView("org.eclipse.ui.browser.view");
-		// layout.addView("org.eclipse.ui.browser.view", IPageLayout.BOTTOM,
-		// (float)0.55, editorArea);
-
-		// try {
-		// PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.eclipse.ui.browser.view","",
-		// IWorkbenchPage.VIEW_ACTIVATE);
-		// } catch (PartInitException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// layout.addView("org.eclipse.ui.browser.view", IPageLayout.LEFT,
-		// 0.5f, IPageLayout.ID_EDITOR_AREA);
 	}
 
 }

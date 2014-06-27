@@ -253,4 +253,21 @@ public class Workflow {
 		this.isShared = isShared;
 	}
 
+	public String getBucket() {
+		if (path == null || path.isEmpty())
+			return null;
+		
+		String[] parts = path.split("/");
+		return parts[1];
+	}
+
+	public String getWorkflowName() {
+		if (path == null || path.isEmpty())
+			return null;
+		
+		String[] parts = path.split("/");
+		return parts[parts.length - 1];
+	}
+
+	
 }

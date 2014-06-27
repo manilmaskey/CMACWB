@@ -3,22 +3,56 @@
  */
 package edu.uah.itsc.cmac.ui;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
+
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.part.ViewPart;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
-import edu.uah.itsc.cmac.portal.PortalUtilities;
+import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.Workflow;
+import edu.uah.itsc.cmac.util.FileUtility;
+import edu.uah.itsc.cmac.util.GITUtility;
+import edu.uah.itsc.cmac.util.PropertyUtility;
 
 /**
  * @author sshrestha
@@ -26,7 +60,15 @@ import edu.uah.itsc.cmac.portal.Workflow;
  */
 public class SharedWorkflowView extends ViewPart {
 
-	private TreeViewer	viewer;
+	private TreeViewer		viewer;
+	private static Image	sharedImage;
+	private static Image	folderImage;
+	private static Image	userImage;
+	private static Image	refreshImage;
+	private static Image	importImage;
+	private static File		sessionSharedWorkflowDir;
+	private Action			refreshCommunityAction;
+	private Action			importWorkflowAction;
 
 	/*
 	 * (non-Javadoc)
@@ -35,50 +77,229 @@ public class SharedWorkflowView extends ViewPart {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
+		if (sessionSharedWorkflowDir == null)
+			sessionSharedWorkflowDir = Utilities.createTempDir("sharedWorkflowDir");
+		sessionSharedWorkflowDir.deleteOnExit();
+
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		viewer.setContentProvider(new SharedWorkflowContentProvider());
 		viewer.setLabelProvider(new SharedWorkflowLabelProvider());
-		viewer.setInput(getSharedWorkflow());
+		createSharedDirectories();
+		viewer.setInput(sessionSharedWorkflowDir.listFiles());
+
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				Object obj = ((StructuredSelection) event.getSelection()).getFirstElement();
+				if (obj instanceof File) {
+					File file = (File) obj;
+					if (file.getParentFile().getName().equalsIgnoreCase(sessionSharedWorkflowDir.getName()))
+						refreshCommunityAction.setEnabled(true);
+					else
+						refreshCommunityAction.setEnabled(false);
+					if (file.list().length == 0)
+						importWorkflowAction.setEnabled(true);
+					else
+						importWorkflowAction.setEnabled(false);
+				}
+			}
+		});
+		createImages();
+		makeActions();
+		hookContextMenu();
+		contributeToActionBars();
 	}
 
-	private Object getSharedWorkflow() {
-		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getWorkflowFeedURL() + "?field_is_shared=1");
-		JSONParser parser = new JSONParser();
-		Object obj;
-		try {
-			obj = parser.parse(jsonText);
-			JSONObject workflowsObj = (JSONObject) obj;
+	private void createImages() {
+		if (sharedImage == null)
+			sharedImage = createImage("icons/shared.png");
+		if (folderImage == null)
+			folderImage = createImage("icons/folder.png");
+		if (userImage == null)
+			userImage = createImage("icons/user.png");
+		if (refreshImage == null)
+			refreshImage = createImage("icons/refresh-16x16.png");
+		if (importImage == null)
+			importImage = createImage("icons/import.png");
+	}
 
-			if (workflowsObj == null)
-				return null;
-			JSONArray workFlowArray = (JSONArray) workflowsObj.get("workflows");
-			Workflow[] workflows = new Workflow[workFlowArray.size()];
-			if (workFlowArray == null || workFlowArray.size() == 0)
-				return null;
-			for (int i = 0; i < workFlowArray.size(); i++) {
-				JSONObject workflowObj = (JSONObject) workFlowArray.get(i);
-				workflowObj = (JSONObject) workflowObj.get("workflow");
-				Workflow workflow = new Workflow();
-				workflow.setPath(workflowObj.get("path").toString());
-				workflow.setTitle(workflowObj.get("title").toString());
-				workflow.setDescription(workflowObj.get("description").toString());
-				workflow.setKeywords(workflowObj.get("keywords").toString());
-				workflows[i] = workflow;
+	private void hookContextMenu() {
+		MenuManager menuMgr = new MenuManager("#PopupMenu");
+		menuMgr.setRemoveAllWhenShown(true);
+		menuMgr.addMenuListener(new IMenuListener() {
+			public void menuAboutToShow(IMenuManager manager) {
+				SharedWorkflowView.this.fillContextMenu(manager);
 			}
-			return workflows;
+		});
+		Menu menu = menuMgr.createContextMenu(viewer.getControl());
+		viewer.getControl().setMenu(menu);
+		// getSite().registerContextMenu(menuMgr, viewer);
+	}
+
+	private void contributeToActionBars() {
+		IActionBars bars = getViewSite().getActionBars();
+		fillLocalToolBar(bars.getToolBarManager());
+	}
+
+	private void fillContextMenu(IMenuManager manager) {
+		manager.add(refreshCommunityAction);
+		manager.add(importWorkflowAction);
+		// Other plug-ins can contribute there actions here
+		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+	}
+
+	private void fillLocalToolBar(IToolBarManager manager) {
+		manager.add(refreshCommunityAction);
+		manager.add(importWorkflowAction);
+	}
+
+	private void makeActions() {
+		refreshCommunityAction = new Action() {
+			public void run() {
+				refreshCommunityResource();
+			}
+		};
+		refreshCommunityAction.setText("Refresh");
+		refreshCommunityAction.setToolTipText("Refresh shared experiments");
+		refreshCommunityAction.setImageDescriptor(new ImageDescriptor() {
+			@Override
+			public ImageData getImageData() {
+				return refreshImage.getImageData();
+			}
+		});
+
+		importWorkflowAction = new Action() {
+			public void run() {
+				importWorkflow();
+			}
+		};
+		importWorkflowAction.setText("Import");
+		importWorkflowAction.setToolTipText("Import selected workflow");
+		importWorkflowAction.setImageDescriptor(new ImageDescriptor() {
+			@Override
+			public ImageData getImageData() {
+				return importImage.getImageData();
+			}
+		});
+		refreshCommunityAction.setEnabled(false);
+		importWorkflowAction.setEnabled(false);
+
+	}
+
+	private void importWorkflow() {
+		ITreeSelection selection = (ITreeSelection) viewer.getSelection();
+		Object obj = selection.getFirstElement();
+		if (obj instanceof File) {
+			File file = (File) obj;
+			if (file.list().length > 0) {
+				showMessage("Cannot import " + file.getName(), "error");
+				return;
+			}
+			String workflowName = file.getName();
+			final String creator = file.getParentFile().getName();
+			final String bucketName = file.getParentFile().getParentFile().getName();
+
+			final String remotePath = "amazon-s3://.jgit@cmac-community/" + bucketName + "/" + creator + "/"
+				+ workflowName + ".git";
+			final String localPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString() + "/"
+				+ bucketName + "/" + User.username + "/" + workflowName;
+
+			createInNavigator(bucketName, workflowName);
+			Job job = new Job("Importing..") {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					try {
+						GITUtility.cloneRepository(localPath, remotePath);
+						setOwnerProperty(localPath, creator);
+
+						IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
+							.getFolder(User.username);
+						userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+					}
+					catch (Exception e) {
+						Display.getDefault().asyncExec(new Runnable() {
+
+							@Override
+							public void run() {
+								MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+									"Error while importing");
+							}
+						});
+					}
+					monitor.done();
+					return Status.OK_STATUS;
+				}
+			};
+			job.setUser(true);
+			job.schedule();
 		}
-		catch (ParseException e) {
+	}
+
+	private void setOwnerProperty(final String localPath, final String repoOwner) throws IOException {
+		String workflowPropertyFileName = localPath + "/.cmacworkflow";
+		String gitIgnoreFileName = localPath + "/.gitignore";
+		File propFile = new File(workflowPropertyFileName);
+		if (!propFile.exists())
+			propFile.createNewFile();
+
+		File gitIgnoreFile = new File(gitIgnoreFileName);
+		if (!gitIgnoreFile.exists()) {
+			gitIgnoreFile.createNewFile();
+			FileUtility.writeTextFile(gitIgnoreFileName, ".cmacworkflow");
+		}
+
+		PropertyUtility propUtil = new PropertyUtility(workflowPropertyFileName);
+		propUtil.setValue("owner", repoOwner);
+	}
+
+	private void createInNavigator(String bucketName, String workflowName) {
+		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName);
+		try {
+			if (!project.exists()) {
+				project.create(null);
+			}
+			project.open(null);
+			IFolder folder = project.getFolder(User.username);
+			if (!folder.exists())
+				folder.create(true, false, null);
+			String folderPath = folder.getLocation().toString();
+			File folderFile = new File(folderPath);
+			if (!folderFile.exists())
+				folderFile.mkdirs();
+		}
+		catch (CoreException e) {
 			e.printStackTrace();
-			System.out.println("Unable to parse json object");
-			return null;
 		}
+	}
+
+	private void showMessage(String message, String type) {
+		if (type.equalsIgnoreCase("info"))
+			MessageDialog.openInformation(viewer.getControl().getShell(), "Shared Experiments", message);
+		else if (type.equalsIgnoreCase("error"))
+			MessageDialog.openError(viewer.getControl().getShell(), "Shared Experiments", message);
+	}
+
+	private Object createSharedDirectories() {
+		HashMap<String, Workflow> sharedWorkflows = Utilities.getSharedWorkflows();
+		File[] files = new File[sharedWorkflows.size()];
+		int i = 0;
+		for (String key : sharedWorkflows.keySet()) {
+			Workflow workflow = sharedWorkflows.get(key);
+			File file = new File(sessionSharedWorkflowDir + workflow.getPath());
+			if (!file.exists())
+				file.mkdirs();
+			files[i] = file;
+			i++;
+		}
+		return files;
+
 	}
 
 	class SharedWorkflowContentProvider implements ITreeContentProvider {
 
 		@Override
 		public void dispose() {
-
 		}
 
 		@Override
@@ -88,31 +309,32 @@ public class SharedWorkflowView extends ViewPart {
 
 		@Override
 		public Object[] getElements(Object inputElement) {
-			return (Workflow[]) inputElement;
+			return (File[]) inputElement;
 		}
 
 		@Override
 		public Object[] getChildren(Object parentElement) {
-			if (parentElement instanceof Workflow){
-				Workflow workflow = (Workflow) parentElement;
-				String[] parts = workflow.getPath().split("/");
-				return parts;
+			if (parentElement instanceof File) {
+				File file = (File) parentElement;
+				if (!file.exists())
+					file.mkdirs();
+				return file.listFiles();
 			}
 			return null;
 		}
 
 		@Override
 		public Object getParent(Object element) {
+			if (element instanceof File)
+				return ((File) element).getParentFile();
 			return null;
 		}
 
 		@Override
 		public boolean hasChildren(Object element) {
-			if (element instanceof Workflow){
-				return true;
-			}
-			else
-				return false;
+			if (element instanceof File)
+				return ((File) element).list().length != 0;
+			return false;
 		}
 
 	}
@@ -121,89 +343,31 @@ public class SharedWorkflowView extends ViewPart {
 		@Override
 		public void update(ViewerCell cell) {
 			StyledString text = new StyledString();
-			if (cell.getElement() instanceof Workflow){
-				Workflow workflow = (Workflow) cell.getElement();
-				text.append(workflow.getPath());
-			}
+			File file = (File) cell.getElement();
+			if (file.list().length == 0)
+				cell.setImage(sharedImage);
+			else if (file.getName().equalsIgnoreCase(User.username))
+				cell.setImage(userImage);
 			else
-				text.append(cell.getElement().toString());
+				cell.setImage(folderImage);
+			text.append(file.getName());
 			cell.setText(text.toString());
 			super.update(cell);
 		}
 
 	}
 
-	// private void refreshCommunityResourceFromPortal() {
-	// clearCommunityResource();
-	// String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getWorkflowFeedURL() + "?field_is_shared=1");
-	// JSONParser parser = new JSONParser();
-	// Object obj;
-	// try {
-	// obj = parser.parse(jsonText);
-	// JSONObject workflows = (JSONObject) obj;
-	//
-	// if (workflows == null)
-	// return;
-	// JSONArray workFlowArray = (JSONArray) workflows.get("workflows");
-	// if (workFlowArray == null || workFlowArray.size() == 0)
-	// return;
-	// for (int i = 0; i < workFlowArray.size(); i++) {
-	// JSONObject workflow = (JSONObject) workFlowArray.get(i);
-	// workflow = (JSONObject) workflow.get("workflow");
-	// HashMap<String, String> map = new HashMap<String, String>();
-	// map.put("nid", workflow.get("nid").toString());
-	// map.put("path", workflow.get("path").toString());
-	// map.put("title", workflow.get("title").toString());
-	// map.put("description", workflow.get("description").toString());
-	// map.put("keywords", workflow.get("keywords").toString());
-	// createSharedFolder(map);
-	// map = null;
-	// }
-	// return;
-	// }
-	// catch (ParseException e) {
-	// e.printStackTrace();
-	// System.out.println("Unable to parse json object");
-	// return;
-	// }
-	// }
-	//
-	public void refreshCommunityResource() {
-		// refreshCommunityResourceFromPortal();
+	private Image createImage(String path) {
+		Bundle bundle = FrameworkUtil.getBundle(SharedWorkflowLabelProvider.class);
+		URL url = FileLocator.find(bundle, new Path(path), null);
+		ImageDescriptor imageDcr = ImageDescriptor.createFromURL(url);
+		return imageDcr.createImage();
 	}
 
-	// public void clearCommunityResource() {
-	// try {
-	// cmacCommunity.delete(true, null);
-	// }
-	// catch (CoreException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// }
-	//
-	// private IFolder createSharedFolder(HashMap<String, String> map) {
-	// try {
-	// if (!cmacCommunity.exists()) {
-	// cmacCommunity.create(null);
-	// cmacCommunity.open(null);
-	// }
-	// IFolder sharedFolder = cmacCommunity.getFolder(map.get("path").replaceFirst("/", ""));
-	// // createFolder(sharedFolder);
-	// return sharedFolder;
-	// }
-	// catch (CoreException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// }
-	//
-	// private void createFolder(IFolder sharedFolder) throws CoreException {
-	// if (!sharedFolder.getParent().exists() && sharedFolder.getParent() != sharedFolder.getProject())
-	// createFolder((IFolder) sharedFolder.getParent());
-	// if (!sharedFolder.exists())
-	// sharedFolder.create(true, true, null);
-	// }
+	public void refreshCommunityResource() {
+		createSharedDirectories();
+		viewer.setInput(sessionSharedWorkflowDir.listFiles());
+	}
 
 	/*
 	 * (non-Javadoc)

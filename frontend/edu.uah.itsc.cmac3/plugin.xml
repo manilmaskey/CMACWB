@@ -13,28 +13,40 @@
 <extension
       point="org.eclipse.ui.views">
       <category 
-      	id="edu.uah.itsc.glider.navigator.category"
-      	name="Community Navigator" />   
+      	id="edu.uah.itsc.cmac"
+      	name="CMACWB" />   
       <view
             allowMultiple="false"
-            name="Experiments"
+            name="Shared Experiments"
+            class="edu.uah.itsc.cmac.ui.SharedWorkflowView"
+            id="edu.uah.itsc.cmac.ui.SharedWorkflowView">
+      </view>
+</extension>
+<extension
+      point="org.eclipse.ui.views">
+      <category 
+      	id="edu.uah.itsc.cmac"
+      	name="CMACWB" />    
+      <view
+            allowMultiple="false"
+            name="Other Experiments"
+            class="edu.uah.itsc.cmac.ui.OtherWorkflowView"
+            id="edu.uah.itsc.cmac.ui.OtherWorkflowView">
+      </view>
+</extension>
+<extension
+      point="org.eclipse.ui.views">
+      <category 
+      	id="edu.uah.itsc.cmac"
+      	name="CMACWB" />  
+      <view
+            allowMultiple="false"
+            name="My Experiments"
             class="edu.uah.itsc.cmac.ui.NavigatorView"
             id="edu.uah.itsc.cmac.NavigatorView">
       </view>
 </extension>
 
-<extension
-	point="org.eclipse.ui.views">
-	<category
-	id="edu.uah.itsc.cmac.cmacwb.category"
-	name="CMACWB" />
-	<view
-		allowMultiple="false"
-		name="Shared Workflow"
-		class="edu.uah.itsc.cmac.ui.SharedWorkflowView"
-		id="edu.uah.itsc.cmac.ui.SharedWorkflowView">
-	</view>
-</extension>
 <extension point="org.eclipse.ui.navigator.viewer">
    <viewerContentBinding 
         viewerId="edu.uah.itsc.cmac.NavigatorView">
@@ -501,14 +513,6 @@
       point="org.eclipse.ui.perspectiveExtensions">
    <perspectiveExtension
          targetID="edu.uah.itsc.cmac.perspective">
-      <view
-            id="edu.uah.itsc.cmac.searchview.views.SearchView"
-            minimized="false"
-            ratio="0.125f"
-            relationship="top"
-            relative="edu.uah.itsc.cmac.NavigatorView"
-            visible="true">
-      </view>
       <view
             id="edu.uah.itsc.cmac.searchview.views.SearchResultView"
             minimized="false"

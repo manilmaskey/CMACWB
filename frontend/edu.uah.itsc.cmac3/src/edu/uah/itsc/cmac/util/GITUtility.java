@@ -267,7 +267,6 @@ public class GITUtility {
 		Repository repository = null;
 		try {
 			File localPath = File.createTempFile("EmptyRepository", "");
-			localPath.delete();
 
 			repository = FileRepositoryBuilder.create(new File(localPath, ".git"));
 			repository.create();
