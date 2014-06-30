@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="4."?>
 <plugin>
+   <extension id="cmacproduct" point="org.eclipse.core.runtime.products"> 
+      <product name="cmacwb" application="edu.uah.itsc.cmac3" description="CMAC Workbench"> 
+          <property name="windowImages" value="splash.bmp"/> 
+          <property name="aboutImage" value="image.gif"/> 
+          <property name="aboutText" value="CMAC WorkBench
+Developed by ITSC UAH
+More at http://www.itsc.uah.edu"/> 
+          <property name="appName" value="cmacwb"/> 
+      </product> 
+   </extension>
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
@@ -706,7 +716,7 @@
      <command
            commandId="edu.uah.itsc.cmac.InitTrackingWorkflow"
            style="push"
-           icon="icons/import.png">
+           icon="icons/new_workflow.png">
         <visibleWhen>
         <with variable="selection">
            <iterate
@@ -761,7 +771,7 @@
      <command
            commandId="edu.uah.itsc.cmac.SaveForTrackingWorkflow"
            style="push"
-           icon="icons/import.png">
+           icon="icons/save.gif">
         <visibleWhen>
         <with variable="selection">
            <iterate
@@ -817,7 +827,7 @@
      <command
            commandId="edu.uah.itsc.cmac.ShowVersionList"
            style="push"
-           icon="icons/import.png">
+           icon="icons/versions.png">
         <visibleWhen>
         <with variable="selection">
            <iterate
@@ -873,7 +883,7 @@
      <command
            commandId="edu.uah.itsc.cmac.AddVersion"
            style="push"
-           icon="icons/import.png">
+           icon="icons/add_version.png">
         <visibleWhen>
         <with variable="selection">
            <iterate
@@ -929,7 +939,7 @@
      <command
            commandId="edu.uah.itsc.cmac.UpdateCommand"
            style="push"
-           icon="icons/import.png">
+           icon="icons/update.png">
         <visibleWhen>
         <with variable="selection">
            <iterate

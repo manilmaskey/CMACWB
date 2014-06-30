@@ -40,7 +40,7 @@ import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
-import edu.uah.itsc.cmac.ui.NavigatorView;
+import edu.uah.itsc.cmac.ui.OtherWorkflowView;
 import edu.uah.itsc.cmac.ui.SharedWorkflowView;
 import edu.uah.itsc.cmac.util.GITUtility;
 
@@ -188,9 +188,16 @@ public class ShareCommandHandler extends AbstractHandler {
 											s3.shareGITFolder(selectedFolder);
 
 											try {
-												SharedWorkflowView view = (SharedWorkflowView) getPage().findView(
-													"edu.uah.itsc.cmac.SharedWorkflowView");
-												view.refreshCommunityResource();
+												Display.getDefault().asyncExec(new Runnable() {
+
+													@Override
+													public void run() {
+														SharedWorkflowView view = (SharedWorkflowView) PlatformUI
+															.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+															.findView("edu.uah.itsc.cmac.ui.OtherWorkflowView");
+														view.refreshCommunityResource();
+													}
+												});
 											}
 											catch (Exception e) {
 												System.out.println("Errror while refreshCommunityResource "

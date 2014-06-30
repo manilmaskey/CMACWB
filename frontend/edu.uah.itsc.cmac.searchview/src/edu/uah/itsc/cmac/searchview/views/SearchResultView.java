@@ -10,7 +10,13 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.swt.SWT;
@@ -27,12 +33,14 @@ import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.searchview.models.SearchResult;
 import edu.uah.itsc.cmac.searchview.models.SearchResultInterface;
+import edu.uah.itsc.cmac.ui.OtherWorkflowView;
 import edu.uah.itsc.cmac.util.FileUtility;
 import edu.uah.itsc.cmac.util.GITUtility;
 import edu.uah.itsc.cmac.util.PropertyUtility;
@@ -89,9 +97,10 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 			description.setEditable(false);
 
 			HashMap<String, String> paths = getPaths(searchResult);
-			final String remotePath = (String) paths.get("remotePath");
-			final String localPath = (String) paths.get("localPath");
-			final String bucketName = (String) paths.get("bucketName");
+			final String remotePath = paths.get("remotePath");
+			final String localPath = paths.get("localPath");
+			final String bucketName = paths.get("bucketName");
+			final String workflow = paths.get("workflow");
 
 			GridData textGridData = new GridData(GridData.FILL_HORIZONTAL);
 			textGridData.widthHint = 400;
@@ -112,21 +121,69 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 
 				public void widgetSelected(SelectionEvent event) {
 					try {
+						createInNavigator(bucketName, workflow);
+						Job job = new Job("Importing..") {
+							@Override
+							protected IStatus run(IProgressMonitor monitor) {
+								try {
+									GITUtility.cloneRepository(localPath, remotePath);
+									setOwnerProperty(localPath, searchResult.getCreator());
 
-						// We do not download folders now. We have to clone the repository locally
-						GITUtility.cloneRepository(localPath, remotePath);
-						setOwnerProperty(localPath, searchResult.getCreator());
+									IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot()
+										.getProject(bucketName).getFolder(User.username);
+									userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+									Display.getDefault().asyncExec(new Runnable() {
 
-						IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
-							.getFolder(User.username);
-						userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+										@Override
+										public void run() {
+											OtherWorkflowView otherWorkflowView = (OtherWorkflowView) PlatformUI
+												.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+												.findView("edu.uah.itsc.cmac.ui.OtherWorkflowView");
+											otherWorkflowView.refreshOtherWorkflows();
+										}
+									});
+								}
+								catch (Exception e) {
+									Display.getDefault().asyncExec(new Runnable() {
 
-						// buildTree(copyFromFolderPath, folderToCopy, ResourcesPlugin.getWorkspace().getRoot()
-						// .getProject(bucketName));
+										@Override
+										public void run() {
+											MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+												"Error while importing");
+										}
+									});
+								}
+								monitor.done();
+								return Status.OK_STATUS;
+							}
+						};
+						job.setUser(true);
+						job.schedule();
+
 					}
 					catch (Exception e) {
 						e.printStackTrace();
 						showError(e.getMessage());
+					}
+				}
+
+				private void createInNavigator(String bucketName, String workflowName) {
+					IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName);
+					try {
+						if (!project.exists()) {
+							project.create(null);
+						}
+						project.open(null);
+						IFolder folder = project.getFolder(User.username);
+						if (!folder.exists())
+							folder.create(true, false, null);
+						String folderPath = folder.getLocation().toString();
+						File folderFile = new File(folderPath);
+						if (!folderFile.exists())
+							folderFile.mkdirs();
+					}
+					catch (CoreException e) {
+						e.printStackTrace();
 					}
 				}
 			});
@@ -179,7 +236,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 
 		String bucketName = copyFromFolderPath.substring(0, fromIndex);
 		String remotePath = "amazon-s3://.jgit@" + s3.getCommunityBucketName() + "/" + copyFromFolderPath + ".git";
-		String localPath = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).getLocation() + "/"
+		String localPath = ResourcesPlugin.getWorkspace().getRoot().getLocation() + "/" + bucketName + "/"
 			+ User.username + "/" + folderToCopy;
 		System.out.println(remotePath + "\n" + localPath);
 		HashMap<String, String> map = new HashMap<String, String>();

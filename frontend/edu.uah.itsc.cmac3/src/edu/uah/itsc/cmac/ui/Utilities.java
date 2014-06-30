@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -141,7 +143,13 @@ public class Utilities {
 				myWorkflowBuckets.add(workflow.getBucket());
 			}
 		Set<String> allBuckets = getAllExperiments().keySet();
+		IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+		Set<String> localProjects = new HashSet<String>();
+		for (IProject project : projects) {
+			localProjects.add(project.getName());
+		}
 		allBuckets.removeAll(myWorkflowBuckets);
+		allBuckets.removeAll(localProjects);
 		return allBuckets;
 	}
 }

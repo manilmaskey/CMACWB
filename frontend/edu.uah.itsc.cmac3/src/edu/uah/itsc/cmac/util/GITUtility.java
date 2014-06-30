@@ -32,6 +32,8 @@ import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.transport.URIish;
 
+import edu.uah.itsc.cmac.ui.Utilities;
+
 /**
  * @author sshrestha
  * 
@@ -266,7 +268,7 @@ public class GITUtility {
 	public static Collection<Ref> getTagList(String repoRemotePath) {
 		Repository repository = null;
 		try {
-			File localPath = File.createTempFile("EmptyRepository", "");
+			File localPath = Utilities.createTempDir("EmptyRepository");
 
 			repository = FileRepositoryBuilder.create(new File(localPath, ".git"));
 			repository.create();

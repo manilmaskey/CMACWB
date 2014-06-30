@@ -44,6 +44,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -66,6 +67,7 @@ public class SharedWorkflowView extends ViewPart {
 	private static Image	userImage;
 	private static Image	refreshImage;
 	private static Image	importImage;
+	// Session directory for shared workflows. This directory does not seem to be deleted. Need to delete it properly.
 	private static File		sessionSharedWorkflowDir;
 	private Action			refreshCommunityAction;
 	private Action			importWorkflowAction;
@@ -80,7 +82,7 @@ public class SharedWorkflowView extends ViewPart {
 		if (sessionSharedWorkflowDir == null)
 			sessionSharedWorkflowDir = Utilities.createTempDir("sharedWorkflowDir");
 		sessionSharedWorkflowDir.deleteOnExit();
-
+		createImages();
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		viewer.setContentProvider(new SharedWorkflowContentProvider());
 		viewer.setLabelProvider(new SharedWorkflowLabelProvider());
@@ -105,7 +107,7 @@ public class SharedWorkflowView extends ViewPart {
 				}
 			}
 		});
-		createImages();
+
 		makeActions();
 		hookContextMenu();
 		contributeToActionBars();
@@ -204,7 +206,6 @@ public class SharedWorkflowView extends ViewPart {
 				+ workflowName + ".git";
 			final String localPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString() + "/"
 				+ bucketName + "/" + User.username + "/" + workflowName;
-
 			createInNavigator(bucketName, workflowName);
 			Job job = new Job("Importing..") {
 				@Override
@@ -216,8 +217,19 @@ public class SharedWorkflowView extends ViewPart {
 						IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
 							.getFolder(User.username);
 						userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+						Display.getDefault().asyncExec(new Runnable() {
+
+							@Override
+							public void run() {
+								OtherWorkflowView otherWorkflowView = (OtherWorkflowView) PlatformUI.getWorkbench()
+									.getActiveWorkbenchWindow().getActivePage()
+									.findView("edu.uah.itsc.cmac.ui.OtherWorkflowView");
+								otherWorkflowView.refreshOtherWorkflows();
+							}
+						});
 					}
 					catch (Exception e) {
+						e.printStackTrace();
 						Display.getDefault().asyncExec(new Runnable() {
 
 							@Override
