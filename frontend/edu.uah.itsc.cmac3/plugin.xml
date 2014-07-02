@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="4."?>
 <plugin>
-   <extension id="cmacproduct" point="org.eclipse.core.runtime.products"> 
-      <product name="cmacwb" application="edu.uah.itsc.cmac3" description="CMAC Workbench"> 
-          <property name="windowImages" value="splash.bmp"/> 
-          <property name="aboutImage" value="image.gif"/> 
-          <property name="aboutText" value="CMAC WorkBench
-Developed by ITSC UAH
-More at http://www.itsc.uah.edu"/> 
-          <property name="appName" value="cmacwb"/> 
-      </product> 
-   </extension>
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
