@@ -1,6 +1,7 @@
 package edu.uah.itsc.cmac.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.eclipse.core.resources.IFolder;
@@ -8,6 +9,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonViewer;
@@ -21,15 +23,25 @@ public class NavigatorView extends CommonNavigator {
 
 	private CommonViewer				viewer;
 	private HashMap<String, Workflow>	workflows;
-
+	private ArrayList<IProject> projects;
+	
+	
 	public static final String			ID	= "edu.uah.itsc.cmac.NavigatorView";
 
 	public CommonViewer getViewer() {
 		return viewer;
 	}
-
+	
+//	@Override
+//	protected Object getInitialInput() {
+//		
+//		return projects;
+//	}
+	
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
+		if (projects == null)
+			projects = new ArrayList<IProject>();
 		System.out.println("AWS: " + User.awsAccessKey + "  " + User.awsSecretKey);
 		if (User.awsAccessKey != null) {
 			viewer = super.getCommonViewer();
@@ -57,8 +69,8 @@ public class NavigatorView extends CommonNavigator {
 					project.create(monitor);
 				}
 				if (!project.isOpen())
-					project.open(null);
-
+					project.open(monitor);
+				projects.add(project);
 				String remotePath = "amazon-s3://.jgit@";
 
 				if (workflow.isShared())

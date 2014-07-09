@@ -301,6 +301,7 @@ public class SharedWorkflowView extends ViewPart {
 			File file = new File(sessionSharedWorkflowDir + workflow.getPath());
 			if (!file.exists())
 				file.mkdirs();
+			file.deleteOnExit();
 			files[i] = file;
 			i++;
 		}

@@ -33,6 +33,7 @@ public class Utilities {
 		for (int counter = 0; counter < TEMP_DIR_ATTEMPTS; counter++) {
 			File tempDir = new File(baseDir, prefix + baseName + counter);
 			if (tempDir.mkdir()) {
+				tempDir.deleteOnExit();
 				return tempDir;
 			}
 		}

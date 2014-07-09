@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="CMAC Workbench" uid="cmacwb" id="edu.uah.itsc.cmac.rcp.cmacwb" application="edu.uah.itsc.cmac.rcp.application" useFeatures="false" includeLaunchers="true">
+
+   <aboutInfo>
+      <text>
+         CMAC Workbench is provided by UAH ITSC. For more information visit http://www.itsc.uah.edu
+      </text>
+   </aboutInfo>
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+   </launcherArgs>
+
+   <windowImages i16="/edu.uah.itsc.cmac3/icons/branding_files/cmac-16x16.png" i32="/edu.uah.itsc.cmac3/icons/branding_files/cmac-32x32.png" i48="/edu.uah.itsc.cmac3/icons/branding_files/cmac-48x48.png" i64="/edu.uah.itsc.cmac3/icons/branding_files/cmac-64x64.png" i128="/edu.uah.itsc.cmac3/icons/branding_files/cmac-128x128.png"/>
+
+   <splash
+      location="edu.uah.itsc.cmac3" />
+   <launcher name="cmacwb">
+      <linux icon="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-256x256.xpm"/>
+      <solaris/>
+      <win useIco="false">
+         <bmp
+            winSmallHigh="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-16x16.bmp"
+            winSmallLow="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-16x16-8bit.bmp"
+            winMediumHigh="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-32x32.bmp"
+            winMediumLow="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-32x32-8bit.bmp"
+            winLargeHigh="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-48x48.bmp"
+            winLargeLow="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-48x48-8bit.bmp"
+            winExtraLargeHigh="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-256x256.bmp"/>
+      </win>
+   </launcher>
+
+
+   <vm>
+   </vm>
+
+   <plugins>
+      <plugin id="com.ibm.icu"/>
+      <plugin id="com.jcraft.jsch"/>
+      <plugin id="edu.uah.itsc.CMACWorkflow"/>
+      <plugin id="edu.uah.itsc.WSDLParserJARS"/>
+      <plugin id="edu.uah.itsc.cmac.ami"/>
+      <plugin id="edu.uah.itsc.cmac.ec2instance"/>
+      <plugin id="edu.uah.itsc.cmac.experimentFormView"/>
+      <plugin id="edu.uah.itsc.cmac.libs"/>
+      <plugin id="edu.uah.itsc.cmac.perspectivechanger"/>
+      <plugin id="edu.uah.itsc.cmac.programview"/>
+      <plugin id="edu.uah.itsc.cmac.rcp"/>
+      <plugin id="edu.uah.itsc.cmac.searchview"/>
+      <plugin id="edu.uah.itsc.cmac.versionView"/>
+      <plugin id="edu.uah.itsc.cmac.wsdl2Durpal"/>
+      <plugin id="edu.uah.itsc.cmac3"/>
+      <plugin id="edu.uah.itsc.programFormView"/>
+      <plugin id="javaewah"/>
+      <plugin id="javax.annotation"/>
+      <plugin id="javax.inject"/>
+      <plugin id="javax.xml"/>
+      <plugin id="org.apache.batik.css"/>
+      <plugin id="org.apache.batik.util"/>
+      <plugin id="org.apache.batik.util.gui"/>
+      <plugin id="org.eclipse.compare"/>
+      <plugin id="org.eclipse.compare.core"/>
+      <plugin id="org.eclipse.core.commands"/>
+      <plugin id="org.eclipse.core.contenttype"/>
+      <plugin id="org.eclipse.core.databinding"/>
+      <plugin id="org.eclipse.core.databinding.observable"/>
+      <plugin id="org.eclipse.core.databinding.property"/>
+      <plugin id="org.eclipse.core.expressions"/>
+      <plugin id="org.eclipse.core.filebuffers"/>
+      <plugin id="org.eclipse.core.filesystem"/>
+      <plugin id="org.eclipse.core.filesystem.win32.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.core.jobs"/>
+      <plugin id="org.eclipse.core.resources"/>
+      <plugin id="org.eclipse.core.resources.win32.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.core.runtime"/>
+      <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
+      <plugin id="org.eclipse.e4.core.commands"/>
+      <plugin id="org.eclipse.e4.core.contexts"/>
+      <plugin id="org.eclipse.e4.core.di"/>
+      <plugin id="org.eclipse.e4.core.di.extensions"/>
+      <plugin id="org.eclipse.e4.core.services"/>
+      <plugin id="org.eclipse.e4.ui.bindings"/>
+      <plugin id="org.eclipse.e4.ui.css.core"/>
+      <plugin id="org.eclipse.e4.ui.css.swt"/>
+      <plugin id="org.eclipse.e4.ui.css.swt.theme"/>
+      <plugin id="org.eclipse.e4.ui.di"/>
+      <plugin id="org.eclipse.e4.ui.model.workbench"/>
+      <plugin id="org.eclipse.e4.ui.services"/>
+      <plugin id="org.eclipse.e4.ui.widgets"/>
+      <plugin id="org.eclipse.e4.ui.workbench"/>
+      <plugin id="org.eclipse.e4.ui.workbench.addons.swt"/>
+      <plugin id="org.eclipse.e4.ui.workbench.renderers.swt"/>
+      <plugin id="org.eclipse.e4.ui.workbench.swt"/>
+      <plugin id="org.eclipse.e4.ui.workbench3"/>
+      <plugin id="org.eclipse.ecf"/>
+      <plugin id="org.eclipse.ecf.console"/>
+      <plugin id="org.eclipse.ecf.datashare"/>
+      <plugin id="org.eclipse.ecf.discovery"/>
+      <plugin id="org.eclipse.ecf.docshare"/>
+      <plugin id="org.eclipse.ecf.filetransfer"/>
+      <plugin id="org.eclipse.ecf.identity"/>
+      <plugin id="org.eclipse.ecf.presence"/>
+      <plugin id="org.eclipse.ecf.presence.ui"/>
+      <plugin id="org.eclipse.ecf.provider"/>
+      <plugin id="org.eclipse.ecf.provider.datashare"/>
+      <plugin id="org.eclipse.ecf.provider.remoteservice"/>
+      <plugin id="org.eclipse.ecf.provider.xmpp"/>
+      <plugin id="org.eclipse.ecf.provider.xmpp.datashare" fragment="true"/>
+      <plugin id="org.eclipse.ecf.provider.xmpp.remoteservice" fragment="true"/>
+      <plugin id="org.eclipse.ecf.remoteservice"/>
+      <plugin id="org.eclipse.ecf.sharedobject"/>
+      <plugin id="org.eclipse.ecf.ssl" fragment="true"/>
+      <plugin id="org.eclipse.ecf.sync"/>
+      <plugin id="org.eclipse.ecf.ui"/>
+      <plugin id="org.eclipse.emf.common"/>
+      <plugin id="org.eclipse.emf.ecore"/>
+      <plugin id="org.eclipse.emf.ecore.change"/>
+      <plugin id="org.eclipse.emf.ecore.xmi"/>
+      <plugin id="org.eclipse.equinox.app"/>
+      <plugin id="org.eclipse.equinox.bidi"/>
+      <plugin id="org.eclipse.equinox.common"/>
+      <plugin id="org.eclipse.equinox.concurrent"/>
+      <plugin id="org.eclipse.equinox.ds"/>
+      <plugin id="org.eclipse.equinox.event"/>
+      <plugin id="org.eclipse.equinox.p2.core"/>
+      <plugin id="org.eclipse.equinox.p2.engine"/>
+      <plugin id="org.eclipse.equinox.p2.metadata"/>
+      <plugin id="org.eclipse.equinox.p2.metadata.repository"/>
+      <plugin id="org.eclipse.equinox.p2.repository"/>
+      <plugin id="org.eclipse.equinox.preferences"/>
+      <plugin id="org.eclipse.equinox.registry"/>
+      <plugin id="org.eclipse.equinox.security"/>
+      <plugin id="org.eclipse.equinox.security.win32.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.equinox.util"/>
+      <plugin id="org.eclipse.help"/>
+      <plugin id="org.eclipse.jface"/>
+      <plugin id="org.eclipse.jface.databinding"/>
+      <plugin id="org.eclipse.jface.text"/>
+      <plugin id="org.eclipse.jgit"/>
+      <plugin id="org.eclipse.jgit.java7" fragment="true"/>
+      <plugin id="org.eclipse.ltk.core.refactoring"/>
+      <plugin id="org.eclipse.ltk.ui.refactoring"/>
+      <plugin id="org.eclipse.osgi"/>
+      <plugin id="org.eclipse.osgi.services"/>
+      <plugin id="org.eclipse.swt"/>
+      <plugin id="org.eclipse.swt.win32.win32.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.team.core"/>
+      <plugin id="org.eclipse.team.ui"/>
+      <plugin id="org.eclipse.text"/>
+      <plugin id="org.eclipse.ui"/>
+      <plugin id="org.eclipse.ui.editors"/>
+      <plugin id="org.eclipse.ui.forms"/>
+      <plugin id="org.eclipse.ui.ide"/>
+      <plugin id="org.eclipse.ui.navigator"/>
+      <plugin id="org.eclipse.ui.navigator.resources"/>
+      <plugin id="org.eclipse.ui.views"/>
+      <plugin id="org.eclipse.ui.views.properties.tabbed"/>
+      <plugin id="org.eclipse.ui.win32" fragment="true"/>
+      <plugin id="org.eclipse.ui.workbench"/>
+      <plugin id="org.eclipse.ui.workbench.texteditor"/>
+      <plugin id="org.jivesoftware.smack"/>
+      <plugin id="org.json"/>
+      <plugin id="org.json.simple"/>
+      <plugin id="org.w3c.css.sac"/>
+      <plugin id="org.w3c.dom.smil"/>
+      <plugin id="org.w3c.dom.svg"/>
+   </plugins>
+
+
+</product>

@@ -72,8 +72,13 @@ public class LoginDialog {
 
 		// Setting the background of the composite
 		// with the image background for login dialog
-		final Label img_Label = new Label(composite, SWT.NONE);
+
+		Composite imgComposite = new Composite(shell, SWT.NONE);
+		imgComposite.setLayoutData(new GridData(195, 210));
+		final Label img_Label = new Label(composite, SWT.BORDER);
 		img_Label.setLayoutData(new GridData(195, 210));
+		// Button button = new Button (composite, SWT.NONE);
+		// button.setLayoutData(new GridData(195, 210));
 
 		Bundle bundle = Activator.getDefault().getBundle();
 		Path path = new Path("splash.bmp");
@@ -86,7 +91,8 @@ public class LoginDialog {
 			System.out.println(e.toString());
 		}
 
-		final Image img = new Image(display, fileUrl.getPath());
+		Image img = new Image(display, fileUrl.getPath());
+
 		// final Image img = new Image(display,"/User/mmaskey/Documents/workspace/svn/glider/splash.bmp");
 		img_Label.setImage(img);
 
@@ -177,6 +183,7 @@ public class LoginDialog {
 			public void handleEvent(Event e) {
 
 				shell.close();
+				System.exit(0);
 			}
 		});
 
@@ -201,7 +208,7 @@ public class LoginDialog {
 					ArrayList<String> allBuckets = adminS3.getAllBuckets();
 					for (String bucket : allBuckets) {
 						// If this the community bucket do not create the user folder
-						if (bucket.equalsIgnoreCase(adminS3.getCommunityBucketName()))
+						if (bucket.equalsIgnoreCase(S3.getCommunityBucketName()))
 							continue;
 						if (!adminS3.userFolderExists(username, bucket)) {
 							adminS3.uploadUserFolder(username, bucket);
@@ -304,9 +311,9 @@ public class LoginDialog {
 		composite.addListener(SWT.MouseUp, l);
 		composite.addListener(SWT.MouseMove, l);
 
-		img_Label.addListener(SWT.MouseDown, l);
-		img_Label.addListener(SWT.MouseUp, l);
-		img_Label.addListener(SWT.MouseMove, l);
+		// img_Label.addListener(SWT.MouseDown, l);
+		// img_Label.addListener(SWT.MouseUp, l);
+		// img_Label.addListener(SWT.MouseMove, l);
 
 		// Positioning in the center of the screen.
 		// This for the 1024 resolution only. Later,

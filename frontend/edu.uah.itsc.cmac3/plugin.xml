@@ -19,6 +19,7 @@
             allowMultiple="false"
             name="Shared Experiments"
             class="edu.uah.itsc.cmac.ui.SharedWorkflowView"
+            icon="icons/cloud-16x16.png"
             id="edu.uah.itsc.cmac.ui.SharedWorkflowView">
       </view>
 </extension>
@@ -30,6 +31,7 @@
       <view
             allowMultiple="false"
             name="Other Experiments"
+            icon="icons/folder.png"
             class="edu.uah.itsc.cmac.ui.OtherWorkflowView"
             id="edu.uah.itsc.cmac.ui.OtherWorkflowView">
       </view>
@@ -42,6 +44,7 @@
       <view
             allowMultiple="false"
             name="My Experiments"
+            icon="icons/lock-16x16.png"
             class="edu.uah.itsc.cmac.ui.NavigatorView"
             id="edu.uah.itsc.cmac.NavigatorView">
       </view>
