@@ -7,13 +7,11 @@
         </extension>
         <extension point="org.eclipse.ui.views">
             <category id="edu.uah.itsc.cmac" name="CMACWB" />
-            <view allowMultiple="false" name="Shared Experiments" class="edu.uah.itsc.cmac.ui.SharedWorkflowView" icon="icons/cloud-16x16.png" id="edu.uah.itsc.cmac.ui.SharedWorkflowView">
+            <view allowMultiple="false" category="edu.uah.itsc.cmac" class="edu.uah.itsc.cmac.ui.SharedWorkflowView" icon="icons/cloud-16x16.png" id="edu.uah.itsc.cmac.ui.SharedWorkflowView" name="Shared Experiments">
             </view>
-            <category id="edu.uah.itsc.cmac" name="CMACWB" />
-            <view allowMultiple="false" name="Other Experiments" icon="icons/folder.png" class="edu.uah.itsc.cmac.ui.OtherWorkflowView" id="edu.uah.itsc.cmac.ui.OtherWorkflowView">
+            <view allowMultiple="false" category="edu.uah.itsc.cmac" class="edu.uah.itsc.cmac.ui.OtherWorkflowView" icon="icons/folder.png" id="edu.uah.itsc.cmac.ui.OtherWorkflowView" name="Other Experiments">
             </view>
-            <category id="edu.uah.itsc.cmac" name="CMACWB" />
-            <view allowMultiple="false" name="My Experiments" icon="icons/lock-16x16.png" class="edu.uah.itsc.cmac.ui.NavigatorView" id="edu.uah.itsc.cmac.NavigatorView">
+            <view allowMultiple="false" category="edu.uah.itsc.cmac" class="edu.uah.itsc.cmac.ui.NavigatorView" icon="icons/lock-16x16.png" id="edu.uah.itsc.cmac.NavigatorView" name="My Experiments">
             </view>
         </extension>
 
@@ -109,16 +107,32 @@
 
         <extension point="org.eclipse.ui.menus">
             <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-                <command commandId="edu.uah.itsc.cmac.Execute" style="push" icon="icons/execute-16x16.png">
+                <separator name="edu.uah.itsc.cmac3.separator1" visible="true">
+                </separator>
+                <command commandId="edu.uah.itsc.cmac3.AddExperiment" icon="icons/experiment.png" label="Add Experiment" style="push">
+                </command>
+                <command commandId="edu.uah.itsc.cmac.NewFile" icon="icons/branding_files/cmac-16x16.png" style="push">
                     <visibleWhen>
-                        <with variable="activeMenuSelection">
-                            <iterate>
-                                <instanceof value="org.eclipse.core.resources.IFile">
-                                </instanceof>
+                        <with variable="selection">
+                            <iterate ifEmpty="false" operator="and">
+                                <test property="my.property.namespace.type" value="delete">
+                                </test>
                             </iterate>
                         </with>
                     </visibleWhen>
                 </command>
+                <command commandId="edu.uah.itsc.cmac.InitTrackingWorkflow" style="push" icon="icons/new_workflow.png">
+                    <visibleWhen>
+                        <with variable="selection">
+                            <iterate ifEmpty="false" operator="and">
+                                <test property="my.property.namespace.type" value="initTrackingWorkflow">
+                                </test>
+                            </iterate>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <separator name="edu.uah.itsc.cmac3.separator1" visible="true">
+                </separator>
                 <command commandId="edu.uah.itsc.cmac.Upload" style="push" icon="icons/upload-16x16.png">
                     <visibleWhen>
                         <with variable="activeMenuSelection">
@@ -139,11 +153,31 @@
                         </with>
                     </visibleWhen>
                 </command>
+                <command commandId="edu.uah.itsc.cmac.Execute" style="push" icon="icons/execute-16x16.png">
+                    <visibleWhen>
+                        <with variable="activeMenuSelection">
+                            <iterate>
+                                <instanceof value="org.eclipse.core.resources.IFile">
+                                </instanceof>
+                            </iterate>
+                        </with>
+                    </visibleWhen>
+                </command>
                 <command commandId="edu.uah.itsc.cmac.ImportWorkflow" style="push" icon="icons/import.png">
                     <visibleWhen>
                         <with variable="selection">
                             <iterate ifEmpty="false" operator="and">
                                 <test property="my.property.namespace.type" value="import">
+                                </test>
+                            </iterate>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="edu.uah.itsc.cmac.UpdateCommand" style="push" icon="icons/update.png">
+                    <visibleWhen>
+                        <with variable="selection">
+                            <iterate ifEmpty="false" operator="and">
+                                <test property="my.property.namespace.type" value="UpdateCommand">
                                 </test>
                             </iterate>
                         </with>
@@ -169,33 +203,13 @@
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="edu.uah.itsc.cmac3.AddExperiment" icon="icons/experiment.png" label="Add Experiment" style="push">
-                </command>
-                <command commandId="edu.uah.itsc.cmac.InitTrackingWorkflow" style="push" icon="icons/new_workflow.png">
-                    <visibleWhen>
-                        <with variable="selection">
-                            <iterate ifEmpty="false" operator="and">
-                                <test property="my.property.namespace.type" value="initTrackingWorkflow">
-                                </test>
-                            </iterate>
-                        </with>
-                    </visibleWhen>
-                </command>
+                <separator name="edu.uah.itsc.cmac3.separator2" visible="true">
+                </separator>
                 <command commandId="edu.uah.itsc.cmac.SaveForTrackingWorkflow" style="push" icon="icons/save.gif">
                     <visibleWhen>
                         <with variable="selection">
                             <iterate ifEmpty="false" operator="and">
                                 <test property="my.property.namespace.type" value="saveForTrackingWorkflow">
-                                </test>
-                            </iterate>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <command commandId="edu.uah.itsc.cmac.ShowVersionList" style="push" icon="icons/versions.png">
-                    <visibleWhen>
-                        <with variable="selection">
-                            <iterate ifEmpty="false" operator="and">
-                                <test property="my.property.namespace.type" value="ShowVersionList">
                                 </test>
                             </iterate>
                         </with>
@@ -211,21 +225,11 @@
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="edu.uah.itsc.cmac.UpdateCommand" style="push" icon="icons/update.png">
+                <command commandId="edu.uah.itsc.cmac.ShowVersionList" style="push" icon="icons/versions.png">
                     <visibleWhen>
                         <with variable="selection">
                             <iterate ifEmpty="false" operator="and">
-                                <test property="my.property.namespace.type" value="UpdateCommand">
-                                </test>
-                            </iterate>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <command commandId="edu.uah.itsc.cmac.NewFile" icon="icons/branding_files/cmac-16x16.png" style="push">
-                    <visibleWhen>
-                        <with variable="selection">
-                            <iterate ifEmpty="false" operator="and">
-                                <test property="my.property.namespace.type" value="delete">
+                                <test property="my.property.namespace.type" value="ShowVersionList">
                                 </test>
                             </iterate>
                         </with>
