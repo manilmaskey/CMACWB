@@ -148,25 +148,6 @@
   </command>
 </extension>
 
-<extension point="org.eclipse.ui.handlers">
-  <handler
-        class="edu.uah.itsc.cmac.actions.ExecuteCommandHandler"
-        commandId="edu.uah.itsc.cmac.Execute">
-     <enabledWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="execute">
-              </test>
-           </iterate>
-        </with>
-     </enabledWhen>
-  </handler>
-</extension>
-
 <extension point="org.eclipse.ui.menus">
   <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
      <command
@@ -350,6 +331,23 @@
         </with>
         </visibleWhen>
      </command>
+          <command
+           commandId="edu.uah.itsc.cmac.NewFile"
+           icon="icons/branding_files/cmac-16x16.png"
+           style="push">
+        <visibleWhen>
+            <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="delete">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
   </menuContribution>
 </extension>
 
@@ -378,17 +376,22 @@
         </with>
      </enabledWhen>
   </handler>
-</extension>
-
-<extension point="org.eclipse.ui.commands">
-  <command
-        description="Share resource"
-        id="edu.uah.itsc.cmac.Share"
-        name="Share">
-  </command>
-</extension>
-
-<extension point="org.eclipse.ui.handlers">
+  <handler
+        class="edu.uah.itsc.cmac.actions.ExecuteCommandHandler"
+        commandId="edu.uah.itsc.cmac.Execute">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="execute">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
   <handler
         class="edu.uah.itsc.cmac.actions.ShareCommandHandler"
         commandId="edu.uah.itsc.cmac.Share">
@@ -405,20 +408,6 @@
         </with>
      </enabledWhen>
   </handler>
-</extension>
-
-<!-- Shreedhan Added importworkflow command-->
-<extension point="org.eclipse.ui.commands">
-  <command
-        description="Import workflow"
-        id="edu.uah.itsc.cmac.ImportWorkflow"
-        name="Import Workflow">
-  </command>
-</extension>
-<!-- Shreedhan Added -->
-
-<!-- Shreedhan Added import workflow handler -->
-<extension point="org.eclipse.ui.handlers">
   <handler
         class="edu.uah.itsc.cmac.actions.ImportWorkflowHandler"
         commandId="edu.uah.itsc.cmac.ImportWorkflow">
@@ -435,21 +424,6 @@
         </with>
      </enabledWhen>
   </handler>
-</extension>
-<!-- Shreedhan Added -->
-
-<!-- Shreedhan Added Delete command-->
-<extension point="org.eclipse.ui.commands">
-  <command
-        description="Delete from cloud"
-        id="edu.uah.itsc.cmac.Delete"
-        name="Delete from cloud">
-  </command>
-</extension>
-<!-- Shreedhan Added -->
-
-<!-- Shreedhan Added Delete handler -->
-<extension point="org.eclipse.ui.handlers">
   <handler
         class="edu.uah.itsc.cmac.actions.DeleteCommandHandler"
         commandId="edu.uah.itsc.cmac.Delete">
@@ -466,17 +440,6 @@
         </with>
      </enabledWhen>
   </handler>
-</extension>
-<!-- Shreedhan Added -->
-
-<extension point="org.eclipse.ui.commands">
-  <command
-        id="edu.uah.itsc.cmac.NewFile"
-        name="New CMAC Editor">
-  </command>
-</extension>
-
-<extension point="org.eclipse.ui.handlers">
   <handler
         class="edu.uah.itsc.cmac.actions.NewFileHandler"
         commandId="edu.uah.itsc.cmac.NewFile">
@@ -493,39 +456,6 @@
         </with>
      </enabledWhen>
   </handler>
-</extension>
-
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?before=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.NewFile"
-           icon="icons/branding_files/cmac-16x16.png"
-           style="push">
-        <visibleWhen>
-            <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="delete">
-              </test>
-           </iterate>
-        </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
-</extension>
-
-<extension point="org.eclipse.ui.commands">
-  <command
-        description="Refresh the resources"
-        id="edu.uah.itsc.cmac.Refresh"
-        name="Refresh">
-  </command>
-</extension>
-
-<extension point="org.eclipse.ui.handlers">
   <handler
         class="edu.uah.itsc.cmac.actions.RefreshCommandHandler"
         commandId="edu.uah.itsc.cmac.Refresh">
@@ -542,7 +472,136 @@
         </with>
      </enabledWhen>
   </handler>
+  <handler
+      class="edu.uah.itsc.cmac.actions.AddExperimentHandler"
+      commandId="edu.uah.itsc.cmac3.AddExperiment">
+  </handler>
+  <handler
+        class="edu.uah.itsc.cmac.actions.InitTrackingWorkflowHandler"
+        commandId="edu.uah.itsc.cmac.InitTrackingWorkflow">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="initTrackingWorkflow">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+  <handler
+        class="edu.uah.itsc.cmac.actions.SaveForTrackingWorkflowHandler"
+        commandId="edu.uah.itsc.cmac.SaveForTrackingWorkflow">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="saveForTrackingWorkflow">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+  <handler
+        class="edu.uah.itsc.cmac.actions.ShowVersionListHandler"
+        commandId="edu.uah.itsc.cmac.ShowVersionList">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="ShowVersionList">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+  <handler
+        class="edu.uah.itsc.cmac.actions.AddVersionHandler"
+        commandId="edu.uah.itsc.cmac.AddVersion">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="AddVersion">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+  <handler
+        class="edu.uah.itsc.cmac.actions.UpdateCommandHandler"
+        commandId="edu.uah.itsc.cmac.UpdateCommand">
+     <enabledWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="UpdateCommand">
+              </test>
+           </iterate>
+        </with>
+     </enabledWhen>
+  </handler>
+
 </extension>
+
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Share resource"
+        id="edu.uah.itsc.cmac.Share"
+        name="Share">
+  </command>
+</extension>
+
+<!-- Shreedhan Added importworkflow command-->
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Import workflow"
+        id="edu.uah.itsc.cmac.ImportWorkflow"
+        name="Import Workflow">
+  </command>
+</extension>
+<!-- Shreedhan Added -->
+
+<!-- Shreedhan Added Delete command-->
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Delete from cloud"
+        id="edu.uah.itsc.cmac.Delete"
+        name="Delete from cloud">
+  </command>
+</extension>
+<!-- Shreedhan Added -->
+
+<extension point="org.eclipse.ui.commands">
+  <command
+        id="edu.uah.itsc.cmac.NewFile"
+        name="New CMAC Editor">
+  </command>
+</extension>
+
+<extension point="org.eclipse.ui.commands">
+  <command
+        description="Refresh the resources"
+        id="edu.uah.itsc.cmac.Refresh"
+        name="Refresh">
+  </command>
+</extension>
+
 
 <extension point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
@@ -693,13 +752,6 @@
             name="AddExperiment">
       </command>
    </extension>
-   <extension
-         point="org.eclipse.ui.handlers">
-      <handler
-            class="edu.uah.itsc.cmac.actions.AddExperimentHandler"
-            commandId="edu.uah.itsc.cmac3.AddExperiment">
-      </handler>
-   </extension>
 
 <!-- Shreedhan Added initLocal command-->
 <extension point="org.eclipse.ui.commands">
@@ -708,27 +760,6 @@
         id="edu.uah.itsc.cmac.InitTrackingWorkflow"
         name="New Workflow">
   </command>
-</extension>
-<!-- Shreedhan Added -->
-
-<!-- Shreedhan Added initLocal handler -->
-<extension point="org.eclipse.ui.handlers">
-  <handler
-        class="edu.uah.itsc.cmac.actions.InitTrackingWorkflowHandler"
-        commandId="edu.uah.itsc.cmac.InitTrackingWorkflow">
-     <enabledWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="initTrackingWorkflow">
-              </test>
-           </iterate>
-        </with>
-     </enabledWhen>
-  </handler>
 </extension>
 <!-- Shreedhan Added -->
 
@@ -742,27 +773,6 @@
 </extension>
 <!-- Shreedhan Added -->
 
-<!-- Shreedhan Added saveForTrackingWorkflow handler -->
-<extension point="org.eclipse.ui.handlers">
-  <handler
-        class="edu.uah.itsc.cmac.actions.SaveForTrackingWorkflowHandler"
-        commandId="edu.uah.itsc.cmac.SaveForTrackingWorkflow">
-     <enabledWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="saveForTrackingWorkflow">
-              </test>
-           </iterate>
-        </with>
-     </enabledWhen>
-  </handler>
-</extension>
-<!-- Shreedhan Added -->
-
 <!-- Shreedhan Added showVersionList command-->
 <extension point="org.eclipse.ui.commands">
   <command
@@ -770,27 +780,6 @@
         id="edu.uah.itsc.cmac.ShowVersionList"
         name="Show versions">
   </command>
-</extension>
-<!-- Shreedhan Added -->
-
-<!-- Shreedhan Added showVersionList handler -->
-<extension point="org.eclipse.ui.handlers">
-  <handler
-        class="edu.uah.itsc.cmac.actions.ShowVersionListHandler"
-        commandId="edu.uah.itsc.cmac.ShowVersionList">
-     <enabledWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="ShowVersionList">
-              </test>
-           </iterate>
-        </with>
-     </enabledWhen>
-  </handler>
 </extension>
 <!-- Shreedhan Added -->
 
@@ -804,27 +793,6 @@
 </extension>
 <!-- Shreedhan Added -->
 
-<!-- Shreedhan Added AddVersion handler -->
-<extension point="org.eclipse.ui.handlers">
-  <handler
-        class="edu.uah.itsc.cmac.actions.AddVersionHandler"
-        commandId="edu.uah.itsc.cmac.AddVersion">
-     <enabledWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="AddVersion">
-              </test>
-           </iterate>
-        </with>
-     </enabledWhen>
-  </handler>
-</extension>
-<!-- Shreedhan Added -->
-
 <!-- Shreedhan Added Update command-->
 <extension point="org.eclipse.ui.commands">
   <command
@@ -835,25 +803,5 @@
 </extension>
 <!-- Shreedhan Added -->
 
-<!-- Shreedhan Added Update handler -->
-<extension point="org.eclipse.ui.handlers">
-  <handler
-        class="edu.uah.itsc.cmac.actions.UpdateCommandHandler"
-        commandId="edu.uah.itsc.cmac.UpdateCommand">
-     <enabledWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="UpdateCommand">
-              </test>
-           </iterate>
-        </with>
-     </enabledWhen>
-  </handler>
-</extension>
-<!-- Shreedhan Added -->
 
 </plugin>
