@@ -65,7 +65,7 @@
             </command>
          </menu>
          <menu
-               label="Cmac">
+               label="CMAC">
             <command
                   commandId="edu.uah.itsc.cmac3.AddExperiment"
                   label="Add Experiment"
@@ -79,6 +79,14 @@
             <command
                   commandId="edu.uah.itsc.cmac.Share"
                   label="Share"
+                  style="push">
+            </command>
+         </menu>
+         <menu
+               label="Window">
+            <command
+                  commandId="org.eclipse.ui.window.preferences"
+                  label="Preferences"
                   style="push">
             </command>
          </menu>
