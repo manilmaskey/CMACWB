@@ -9,13 +9,9 @@
             <category id="edu.uah.itsc.cmac" name="CMACWB" />
             <view allowMultiple="false" name="Shared Experiments" class="edu.uah.itsc.cmac.ui.SharedWorkflowView" icon="icons/cloud-16x16.png" id="edu.uah.itsc.cmac.ui.SharedWorkflowView">
             </view>
-        </extension>
-        <extension point="org.eclipse.ui.views">
             <category id="edu.uah.itsc.cmac" name="CMACWB" />
             <view allowMultiple="false" name="Other Experiments" icon="icons/folder.png" class="edu.uah.itsc.cmac.ui.OtherWorkflowView" id="edu.uah.itsc.cmac.ui.OtherWorkflowView">
             </view>
-        </extension>
-        <extension point="org.eclipse.ui.views">
             <category id="edu.uah.itsc.cmac" name="CMACWB" />
             <view allowMultiple="false" name="My Experiments" icon="icons/lock-16x16.png" class="edu.uah.itsc.cmac.ui.NavigatorView" id="edu.uah.itsc.cmac.NavigatorView">
             </view>
@@ -34,14 +30,6 @@
                     <actionExtension pattern="org.eclipse.ui.navigator.resources.*" />
                 </includes>
             </viewerActionBinding>
-        </extension>
-        <extension point="org.eclipse.ui.menus">
-            <menuContribution locationURI="popup:org.python.pydev.editor.PythonEditor.EditorContext">
-                <dynamic class="org.eclipse.ecf.docshare.menu.DocShareRosterMenuContributionItem" id="edu.uah.itsc.cmac.shreedhan.pythonEditorMenuContribution">
-                </dynamic>
-            </menuContribution>
-        </extension>
-        <extension point="org.eclipse.ui.navigator.viewer">
             <viewer viewerId="edu.uah.itsc.cmac.NavigatorView">
                 <popupMenu allowsPlatformContributions="true" id="edu.uah.itsc.cmac.PopupMenu">
                     <insertionPoint name="group.new" />
@@ -52,6 +40,24 @@
                     <insertionPoint name="group.properties" />
                 </popupMenu>
             </viewer>
+            <viewerActionBinding viewerId="edu.uah.itsc.cmac.NavigatorView">
+                <includes>
+                    <actionExtension pattern="edu.uah.itsc.cmac.ui.EditActionExtension">
+                    </actionExtension>
+                </includes>
+            </viewerActionBinding>
+            <viewerActionBinding viewerId="edu.uah.itsc.cmac.NavigatorView">
+                <includes>
+                    <actionExtension pattern="edu.uah.itsc.cmac.ui.NewActionExtension">
+                    </actionExtension>
+                </includes>
+            </viewerActionBinding>
+            <viewerActionBinding viewerId="edu.uah.itsc.cmac.NavigatorView">
+                <includes>
+                    <actionExtension pattern="edu.uah.itsc.cmac.ui.GoIntoActionExtension">
+                    </actionExtension>
+                </includes>
+            </viewerActionBinding>
         </extension>
         <extension point="org.eclipse.ui.commands">
             <command id="edu.uah.itsc.cmac.viewMetadata" name="View Metadata">
@@ -94,9 +100,6 @@
                     pProject Decorator
                 </description>
             </decorator>
-        </extension>
-
-        <extension point="org.eclipse.ui.decorators">
             <decorator id="edu.uah.itsc.cmac.ui.FolderDecorator" label="Folder Decorator" state="true" class="edu.uah.itsc.cmac.ui.decorators.FolderDecorator" objectClass="org.eclipse.core.resources.IFolder" adaptable="true">
                 <description>
                     Folder Decorator
@@ -228,6 +231,10 @@
                         </with>
                     </visibleWhen>
                 </command>
+            </menuContribution>
+            <menuContribution locationURI="popup:org.python.pydev.editor.PythonEditor.EditorContext">
+                <dynamic class="org.eclipse.ecf.docshare.menu.DocShareRosterMenuContributionItem" id="edu.uah.itsc.cmac.shreedhan.pythonEditorMenuContribution">
+                </dynamic>
             </menuContribution>
         </extension>
 
@@ -374,16 +381,6 @@
             </perspectiveExtension>
         </extension>
 
-
-        <extension point="org.eclipse.ui.navigator.viewer">
-            <viewerActionBinding viewerId="edu.uah.itsc.cmac.NavigatorView">
-                <includes>
-                    <actionExtension pattern="edu.uah.itsc.cmac.ui.EditActionExtension">
-                    </actionExtension>
-                </includes>
-            </viewerActionBinding>
-        </extension>
-
         <extension point="org.eclipse.ui.navigator.navigatorContent">
             <actionProvider class="edu.uah.itsc.cmac.ui.CMACEditActionProvider" id="edu.uah.itsc.cmac.ui.EditActionExtension" overrides="org.eclipse.ui.navigator.resources.actions.EditActions" priority="highest">
                 <enablement>
@@ -413,21 +410,4 @@
             </actionProvider>
         </extension>
 
-        <extension point="org.eclipse.ui.navigator.viewer">
-            <viewerActionBinding viewerId="edu.uah.itsc.cmac.NavigatorView">
-                <includes>
-                    <actionExtension pattern="edu.uah.itsc.cmac.ui.NewActionExtension">
-                    </actionExtension>
-                </includes>
-            </viewerActionBinding>
-        </extension>
-
-        <extension point="org.eclipse.ui.navigator.viewer">
-            <viewerActionBinding viewerId="edu.uah.itsc.cmac.NavigatorView">
-                <includes>
-                    <actionExtension pattern="edu.uah.itsc.cmac.ui.GoIntoActionExtension">
-                    </actionExtension>
-                </includes>
-            </viewerActionBinding>
-        </extension>
     </plugin>
