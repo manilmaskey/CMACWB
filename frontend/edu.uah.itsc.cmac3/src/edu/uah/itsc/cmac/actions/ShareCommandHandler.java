@@ -194,7 +194,7 @@ public class ShareCommandHandler extends AbstractHandler {
 													public void run() {
 														SharedWorkflowView view = (SharedWorkflowView) PlatformUI
 															.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-															.findView("edu.uah.itsc.cmac.ui.OtherWorkflowView");
+															.findView("edu.uah.itsc.cmac.ui.SharedWorkflowView");
 														view.refreshCommunityResource();
 													}
 												});

@@ -5,7 +5,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="edu.uah.itsc.cmac.ui.Perspective"
-            icon="icons/cmac-16x16.png"
+            icon="icons/branding_files/cmac-16x16.png"
             id="edu.uah.itsc.cmac.perspective"
             name="CMACWB">
       </perspective>
@@ -73,27 +73,6 @@
         id="edu.uah.itsc.cmac.shreedhan.pythonEditorMenuContribution">
     </dynamic>
   </menuContribution>
-</extension>
-<extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
-         <command
-               commandId="my id"
-               label="my command label"
-               style="push">
-          <visibleWhen>
-           <with variable="activeMenuSelection">
-            <iterate
-                 ifEmpty="false">
-             <adapt type="org.eclipse.core.resources.IResource">
-               <test property="org.eclipse.core.resources.name" value="*.txt" />
-             </adapt>
-            </iterate>
-           </with>
-         </visibleWhen>
-       </command>
-      </menuContribution>
 </extension>
 <extension point="org.eclipse.ui.navigator.viewer">
    <viewer  viewerId="edu.uah.itsc.cmac.NavigatorView">
@@ -204,6 +183,173 @@
            </with>
         </visibleWhen>
      </command>
+          <command
+           commandId="edu.uah.itsc.cmac.Upload"
+           style="push"
+           icon="icons/upload-16x16.png">
+        <visibleWhen>
+            <with variable="activeMenuSelection">
+               <iterate>
+                  <instanceof
+                     value="org.eclipse.core.resources.IResource">
+                  </instanceof>
+               </iterate>
+           </with>
+        </visibleWhen>
+     </command>
+     <command
+           commandId="edu.uah.itsc.cmac.Share"
+           style="push"
+           icon="icons/share-16x16.png">
+        <visibleWhen>
+            <with variable="activeMenuSelection">
+               <iterate>
+                  <instanceof
+                     value="org.eclipse.core.resources.IFolder">
+                  </instanceof>
+               </iterate>
+           </with>
+        </visibleWhen>
+     </command>
+     <command
+           commandId="edu.uah.itsc.cmac.ImportWorkflow"
+           style="push"
+           icon="icons/import.png">
+        <visibleWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="import">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+          <command
+           commandId="edu.uah.itsc.cmac.Delete"
+           style="push"
+           icon="icons/delete.png">
+        <visibleWhen>
+            <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="delete">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+     <command
+           commandId="edu.uah.itsc.cmac.Refresh"
+           style="push"
+           icon="icons/refresh-16x16.png">
+        <visibleWhen>
+            <with variable="activeMenuSelection">
+               <iterate>
+                  <instanceof
+                     value="org.eclipse.core.resources.IProject">
+                  </instanceof>
+               </iterate>
+           </with>
+        </visibleWhen>
+     </command>
+     <command
+           commandId="edu.uah.itsc.cmac3.AddExperiment"
+           icon="icons/experiment.png"
+           label="Add Experiment"
+           style="push">
+     </command>
+      <command
+           commandId="edu.uah.itsc.cmac.InitTrackingWorkflow"
+           style="push"
+           icon="icons/new_workflow.png">
+        <visibleWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="initTrackingWorkflow">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+     <command
+           commandId="edu.uah.itsc.cmac.SaveForTrackingWorkflow"
+           style="push"
+           icon="icons/save.gif">
+        <visibleWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="saveForTrackingWorkflow">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+     <command
+           commandId="edu.uah.itsc.cmac.ShowVersionList"
+           style="push"
+           icon="icons/versions.png">
+        <visibleWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="ShowVersionList">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+          <command
+           commandId="edu.uah.itsc.cmac.AddVersion"
+           style="push"
+           icon="icons/add_version.png">
+        <visibleWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="AddVersion">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
+     <command
+           commandId="edu.uah.itsc.cmac.UpdateCommand"
+           style="push"
+           icon="icons/update.png">
+        <visibleWhen>
+        <with variable="selection">
+           <iterate
+                 ifEmpty="false"
+                 operator="and">
+              <test
+                    property="my.property.namespace.type"
+                    value="UpdateCommand">
+              </test>
+           </iterate>
+        </with>
+        </visibleWhen>
+     </command>
   </menuContribution>
 </extension>
 
@@ -234,25 +380,6 @@
   </handler>
 </extension>
 
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.Upload"
-           style="push"
-           icon="icons/upload-16x16.png">
-        <visibleWhen>
-            <with variable="activeMenuSelection">
-               <iterate>
-                  <instanceof
-                     value="org.eclipse.core.resources.IResource">
-                  </instanceof>
-               </iterate>
-           </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
-</extension>
-
 <extension point="org.eclipse.ui.commands">
   <command
         description="Share resource"
@@ -278,25 +405,6 @@
         </with>
      </enabledWhen>
   </handler>
-</extension>
-
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.Share"
-           style="push"
-           icon="icons/share-16x16.png">
-        <visibleWhen>
-            <with variable="activeMenuSelection">
-               <iterate>
-                  <instanceof
-                     value="org.eclipse.core.resources.IFolder">
-                  </instanceof>
-               </iterate>
-           </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
 </extension>
 
 <!-- Shreedhan Added importworkflow command-->
@@ -330,30 +438,6 @@
 </extension>
 <!-- Shreedhan Added -->
 
-<!-- Shreedhan Add import workflow in the menu -->
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.ImportWorkflow"
-           style="push"
-           icon="icons/import.png">
-        <visibleWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="import">
-              </test>
-           </iterate>
-        </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
-</extension>
-<!-- Shreedhan Add import workflow in the menu -->
-
 <!-- Shreedhan Added Delete command-->
 <extension point="org.eclipse.ui.commands">
   <command
@@ -385,30 +469,6 @@
 </extension>
 <!-- Shreedhan Added -->
 
-<!-- Shreedhan Add Delete in the menu -->
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.Delete"
-           style="push"
-           icon="icons/delete.png">
-        <visibleWhen>
-            <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="delete">
-              </test>
-           </iterate>
-        </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
-</extension>
-<!-- Shreedhan Add Delete in the menu -->
-
 <extension point="org.eclipse.ui.commands">
   <command
         id="edu.uah.itsc.cmac.NewFile"
@@ -439,7 +499,7 @@
   <menuContribution locationURI="popup:org.eclipse.ui.popup.any?before=additions">
      <command
            commandId="edu.uah.itsc.cmac.NewFile"
-           icon="icons/cmac-16x16.png"
+           icon="icons/branding_files/cmac-16x16.png"
            style="push">
         <visibleWhen>
             <with variable="selection">
@@ -482,25 +542,6 @@
         </with>
      </enabledWhen>
   </handler>
-</extension>
-
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.Refresh"
-           style="push"
-           icon="icons/refresh-16x16.png">
-        <visibleWhen>
-            <with variable="activeMenuSelection">
-               <iterate>
-                  <instanceof
-                     value="org.eclipse.core.resources.IProject">
-                  </instanceof>
-               </iterate>
-           </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
 </extension>
 
 <extension point="org.eclipse.core.expressions.propertyTesters">
@@ -645,18 +686,6 @@
      </actionProvider>
    </extension>
    <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-         <command
-               commandId="edu.uah.itsc.cmac3.AddExperiment"
-               icon="icons/experiment.png"
-               label="Add Experiment"
-               style="push">
-         </command>
-      </menuContribution>
-   </extension>
-   <extension
          point="org.eclipse.ui.commands">
       <command
             description="Add Experiment"
@@ -703,30 +732,6 @@
 </extension>
 <!-- Shreedhan Added -->
 
-<!-- Shreedhan initLocal in the menu -->
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.InitTrackingWorkflow"
-           style="push"
-           icon="icons/new_workflow.png">
-        <visibleWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="initTrackingWorkflow">
-              </test>
-           </iterate>
-        </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
-</extension>
-<!-- Shreedhan Add initLocal in the menu -->
-
 <!-- Shreedhan Added saveForTrackingWorkflow command-->
 <extension point="org.eclipse.ui.commands">
   <command
@@ -757,31 +762,6 @@
   </handler>
 </extension>
 <!-- Shreedhan Added -->
-
-<!-- Shreedhan saveForTrackingWorkflow in the menu -->
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.SaveForTrackingWorkflow"
-           style="push"
-           icon="icons/save.gif">
-        <visibleWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="saveForTrackingWorkflow">
-              </test>
-           </iterate>
-        </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
-</extension>
-<!-- Shreedhan Add saveForTrackingWorkflow in the menu -->
-
 
 <!-- Shreedhan Added showVersionList command-->
 <extension point="org.eclipse.ui.commands">
@@ -814,31 +794,6 @@
 </extension>
 <!-- Shreedhan Added -->
 
-<!-- Shreedhan showVersionList in the menu -->
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.ShowVersionList"
-           style="push"
-           icon="icons/versions.png">
-        <visibleWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="ShowVersionList">
-              </test>
-           </iterate>
-        </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
-</extension>
-<!-- Shreedhan Add showVersionList in the menu -->
-
-
 <!-- Shreedhan Added AddVersion command-->
 <extension point="org.eclipse.ui.commands">
   <command
@@ -870,31 +825,6 @@
 </extension>
 <!-- Shreedhan Added -->
 
-<!-- Shreedhan AddVersion in the menu -->
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.AddVersion"
-           style="push"
-           icon="icons/add_version.png">
-        <visibleWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="AddVersion">
-              </test>
-           </iterate>
-        </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
-</extension>
-<!-- Shreedhan Add AddVersion in the menu -->
-
-
 <!-- Shreedhan Added Update command-->
 <extension point="org.eclipse.ui.commands">
   <command
@@ -925,31 +855,5 @@
   </handler>
 </extension>
 <!-- Shreedhan Added -->
-
-<!-- Shreedhan AddVersion in the menu -->
-<extension point="org.eclipse.ui.menus">
-  <menuContribution locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-     <command
-           commandId="edu.uah.itsc.cmac.UpdateCommand"
-           style="push"
-           icon="icons/update.png">
-        <visibleWhen>
-        <with variable="selection">
-           <iterate
-                 ifEmpty="false"
-                 operator="and">
-              <test
-                    property="my.property.namespace.type"
-                    value="UpdateCommand">
-              </test>
-           </iterate>
-        </with>
-        </visibleWhen>
-     </command>
-  </menuContribution>
-</extension>
-<!-- Shreedhan Add AddVersion in the menu -->
-
-
 
 </plugin>

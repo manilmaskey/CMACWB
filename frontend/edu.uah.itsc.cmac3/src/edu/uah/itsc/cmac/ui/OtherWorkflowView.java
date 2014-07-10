@@ -75,16 +75,13 @@ public class OtherWorkflowView extends ViewPart {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
-		if (sessionOtherWorkflowDir == null)
-			sessionOtherWorkflowDir = Utilities.createTempDir("otherWorkflowDir");
-		sessionOtherWorkflowDir.deleteOnExit();
 		createImages();
 		if (folderImage == null)
 			folderImage = createImage("icons/folder.png");
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		viewer.setContentProvider(new OtherWorkflowContentProvider());
 		viewer.setLabelProvider(new OtherWorkflowLabelProvider());
-		createotherDirectories();
+		refreshOtherWorkflows();
 		viewer.setInput(sessionOtherWorkflowDir.listFiles());
 		
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -107,6 +104,8 @@ public class OtherWorkflowView extends ViewPart {
 	}
 
 	private Object createotherDirectories() {
+		if (sessionOtherWorkflowDir == null)
+			sessionOtherWorkflowDir = Utilities.createTempDir("otherWorkflowDir", false);
 		Set<String> otherBuckets = Utilities.getOtherBuckets();
 		File[] files = new File[otherBuckets.size()];
 		int i = 0;
@@ -356,14 +355,10 @@ public class OtherWorkflowView extends ViewPart {
 
 	}
 
-	private void deleteAllOtherWorkflows() {
-		File[] dirs = sessionOtherWorkflowDir.listFiles();
-		for (File dir : dirs)
-			dir.delete();
-	}
-
 	public void refreshOtherWorkflows() {
-		deleteAllOtherWorkflows();
+		if (sessionOtherWorkflowDir == null)
+			sessionOtherWorkflowDir = Utilities.createTempDir("otherWorkflowDir", false);
+		Utilities.deleteRecursive(sessionOtherWorkflowDir);
 		createotherDirectories();
 		viewer.setInput(sessionOtherWorkflowDir.listFiles());
 	}

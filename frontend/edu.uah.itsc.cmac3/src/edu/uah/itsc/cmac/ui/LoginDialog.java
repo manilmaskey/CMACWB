@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -36,12 +35,9 @@ import org.eclipse.swt.widgets.Text;
 import org.json.JSONObject;
 import org.osgi.framework.Bundle;
 
-import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.Activator;
 import edu.uah.itsc.cmac.portal.PortalConnector;
-
-// import com.swtdesigner.SWTResourceManager;
 
 public class LoginDialog {
 
@@ -204,16 +200,18 @@ public class LoginDialog {
 					// Shreedhan - Store password as well
 					User.password = password;
 
-					S3 adminS3 = new S3();
-					ArrayList<String> allBuckets = adminS3.getAllBuckets();
-					for (String bucket : allBuckets) {
-						// If this the community bucket do not create the user folder
-						if (bucket.equalsIgnoreCase(S3.getCommunityBucketName()))
-							continue;
-						if (!adminS3.userFolderExists(username, bucket)) {
-							adminS3.uploadUserFolder(username, bucket);
-						}
-					}
+					// Do not create <username>_$folder$ anymore
+					
+					// S3 adminS3 = new S3();
+					// ArrayList<String> allBuckets = adminS3.getAllBuckets();
+					// for (String bucket : allBuckets) {
+					// // If this the community bucket do not create the user folder
+					// if (bucket.equalsIgnoreCase(S3.getCommunityBucketName()))
+					// continue;
+					// if (!adminS3.userFolderExists(username, bucket)) {
+					// adminS3.uploadUserFolder(username, bucket);
+					// }
+					// }
 					// if (!adminS3.userFolderExists(username, adminS3.getBucketName())){
 					// adminS3.uploadUserFolder(username, adminS3.getBucketName());
 					// }

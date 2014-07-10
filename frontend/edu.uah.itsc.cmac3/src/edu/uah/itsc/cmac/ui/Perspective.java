@@ -13,7 +13,7 @@ public class Perspective implements IPerspectiveFactory {
 		layout.setEditorAreaVisible(true);
 		layout.setFixed(true);
 
-		IFolderLayout left = layout.createFolder("left", IPageLayout.LEFT, (float) 0.30, editorArea);
+		IFolderLayout left = layout.createFolder("left", IPageLayout.LEFT, (float) 0.35, editorArea);
 		IFolderLayout leftTop = layout.createFolder("leftTop", IPageLayout.TOP, (float) 0.125, "left");
 		IFolderLayout leftMiddle = layout.createFolder("leftMiddle", IPageLayout.BOTTOM, (float) 0.30, "left");
 		IFolderLayout leftBottom = layout.createFolder("leftBottom", IPageLayout.BOTTOM, (float) 0.50, "leftMiddle");

@@ -26,16 +26,32 @@ public class Utilities {
 		s3 = new S3(User.awsAccessKey, User.awsSecretKey);
 	}
 
-	public static File createTempDir(String prefix) {
+	public static File createTempDir(String prefix, boolean random){
+		if (random)
+			return createTempDirRandom(prefix);
+		else
+			return createTempDir(prefix);
+	}
+	
+	private static File createTempDir(String prefix){
+		File baseDir = new File(System.getProperty("java.io.tmpdir"));
+		File tempDir = new File(baseDir, prefix);
+		if (tempDir.exists())
+			return tempDir;
+		if (tempDir.mkdir())
+			return tempDir;
+		else return null;
+	}
+	
+	
+	private static File createTempDirRandom(String prefix) {
 		File baseDir = new File(System.getProperty("java.io.tmpdir"));
 		String baseName = System.currentTimeMillis() + "-";
 
 		for (int counter = 0; counter < TEMP_DIR_ATTEMPTS; counter++) {
 			File tempDir = new File(baseDir, prefix + baseName + counter);
-			if (tempDir.mkdir()) {
-				tempDir.deleteOnExit();
+			if (tempDir.mkdir())
 				return tempDir;
-			}
 		}
 		throw new IllegalStateException("Failed to create directory within " + TEMP_DIR_ATTEMPTS + " attempts (tried "
 			+ baseName + "0 to " + baseName + (TEMP_DIR_ATTEMPTS - 1) + ')');
@@ -152,5 +168,22 @@ public class Utilities {
 		allBuckets.removeAll(myWorkflowBuckets);
 		allBuckets.removeAll(localProjects);
 		return allBuckets;
+	}
+
+	public static void deleteRecursive(File localPath) {
+		if (localPath == null)
+			return;
+		File[] files = localPath.listFiles();
+		if (files.length == 0){
+			localPath.delete();
+			return;
+		}
+		for (File file : files){
+			if (file.isDirectory())
+				deleteRecursive(file);
+			else
+				file.delete();
+		}
+		localPath.delete();
 	}
 }

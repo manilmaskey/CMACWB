@@ -110,7 +110,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 			if (!tagList.isEmpty()) {
 				Composite tagListComposite = new Composite(composite, SWT.BORDER);
 				tagListComposite.setLayout(new RowLayout(SWT.VERTICAL));
-				createTagComposite(tagListComposite, tagList, paths);
+				createTagComposite(tagListComposite, tagList, paths, searchResult.getCreator());
 
 			}
 
@@ -217,7 +217,6 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 	private HashMap<String, String> getPaths(SearchResult searchResult) {
 		String copyFromFolderPath = searchResult.getFolderPath();
 		String folderToCopy = "";
-		S3 s3 = new S3();
 		folderToCopy = copyFromFolderPath;
 		int fromIndex = 0;
 
@@ -235,7 +234,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 		System.out.println("folderpath: " + copyFromFolderPath);
 
 		String bucketName = copyFromFolderPath.substring(0, fromIndex);
-		String remotePath = "amazon-s3://.jgit@" + s3.getCommunityBucketName() + "/" + copyFromFolderPath + ".git";
+		String remotePath = "amazon-s3://.jgit@" + S3.getCommunityBucketName() + "/" + copyFromFolderPath + ".git";
 		String localPath = ResourcesPlugin.getWorkspace().getRoot().getLocation() + "/" + bucketName + "/"
 			+ User.username + "/" + folderToCopy;
 		System.out.println(remotePath + "\n" + localPath);
@@ -247,7 +246,8 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 		return map;
 	}
 
-	private void createTagComposite(Composite parent, Collection<Ref> tagList, final HashMap<String, String> paths) {
+	private void createTagComposite(Composite parent, Collection<Ref> tagList, final HashMap<String, String> paths,
+		final String creator) {
 		for (final Ref ref : tagList) {
 			Composite tagComposite = new Composite(parent, SWT.BORDER);
 			GridLayout layout = new GridLayout(3, false);
@@ -276,12 +276,11 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 					String workflow = paths.get("workflow");
 					String bucketName = paths.get("bucketName");
 					try {
-
-						GITUtility.cloneRepository(localPath + "/" + workflow, remotePath);
+						GITUtility.cloneRepository(localPath, remotePath);
+						setOwnerProperty(localPath, creator);
 						GITUtility.hardReset(workflow, localPath, ref.getTarget().getName());
 						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
 							.refreshLocal(IFolder.DEPTH_INFINITE, null);
-
 					}
 					catch (Exception e1) {
 						e1.printStackTrace();

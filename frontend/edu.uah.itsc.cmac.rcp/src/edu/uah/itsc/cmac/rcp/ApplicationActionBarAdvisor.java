@@ -1,5 +1,8 @@
 package edu.uah.itsc.cmac.rcp;
 
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.ICoolBarManager;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 
@@ -17,5 +20,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
 		super(configurer);
 	}
-
+	
+	@Override
+	protected void fillCoolBar(ICoolBarManager coolBar) {
+	    coolBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+	}
 }

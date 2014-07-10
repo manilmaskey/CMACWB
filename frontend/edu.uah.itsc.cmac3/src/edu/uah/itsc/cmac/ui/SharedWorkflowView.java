@@ -79,14 +79,11 @@ public class SharedWorkflowView extends ViewPart {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
-		if (sessionSharedWorkflowDir == null)
-			sessionSharedWorkflowDir = Utilities.createTempDir("sharedWorkflowDir");
-		sessionSharedWorkflowDir.deleteOnExit();
 		createImages();
 		viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		viewer.setContentProvider(new SharedWorkflowContentProvider());
 		viewer.setLabelProvider(new SharedWorkflowLabelProvider());
-		createSharedDirectories();
+		refreshCommunityResource();
 		viewer.setInput(sessionSharedWorkflowDir.listFiles());
 
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -293,7 +290,11 @@ public class SharedWorkflowView extends ViewPart {
 	}
 
 	private Object createSharedDirectories() {
+		if (sessionSharedWorkflowDir == null)
+			sessionSharedWorkflowDir = Utilities.createTempDir("sharedWorkflowDir", false);
 		HashMap<String, Workflow> sharedWorkflows = Utilities.getSharedWorkflows();
+		if (sharedWorkflows == null || sharedWorkflows.size() == 0)
+			return null;
 		File[] files = new File[sharedWorkflows.size()];
 		int i = 0;
 		for (String key : sharedWorkflows.keySet()) {
@@ -301,7 +302,6 @@ public class SharedWorkflowView extends ViewPart {
 			File file = new File(sessionSharedWorkflowDir + workflow.getPath());
 			if (!file.exists())
 				file.mkdirs();
-			file.deleteOnExit();
 			files[i] = file;
 			i++;
 		}
@@ -377,7 +377,11 @@ public class SharedWorkflowView extends ViewPart {
 		return imageDcr.createImage();
 	}
 
+	
 	public void refreshCommunityResource() {
+		if (sessionSharedWorkflowDir == null)
+			sessionSharedWorkflowDir = Utilities.createTempDir("sharedWorkflowDir", false);
+		Utilities.deleteRecursive(sessionSharedWorkflowDir);
 		createSharedDirectories();
 		viewer.setInput(sessionSharedWorkflowDir.listFiles());
 	}

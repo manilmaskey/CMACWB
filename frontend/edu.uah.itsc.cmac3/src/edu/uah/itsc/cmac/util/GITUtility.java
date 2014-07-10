@@ -268,14 +268,14 @@ public class GITUtility {
 	public static Collection<Ref> getTagList(String repoRemotePath) {
 		Repository repository = null;
 		try {
-			File localPath = Utilities.createTempDir("EmptyRepository");
+			File localPath = Utilities.createTempDir("EmptyRepository", false);
 
 			repository = FileRepositoryBuilder.create(new File(localPath, ".git"));
 			repository.create();
 
 			Collection<Ref> tagList = Git.wrap(repository).lsRemote().setTags(true).setRemote(repoRemotePath).call();
 			repository.close();
-			localPath.delete();
+			Utilities.deleteRecursive(localPath);
 			return tagList;
 		}
 		catch (Exception e) {
