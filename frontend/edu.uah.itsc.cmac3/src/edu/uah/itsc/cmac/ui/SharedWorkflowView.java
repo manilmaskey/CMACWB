@@ -108,6 +108,8 @@ public class SharedWorkflowView extends ViewPart {
 		makeActions();
 		hookContextMenu();
 		contributeToActionBars();
+		
+		setTitleToolTip("Experiments which contain workflows shared by the community");
 	}
 
 	private void createImages() {

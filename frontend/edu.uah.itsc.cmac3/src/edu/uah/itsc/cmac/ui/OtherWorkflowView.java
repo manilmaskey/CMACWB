@@ -83,24 +83,27 @@ public class OtherWorkflowView extends ViewPart {
 		viewer.setLabelProvider(new OtherWorkflowLabelProvider());
 		refreshOtherWorkflows();
 		viewer.setInput(sessionOtherWorkflowDir.listFiles());
-		
+
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			
+
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				Object obj = ((StructuredSelection) event.getSelection()).getFirstElement();
 				if (obj instanceof File) {
 					File file = (File) obj;
-					if (file.isDirectory() && file.getParentFile().equals(sessionOtherWorkflowDir) && file.list().length == 0)
+					if (file.isDirectory() && file.getParentFile().equals(sessionOtherWorkflowDir)
+						&& file.list().length == 0)
 						newWorkflowAction.setEnabled(true);
 				}
-				
+
 			}
 		});
-		
+
 		makeActions();
 		hookContextMenu();
 		contributeToActionBars();
+
+		setTitleToolTip("Experiments on which you don't have any workflows yet. You have not created any workflows in these experiments.");
 	}
 
 	private Object createotherDirectories() {
