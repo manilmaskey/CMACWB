@@ -35,13 +35,18 @@
       </win>
    </launcher>
 
-
    <vm>
    </vm>
 
    <plugins>
       <plugin id="com.ibm.icu"/>
       <plugin id="com.jcraft.jsch"/>
+      <plugin id="com.python.pydev"/>
+      <plugin id="com.python.pydev.analysis"/>
+      <plugin id="com.python.pydev.codecompletion"/>
+      <plugin id="com.python.pydev.debug"/>
+      <plugin id="com.python.pydev.fastparser"/>
+      <plugin id="com.python.pydev.refactoring"/>
       <plugin id="edu.uah.itsc.CMACWorkflow"/>
       <plugin id="edu.uah.itsc.WSDLParserJARS"/>
       <plugin id="edu.uah.itsc.cmac.ami"/>
@@ -60,9 +65,11 @@
       <plugin id="javax.annotation"/>
       <plugin id="javax.inject"/>
       <plugin id="javax.xml"/>
+      <plugin id="org.apache.ant"/>
       <plugin id="org.apache.batik.css"/>
       <plugin id="org.apache.batik.util"/>
       <plugin id="org.apache.batik.util.gui"/>
+      <plugin id="org.apache.commons.io"/>
       <plugin id="org.eclipse.compare"/>
       <plugin id="org.eclipse.compare.core"/>
       <plugin id="org.eclipse.core.commands"/>
@@ -75,10 +82,15 @@
       <plugin id="org.eclipse.core.filesystem"/>
       <plugin id="org.eclipse.core.filesystem.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.core.jobs"/>
+      <plugin id="org.eclipse.core.net"/>
+      <plugin id="org.eclipse.core.net.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.core.resources"/>
       <plugin id="org.eclipse.core.resources.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
+      <plugin id="org.eclipse.core.variables"/>
+      <plugin id="org.eclipse.debug.core"/>
+      <plugin id="org.eclipse.debug.ui"/>
       <plugin id="org.eclipse.e4.core.commands"/>
       <plugin id="org.eclipse.e4.core.contexts"/>
       <plugin id="org.eclipse.e4.core.di"/>
@@ -112,6 +124,7 @@
       <plugin id="org.eclipse.ecf.provider.xmpp"/>
       <plugin id="org.eclipse.ecf.provider.xmpp.datashare" fragment="true"/>
       <plugin id="org.eclipse.ecf.provider.xmpp.remoteservice" fragment="true"/>
+      <plugin id="org.eclipse.ecf.provider.xmpp.ui" version="1.0.0.qualifier"/>
       <plugin id="org.eclipse.ecf.remoteservice"/>
       <plugin id="org.eclipse.ecf.sharedobject"/>
       <plugin id="org.eclipse.ecf.ssl" fragment="true"/>
@@ -145,14 +158,26 @@
       <plugin id="org.eclipse.jgit.java7" fragment="true"/>
       <plugin id="org.eclipse.ltk.core.refactoring"/>
       <plugin id="org.eclipse.ltk.ui.refactoring"/>
+      <plugin id="org.eclipse.mylyn.commons.core"/>
+      <plugin id="org.eclipse.mylyn.commons.screenshots"/>
+      <plugin id="org.eclipse.mylyn.commons.ui"/>
+      <plugin id="org.eclipse.mylyn.commons.workbench"/>
+      <plugin id="org.eclipse.mylyn.context.core"/>
+      <plugin id="org.eclipse.mylyn.context.ui"/>
+      <plugin id="org.eclipse.mylyn.ide.ui"/>
+      <plugin id="org.eclipse.mylyn.monitor.core"/>
+      <plugin id="org.eclipse.mylyn.monitor.ui"/>
+      <plugin id="org.eclipse.mylyn.resources.ui"/>
       <plugin id="org.eclipse.osgi"/>
       <plugin id="org.eclipse.osgi.services"/>
+      <plugin id="org.eclipse.search"/>
       <plugin id="org.eclipse.swt"/>
       <plugin id="org.eclipse.swt.win32.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.team.core"/>
       <plugin id="org.eclipse.team.ui"/>
       <plugin id="org.eclipse.text"/>
       <plugin id="org.eclipse.ui"/>
+      <plugin id="org.eclipse.ui.console"/>
       <plugin id="org.eclipse.ui.editors"/>
       <plugin id="org.eclipse.ui.forms"/>
       <plugin id="org.eclipse.ui.ide"/>
@@ -166,6 +191,20 @@
       <plugin id="org.jivesoftware.smack"/>
       <plugin id="org.json"/>
       <plugin id="org.json.simple"/>
+      <plugin id="org.python.pydev"/>
+      <plugin id="org.python.pydev.ast"/>
+      <plugin id="org.python.pydev.core"/>
+      <plugin id="org.python.pydev.customizations"/>
+      <plugin id="org.python.pydev.debug"/>
+      <plugin id="org.python.pydev.django"/>
+      <plugin id="org.python.pydev.help"/>
+      <plugin id="org.python.pydev.jython"/>
+      <plugin id="org.python.pydev.mylyn"/>
+      <plugin id="org.python.pydev.parser"/>
+      <plugin id="org.python.pydev.refactoring"/>
+      <plugin id="org.python.pydev.shared_core"/>
+      <plugin id="org.python.pydev.shared_interactive_console"/>
+      <plugin id="org.python.pydev.shared_ui"/>
       <plugin id="org.w3c.css.sac"/>
       <plugin id="org.w3c.dom.smil"/>
       <plugin id="org.w3c.dom.svg"/>
