@@ -65,7 +65,7 @@
             </command>
          </menu>
          <menu
-               label="CMAC">
+               label="Workbench">
             <command
                   commandId="edu.uah.itsc.cmac3.AddExperiment"
                   label="Add Experiment"
@@ -142,22 +142,22 @@
       </menuContribution>
    </extension>
    <extension
-         id="cmacwb"
+         id="cwb"
          point="org.eclipse.core.runtime.products">
       <product
             application="edu.uah.itsc.cmac.rcp.application"
-            name="CMAC Workbench">
+            name="Collaborative Workbench">
          <property
                name="windowImages"
                value="platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/cmac-16x16.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/cmac-32x32.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/cmac-48x48.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/cmac-64x64.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/cmac-128x128.png">
          </property>
          <property
                name="aboutText"
-               value="CMAC Workbench is provided by UAH ITSC. For more information visit http://www.itsc.uah.edu">
+               value="Collaborative Workbench (CWB) is funded by NASA Computational Modeling Algorithms and Cyberinfrastructure (CMAC) Grant. &#x0A;&#x0A;Copyright 2014 - University of Alabama in Huntsville&#x0A;http://www.itsc.uah.edu">
          </property>
          <property
                name="appName"
-               value="CMAC Workbench">
+               value="Collaborative Workbench">
          </property>
       </product>
    </extension>

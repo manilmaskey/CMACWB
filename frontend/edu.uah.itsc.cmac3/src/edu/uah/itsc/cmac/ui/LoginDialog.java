@@ -77,7 +77,7 @@ public class LoginDialog {
 		// button.setLayoutData(new GridData(195, 210));
 
 		Bundle bundle = Activator.getDefault().getBundle();
-		Path path = new Path("splash.bmp");
+		Path path = new Path("login.bmp");
 		URL url = FileLocator.find(bundle, path, Collections.EMPTY_MAP);
 		URL fileUrl = null;
 		try {

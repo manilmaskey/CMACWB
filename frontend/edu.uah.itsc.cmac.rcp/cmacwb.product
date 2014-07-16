@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="CMAC Workbench" uid="cmacwb" id="edu.uah.itsc.cmac.rcp.cmacwb" application="edu.uah.itsc.cmac.rcp.application" useFeatures="false" includeLaunchers="true">
+<product name="Collaborative Workbench" uid="cwb" id="edu.uah.itsc.cmac.rcp.cwb" application="edu.uah.itsc.cmac.rcp.application" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <text>
-         CMAC Workbench is provided by UAH ITSC. For more information visit http://www.itsc.uah.edu
+         Collaborative Workbench (CWB) is funded by NASA Computational Modeling Algorithms and Cyberinfrastructure (CMAC) Grant. 
+
+Copyright 2014 - University of Alabama in Huntsville
+http://www.itsc.uah.edu
       </text>
    </aboutInfo>
 
@@ -20,20 +23,22 @@
 
    <splash
       location="edu.uah.itsc.cmac3" />
-   <launcher name="cmacwb">
+   <launcher name="cwb">
       <linux icon="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-256x256.xpm"/>
+      <macosx icon="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-256x256.icns"/>
       <solaris/>
       <win useIco="false">
          <bmp
-            winSmallHigh="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-16x16.bmp"
-            winSmallLow="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-16x16-8bit.bmp"
-            winMediumHigh="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-32x32.bmp"
-            winMediumLow="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-32x32-8bit.bmp"
-            winLargeHigh="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-48x48.bmp"
-            winLargeLow="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-48x48-8bit.bmp"
-            winExtraLargeHigh="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-256x256.bmp"/>
+            winSmallHigh="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-16x16.bmp"
+            winSmallLow="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-16x16-8bit.bmp"
+            winMediumHigh="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-32x32.bmp"
+            winMediumLow="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-32x32-8bit.bmp"
+            winLargeHigh="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-48x48.bmp"
+            winLargeLow="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-48x48-8bit.bmp"
+            winExtraLargeHigh="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-256x256.bmp"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>
@@ -80,11 +85,25 @@
       <plugin id="org.eclipse.core.expressions"/>
       <plugin id="org.eclipse.core.filebuffers"/>
       <plugin id="org.eclipse.core.filesystem"/>
+      <plugin id="org.eclipse.core.filesystem.aix.ppc" fragment="true"/>
+      <plugin id="org.eclipse.core.filesystem.aix.ppc64" fragment="true"/>
+      <plugin id="org.eclipse.core.filesystem.hpux.ia64" fragment="true"/>
+      <plugin id="org.eclipse.core.filesystem.linux.ppc" fragment="true"/>
+      <plugin id="org.eclipse.core.filesystem.linux.ppc64" fragment="true"/>
+      <plugin id="org.eclipse.core.filesystem.linux.x86" fragment="true"/>
+      <plugin id="org.eclipse.core.filesystem.linux.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.core.filesystem.macosx" fragment="true"/>
+      <plugin id="org.eclipse.core.filesystem.solaris.sparc" fragment="true"/>
+      <plugin id="org.eclipse.core.filesystem.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.core.filesystem.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.core.jobs"/>
       <plugin id="org.eclipse.core.net"/>
+      <plugin id="org.eclipse.core.net.linux.x86" fragment="true"/>
+      <plugin id="org.eclipse.core.net.linux.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.core.net.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.core.net.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.core.resources"/>
+      <plugin id="org.eclipse.core.resources.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.core.resources.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
@@ -107,6 +126,7 @@
       <plugin id="org.eclipse.e4.ui.workbench"/>
       <plugin id="org.eclipse.e4.ui.workbench.addons.swt"/>
       <plugin id="org.eclipse.e4.ui.workbench.renderers.swt"/>
+      <plugin id="org.eclipse.e4.ui.workbench.renderers.swt.cocoa" fragment="true"/>
       <plugin id="org.eclipse.e4.ui.workbench.swt"/>
       <plugin id="org.eclipse.e4.ui.workbench3"/>
       <plugin id="org.eclipse.ecf"/>
@@ -148,6 +168,8 @@
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.registry"/>
       <plugin id="org.eclipse.equinox.security"/>
+      <plugin id="org.eclipse.equinox.security.macosx" fragment="true"/>
+      <plugin id="org.eclipse.equinox.security.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.equinox.security.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.equinox.util"/>
       <plugin id="org.eclipse.help"/>
@@ -172,6 +194,20 @@
       <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.eclipse.search"/>
       <plugin id="org.eclipse.swt"/>
+      <plugin id="org.eclipse.swt.cocoa.macosx" fragment="true"/>
+      <plugin id="org.eclipse.swt.cocoa.macosx.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.aix.ppc" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.aix.ppc64" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.hpux.ia64" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.linux.ppc" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.linux.ppc64" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.linux.s390" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.linux.s390x" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.linux.x86" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.linux.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.solaris.sparc" fragment="true"/>
+      <plugin id="org.eclipse.swt.gtk.solaris.x86" fragment="true"/>
+      <plugin id="org.eclipse.swt.win32.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.swt.win32.win32.x86_64" fragment="true"/>
       <plugin id="org.eclipse.team.core"/>
       <plugin id="org.eclipse.team.ui"/>
