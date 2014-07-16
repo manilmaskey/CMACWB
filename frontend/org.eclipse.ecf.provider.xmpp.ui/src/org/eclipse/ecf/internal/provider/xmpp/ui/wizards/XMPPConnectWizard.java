@@ -235,12 +235,14 @@ public class XMPPConnectWizard extends Wizard implements IConnectWizard,
 	public boolean performCancel() {
 		if (container != null) {
 			container.dispose();
-
-			IContainerManager containerManager = Activator.getDefault()
+			
+			// Shreedhan - getContainerManager throws NullPointerException. It is out of scope of CMACWB to modify
+			// Eclipse's internal files. So, commenting out following lines. However, it works as expected.
+			/*IContainerManager containerManager = Activator.getDefault()
 					.getContainerManager();
 			if (containerManager != null) {
 				containerManager.removeContainer(container);
-			}
+			}*/
 		}
 
 		return super.performCancel();
