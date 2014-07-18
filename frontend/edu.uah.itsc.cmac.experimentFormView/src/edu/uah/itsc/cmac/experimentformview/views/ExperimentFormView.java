@@ -151,9 +151,10 @@ public class ExperimentFormView extends ViewPart {
 									createFolderInCommunity(experiment.getTitle(), adminS3);
 									monitor.worked(75);
 									Thread.sleep(5000);
-									if (!adminS3.userFolderExists(User.username, experiment.getTitle())) {
-										adminS3.uploadUserFolder(User.username, experiment.getTitle());
-									}
+									// Since we are using git now, we don't need to create user's folder immediately
+									// if (!adminS3.userFolderExists(User.username, experiment.getTitle())) {
+									// adminS3.uploadUserFolder(User.username, experiment.getTitle());
+									// }
 									buildBucketAsProject(experiment.getTitle(), new NullProgressMonitor());
 									monitor.done();
 									message.setMessage("Added Experiment Successfully");
@@ -259,31 +260,12 @@ public class ExperimentFormView extends ViewPart {
 			IFolder experimentFolder = cmacCommunity.getFolder(title);
 			if (!experimentFolder.exists())
 				experimentFolder.create(true, true, null);
-			adminS3.uploadFolderName(experimentFolder);
+			// Since we are using git now, do not create empty folder in community bucket
+			// adminS3.uploadFolderName(experimentFolder);
 		}
 		catch (CoreException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private String getPolicyToAdd(String bucketName) {
-		BufferedReader bufferedReader = null;
-		String fileContent = "";
-		String line = "";
-		try {
-			InputStream stream = this.getClass().getClassLoader().getResourceAsStream("policy.template");
-			bufferedReader = new BufferedReader(new InputStreamReader(stream));
-			while ((line = bufferedReader.readLine()) != null) {
-				fileContent = fileContent + "\n" + line;
-			}
-			bufferedReader.close();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		fileContent = fileContent.replace("%cmac-bucketName-cmac%", bucketName);
-		return fileContent;
 	}
 
 	public void buildBucketAsProject(String bucket, IProgressMonitor monitor) {
@@ -291,123 +273,13 @@ public class ExperimentFormView extends ViewPart {
 		try {
 			if (!project.exists())
 				project.create(monitor);
-			buildTree(User.username + "_$folder$", project, bucket);
+			// Sine we are using git now, do not create user's _$folder$ file in S3
+			// buildTree(User.username + "_$folder$", project, bucket);
 			project.refreshLocal(0, monitor);
 		}
 		catch (CoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-	}
-
-	private void buildTree(String prefix, IResource tp, String bucket) {
-		ListObjectsRequest lor = new ListObjectsRequest();
-		lor.setBucketName(bucket);
-		lor.setDelimiter(s3.getDelimiter());
-		lor.setPrefix(prefix);
-
-		System.out.println("Building tree.............." + bucket + " delimiter=" + s3.getDelimiter() + " prefix="
-			+ prefix);
-
-		// Just listing the buckets here
-		// List<Bucket> bu = s3.getService().listBuckets();
-		//
-		// for (int i=0;i<bu.size();i++){
-		// Bucket b = bu.get(i);
-		// System.out.println("---------------"+ b.getName()+"  " +
-		// b.getOwner().getDisplayName());
-		// }
-		ObjectListing filteredObjects = null;
-		try {
-			filteredObjects = s3.getService().listObjects(lor);
-		}
-		catch (Exception e) {
-			// e.printStackTrace();
-			System.out.println("Cannot build tree for " + bucket + "\n" + e.getMessage());
-			return;
-		}
-		// if (filteredObjects.getObjectSummaries().isEmpty()){
-		// IFolder tp1 = ((IProject)tp).getFolder(prefix);
-		// if (!tp1.exists())
-		// tp1.create(false, true, null);
-		// }
-		//
-		for (S3ObjectSummary objectSummary : filteredObjects.getObjectSummaries()) {
-			String currentResource = objectSummary.getKey();
-			System.out.println("Prefix=" + prefix);
-			System.out.println("buildTree currentResource=" + currentResource);
-
-			// check if the resource is a folder
-			if (currentResource.indexOf("_$folder$") > 0) {
-				IFolder tp1;
-
-				System.out.println("Folder=" + currentResource.substring(0, currentResource.indexOf("_$folder$")));
-
-				if (tp instanceof IFolder) {
-					System.out.println("IFolder=" + currentResource.substring(0, currentResource.indexOf("_$folder$")));
-					System.out.println("Current Foldername tp= " + tp.getName());
-					tp1 = ((IFolder) tp).getFolder(currentResource.substring(0, currentResource.indexOf("_$folder$"))
-						.replaceAll(prefix, ""));
-					System.out.println("Current Foldername tp1= " + tp1.getName());
-					if (!tp1.exists())
-						try {
-							tp1.create(false, true, null);
-						}
-						catch (CoreException e) {
-							// TODO Auto-generated catch block
-							System.err.println("buildTree method tp1.create for IFolder ->" + e.toString());
-						}
-				}
-				else {
-					tp1 = ((IProject) tp).getFolder(currentResource.substring(0, currentResource.indexOf("_$folder$"))
-						.replaceAll(prefix, ""));
-					if (!tp1.exists()) {
-						try {
-							if (!((IProject) tp).isOpen())
-								((IProject) tp).open(null);
-							tp1.create(false, true, null);
-						}
-						catch (CoreException e) {
-							// TODO Auto-generated catch block
-							System.err.println("buildTree method tp1.create for IProject ->" + e.toString());
-						}
-					}
-				}
-				buildTree(currentResource.substring(0, currentResource.indexOf("_$folder$")) + "/", tp1, bucket);
-			}
-			else { // not a folder, must be a file
-				System.out.println("Not a folder prefix: " + prefix);
-				IFile f;
-				String fullFilePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString()
-					+ java.io.File.separator + bucket + java.io.File.separator + currentResource;
-				System.out.println("full path: " + fullFilePath);
-				IPath location = new Path(fullFilePath);
-
-				java.io.File file = new java.io.File(fullFilePath);
-				try {
-					file.createNewFile();
-				}
-				catch (IOException e) {
-					// TODO Auto-generated catch block
-					System.err.println("buildTree method file.createNewFile() ->" + e.toString());
-				}
-				if (tp instanceof IFolder)
-					f = ((IFolder) tp).getFile(currentResource.replaceAll(prefix, ""));
-				else
-					f = ((IProject) tp).getFile(currentResource.replaceAll(prefix, ""));
-				if (!f.exists())
-					try {
-						f.createLink(location, IResource.NONE, null);
-					}
-					catch (CoreException e) {
-						// TODO Auto-generated catch block
-						System.err.println("buildTree method f.createLink(location, IResource.NONE, null) ->"
-							+ e.toString());
-					}
-				// tp.addChild(new TreeObject(currentResource.replaceAll(prefix,
-				// ""),currentResource));
-				System.out.println("File=" + currentResource);
-			}
 		}
 	}
 }

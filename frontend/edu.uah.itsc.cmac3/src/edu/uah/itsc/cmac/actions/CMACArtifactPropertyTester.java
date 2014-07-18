@@ -18,23 +18,30 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 			else if (receiver instanceof IFolder) {
 
 				IFolder folder = (IFolder) receiver;
-				if ((folder.getParent() instanceof IProject)
-					|| folder.getProject().getName().equals(S3.getCommunityBucketName()))
-					return false;
 
-				else if (!folder.getProject().getName().equals(S3.getCommunityBucketName())) {
-					if (folder.getParent() instanceof IFolder) {
-						IFolder maybeUserFolder = (IFolder) folder.getParent();
-						if (maybeUserFolder.getName().equals(User.username) && !expectedValue.equals("execute"))
-							return true;
-						else
-							return false;
-					}
-					else
-						return false;
-				}
-				else
+				if (folder.getParent() instanceof IProject
+					&& !folder.getParent().getName().equals(S3.getCommunityBucketName()))
 					return true;
+				else
+					return false;
+				//
+				// if ((folder.getParent() instanceof IProject)
+				// || folder.getProject().getName().equals(S3.getCommunityBucketName()))
+				// return false;
+				//
+				// else if (!folder.getProject().getName().equals(S3.getCommunityBucketName())) {
+				// if (folder.getParent() instanceof IFolder) {
+				// IFolder maybeUserFolder = (IFolder) folder.getParent();
+				// if (maybeUserFolder.getName().equals(User.username) && !expectedValue.equals("execute"))
+				// return true;
+				// else
+				// return false;
+				// }
+				// else
+				// return false;
+				// }
+				// else
+				// return true;
 
 			}
 			else if (receiver instanceof IFile) {
@@ -42,7 +49,8 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 				if (file.getProject().getName().equals(S3.getCommunityBucketName()))
 					return false;
 				else if (!file.getProject().getName().equals(S3.getCommunityBucketName())) {
-					if (!file.getParent().getName().equals(User.username) && expectedValue.equals("execute")) {
+					// if (!file.getParent().getName().equals(User.username) && expectedValue.equals("execute")) {
+					if (expectedValue.equals("execute")) {
 						String ext = file.getFileExtension();
 						return (ext.equals("py") || ext.equals("pro"));
 
@@ -55,7 +63,7 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 
 			}
 			else
-				return true;
+				return false;
 		}
 
 		else if (expectedValue.equals("refresh")) { // Refresh
@@ -85,35 +93,53 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 		}
 
 		else if (expectedValue.equals("initTrackingWorkflow")) {
-			if (receiver instanceof IFolder) {
-				IFolder folder = (IFolder) receiver;
-				if (folder.getParent() instanceof IProject && folder.getName().equalsIgnoreCase(User.username)
-					&& !folder.getParent().getName().equalsIgnoreCase(S3.getCommunityBucketName())) {
+
+			if (receiver instanceof IProject) {
+				IProject project = (IProject) receiver;
+				if (!project.getName().equals(S3.getCommunityBucketName()))
 					return true;
-				}
 				else
 					return false;
 			}
 			else
 				return false;
+
+			// if (receiver instanceof IFolder) {
+			// IFolder folder = (IFolder) receiver;
+			// if (folder.getParent() instanceof IProject && folder.getName().equalsIgnoreCase(User.username)
+			// && !folder.getParent().getName().equalsIgnoreCase(S3.getCommunityBucketName())) {
+			// return true;
+			// }
+			// else
+			// return false;
+			// }
+			// else
+			// return false;
 		}
 
 		else if (expectedValue.equals("saveForTrackingWorkflow") || expectedValue.equals("ShowVersionList")
 			|| expectedValue.equals("AddVersion") || expectedValue.equals("UpdateCommand")) {
 			if (receiver instanceof IFolder) {
 				IFolder folder = (IFolder) receiver;
-				if (folder.getParent() instanceof IFolder) {
-					IFolder parent = (IFolder) folder.getParent();
-					if (!parent.getName().equalsIgnoreCase(User.username))
-						return false;
-					if (!(parent.getParent() instanceof IProject))
-						return false;
-					if (parent.getProject().getName().equalsIgnoreCase(S3.getCommunityBucketName()))
-						return false;
+
+				if (folder.getParent() instanceof IProject
+					&& !folder.getParent().getName().equals(S3.getCommunityBucketName()))
 					return true;
-				}
 				else
 					return false;
+
+				// if (folder.getParent() instanceof IFolder) {
+				// IFolder parent = (IFolder) folder.getParent();
+				// if (!parent.getName().equalsIgnoreCase(User.username))
+				// return false;
+				// if (!(parent.getParent() instanceof IProject))
+				// return false;
+				// if (parent.getProject().getName().equalsIgnoreCase(S3.getCommunityBucketName()))
+				// return false;
+				// return true;
+				// }
+				// else
+				// return false;
 			}
 			else
 				return false;
@@ -129,7 +155,7 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 				// Enable "Delete from cloud" only if this folder is not community bucket and is an immediate child of
 				// userfolder
 				if ((!folder.getProject().getName().equals(S3.getCommunityBucketName()))
-					&& folder.getParent().getName().equalsIgnoreCase(User.username)) {
+					&& folder.getParent() instanceof IProject) {
 					// HashMap<String, String> nodeMap = PortalUtilities
 					// .getPortalWorkflowDetails(folder.getFullPath()
 					// .toString());

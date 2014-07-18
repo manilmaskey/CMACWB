@@ -242,7 +242,7 @@ public class OtherWorkflowView extends ViewPart {
 				project.create(null);
 			}
 			project.open(null);
-			IFolder folder = project.getFolder(User.username);
+			IFolder folder = project.getFolder(workflowName);
 			if (!folder.exists())
 				folder.create(true, false, null);
 			String folderPath = folder.getLocation().toString();
@@ -302,7 +302,7 @@ public class OtherWorkflowView extends ViewPart {
 					try {
 						createInNavigator(bucketName, workflow);
 						String path = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() + "/"
-							+ bucketName + "/" + User.username;
+							+ bucketName;
 						GITUtility.createLocalRepo(workflow, path);
 						refreshOtherWorkflows();
 					}
@@ -316,7 +316,7 @@ public class OtherWorkflowView extends ViewPart {
 
 					try {
 						IFolder folder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
-							.getFolder(User.username + "/" + workflow);
+							.getFolder(workflow);
 						folder.refreshLocal(IFolder.DEPTH_INFINITE, null);
 					}
 					catch (CoreException e1) {

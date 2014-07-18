@@ -3,7 +3,6 @@ package edu.uah.itsc.cmac.ui;
 import java.io.File;
 import java.util.HashMap;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -73,13 +72,13 @@ public class NavigatorView extends CommonNavigator {
 					remotePath = remotePath + S3.getCommunityBucketName() + "/";
 				remotePath = remotePath + origBucket + "/" + workflow.getCreator() + "/" + workflowName + ".git";
 
-				String localPath = project.getLocation().toString() + "/" + workflow.getCreator() + "/" + workflowName;
+				String localPath = project.getLocation().toString() + "/" + workflowName;
 				System.out.println(remotePath + "\n" + localPath);
 				File localPathDir = new File(localPath);
 				if (!localPathDir.exists()) {
 					localPathDir.mkdirs();
 					GITUtility.cloneRepository(localPath, remotePath);
-					project.getFolder(User.username).refreshLocal(IFolder.DEPTH_INFINITE, null);
+					project.refreshLocal(IProject.DEPTH_INFINITE, null);
 				}
 			}
 			catch (Exception e) {

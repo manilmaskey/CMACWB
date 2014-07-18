@@ -59,11 +59,11 @@ public class EditCommandHandler extends AbstractHandler {
 						}
 
 						S3 s3 = new S3(User.awsAccessKey, User.awsSecretKey);
-						s3.uploadFile(selectedFile);
+						// s3.uploadFile(selectedFile);
 					}
 					else if (firstElement instanceof IFolder) {
 						S3 s3 = new S3(User.awsAccessKey, User.awsSecretKey);
-						s3.uploadFolder((IFolder) firstElement);
+						// s3.uploadFolder((IFolder) firstElement);
 					}
 
 				}

@@ -129,9 +129,15 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 									GITUtility.cloneRepository(localPath, remotePath);
 									setOwnerProperty(localPath, searchResult.getCreator());
 
-									IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot()
-										.getProject(bucketName).getFolder(User.username);
-									userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+//									IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot()
+//										.getProject(bucketName).getFolder(User.username);
+//									userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+									
+									// We will have workflows under project directly now
+									IProject project = ResourcesPlugin.getWorkspace().getRoot()
+										.getProject(bucketName);
+									project.refreshLocal(IProject.DEPTH_INFINITE, null);
+									
 									Display.getDefault().asyncExec(new Runnable() {
 
 										@Override
@@ -174,7 +180,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 							project.create(null);
 						}
 						project.open(null);
-						IFolder folder = project.getFolder(User.username);
+						IFolder folder = project.getFolder(workflowName);
 						if (!folder.exists())
 							folder.create(true, false, null);
 						String folderPath = folder.getLocation().toString();
@@ -236,7 +242,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 		String bucketName = copyFromFolderPath.substring(0, fromIndex);
 		String remotePath = "amazon-s3://.jgit@" + S3.getCommunityBucketName() + "/" + copyFromFolderPath + ".git";
 		String localPath = ResourcesPlugin.getWorkspace().getRoot().getLocation() + "/" + bucketName + "/"
-			+ User.username + "/" + folderToCopy;
+			+ folderToCopy;
 		System.out.println(remotePath + "\n" + localPath);
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put("localPath", localPath);

@@ -23,7 +23,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.util.FileUtility;
 import edu.uah.itsc.cmac.util.GITUtility;
 import edu.uah.itsc.cmac.util.PropertyUtility;
@@ -81,7 +80,7 @@ public class ImportWorkflowHandler extends AbstractHandler {
 			final String bucketName = bucketFolder.getName();
 			final String remotePath = "amazon-s3://.jgit@" + copyFolderPath + ".git";
 			final String localPath = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).getLocation()
-				+ "/" + User.username + "/" + folderToCopy;
+				+ "/" + folderToCopy;
 			final String repoOwner = selectedFolder.getParent().getName();
 			System.out.println(remotePath + "\n" + localPath);
 
@@ -95,9 +94,7 @@ public class ImportWorkflowHandler extends AbstractHandler {
 						GITUtility.cloneRepository(localPath, remotePath);
 						setOwnerProperty(localPath, repoOwner);
 
-						IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
-							.getFolder(User.username);
-						userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).refreshLocal(IProject.DEPTH_INFINITE, null);
 					}
 					catch (Exception e) {
 						Display.getDefault().asyncExec(new Runnable() {

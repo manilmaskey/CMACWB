@@ -40,7 +40,6 @@ import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
-import edu.uah.itsc.cmac.ui.OtherWorkflowView;
 import edu.uah.itsc.cmac.ui.SharedWorkflowView;
 import edu.uah.itsc.cmac.util.GITUtility;
 
@@ -72,7 +71,8 @@ public class ShareCommandHandler extends AbstractHandler {
 					return null;
 				}
 				final S3 s3 = new S3();
-				final String path = selectedFolder.getFullPath().toString();
+				final String path = "/" + selectedFolder.getProject().getName() + "/" + User.username + "/"
+					+ selectedFolder.getName();
 				final Shell shell = new Shell(Display.getDefault().getActiveShell());
 				shell.setText("Workflow Settings");
 				shell.setLayout(new GridLayout(2, false));
@@ -173,8 +173,8 @@ public class ShareCommandHandler extends AbstractHandler {
 											// commit and push before sharing
 											String repoName = selectedFolder.getName();
 											String repoLocalPath = selectedFolder.getParent().getLocation().toString();
-											String repoRemotePath = REMOTE_URL + s3.getCommunityBucketName()
-												+ selectedFolder.getFullPath().toString();
+											String repoRemotePath = REMOTE_URL + S3.getCommunityBucketName()
+												+ path;
 											try {
 												GITUtility.commitLocalChanges(repoName, repoLocalPath,
 													"Commit for share", User.username, User.userEmail);

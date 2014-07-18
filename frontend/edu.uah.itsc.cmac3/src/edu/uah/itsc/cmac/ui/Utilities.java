@@ -174,7 +174,7 @@ public class Utilities {
 		if (localPath == null)
 			return;
 		File[] files = localPath.listFiles();
-		if (files.length == 0){
+		if (files == null || files.length == 0){
 			localPath.delete();
 			return;
 		}

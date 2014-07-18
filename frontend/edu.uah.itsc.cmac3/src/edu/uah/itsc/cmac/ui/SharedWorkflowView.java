@@ -204,7 +204,7 @@ public class SharedWorkflowView extends ViewPart {
 			final String remotePath = "amazon-s3://.jgit@cmac-community/" + bucketName + "/" + creator + "/"
 				+ workflowName + ".git";
 			final String localPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toString() + "/"
-				+ bucketName + "/" + User.username + "/" + workflowName;
+				+ bucketName + "/" + workflowName;
 			createInNavigator(bucketName, workflowName);
 			Job job = new Job("Importing..") {
 				@Override
@@ -213,9 +213,7 @@ public class SharedWorkflowView extends ViewPart {
 						GITUtility.cloneRepository(localPath, remotePath);
 						setOwnerProperty(localPath, creator);
 
-						IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
-							.getFolder(User.username);
-						userFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).refreshLocal(IProject.DEPTH_INFINITE, null);
 						Display.getDefault().asyncExec(new Runnable() {
 
 							@Override
@@ -271,7 +269,7 @@ public class SharedWorkflowView extends ViewPart {
 				project.create(null);
 			}
 			project.open(null);
-			IFolder folder = project.getFolder(User.username);
+			IFolder folder = project.getFolder(workflowName);
 			if (!folder.exists())
 				folder.create(true, false, null);
 			String folderPath = folder.getLocation().toString();
