@@ -98,7 +98,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 		s3.deleteFilesFromBucket(allFiles, bucketName);
 		allFiles = getAllFilesCommunity(selection);
 		System.out.println(allFiles);
-		s3.deleteFilesFromBucket(allFiles, s3.getCommunityBucketName());
+		s3.deleteFilesFromBucket(allFiles, S3.getCommunityBucketName());
 	}
 
 	private void deleteBucketFromPortal(String bucketName) {
@@ -226,7 +226,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 				String bucketName = selectedFolder.getProject().getName();
 				String path = selectedFolder.getFullPath().toString().replaceFirst(bucketName, "").replace("//", "");
 				// Since we are only dealing with git repository, add ".git" at the end
-				allFiles.addAll(s3.getAllFiles(s3.getCommunityBucketName(), bucketName + "/" + path + ".git"));
+				allFiles.addAll(s3.getAllFiles(S3.getCommunityBucketName(), bucketName + "/" + path + ".git"));
 
 			}
 		}

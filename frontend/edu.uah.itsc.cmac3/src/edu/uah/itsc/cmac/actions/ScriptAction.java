@@ -164,8 +164,8 @@ class LongRunningOperation implements IRunnableWithProgress {
 			if (isSharedRepo) {
 				repoRemotePath = repoRemotePath + "cmac-community/";
 			}
-			repoRemotePath = repoRemotePath + bucket + "/" + User.username;
-			GITUtility.pull(repoName, repoLocalPath, repoRemotePath);
+			repoRemotePath = repoRemotePath + bucket;
+			GITUtility.pull(repoName, repoLocalPath);
 			GITUtility.commitLocalChanges(repoName, repoLocalPath, "", User.username, User.userEmail);
 			GITUtility.push(repoName, repoLocalPath, repoRemotePath);
 			ExecuteCommand execCommand = new ExecuteCommand.Builder(bucket, repoName, file).shared(isSharedRepo)
@@ -177,7 +177,7 @@ class LongRunningOperation implements IRunnableWithProgress {
 			HttpResponse response = postData("http://54.208.76.40:8080/cmacBackend/services/action/execute", seData);
 			// HttpResponse response = postData("http://localhost:8080/cmacBackend/services/action/execute", seData);
 			if (response.getStatusLine().getStatusCode() == 200) {
-				GITUtility.pull(repoName, repoLocalPath, repoRemotePath + "/" + repoName + ".git");
+				GITUtility.pull(repoName, repoLocalPath);
 				folderResource.refreshLocal(IFolder.DEPTH_INFINITE, null);
 			}
 			else {

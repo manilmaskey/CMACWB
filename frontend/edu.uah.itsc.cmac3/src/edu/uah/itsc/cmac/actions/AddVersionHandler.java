@@ -79,7 +79,7 @@ public class AddVersionHandler extends AbstractHandler {
 				String repoName = selectedFolder.getName();
 				Ref ref = GITUtility.createTag(repoName, parentPath, User.username + "." + versionName, comments);
 				String project = selectedFolder.getProject().getName();
-				String repoRemotePath = REMOTE_URL + project + "/" + User.username;
+				String repoRemotePath = REMOTE_URL + project;
 				if (ref != null)
 					try {
 						GITUtility.push(repoName, parentPath, repoRemotePath);

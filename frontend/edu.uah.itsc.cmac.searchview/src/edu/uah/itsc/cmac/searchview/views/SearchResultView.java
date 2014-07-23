@@ -37,7 +37,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.uah.itsc.aws.S3;
-import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.searchview.models.SearchResult;
 import edu.uah.itsc.cmac.searchview.models.SearchResultInterface;
 import edu.uah.itsc.cmac.ui.OtherWorkflowView;

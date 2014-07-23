@@ -12,14 +12,7 @@ package edu.uah.itsc.aws;
  * Filename: S3.java Author:
  */
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -27,14 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -46,7 +32,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
 import com.amazonaws.services.identitymanagement.model.GetGroupPolicyRequest;
@@ -242,15 +227,24 @@ public class S3 {
 
 	public void shareGITFolder(IFolder folder) {
 		String sourceBucketName = folder.getProject().getName();
-//		String workflowPath = folder.getProjectRelativePath().toString().replaceFirst("^/", "");
-		String workflowPath = folder.getProject().getName() + "/" + User.username + "/" + folder.getName();
+		// String workflowPath = folder.getProjectRelativePath().toString().replaceFirst("^/", "");
+		// String workflowPath = folder.getProject().getName() + "/" + User.username + "/" + folder.getName() + ".git";
+
+		// //////
+		// /////
+		// /////
+		// copy object in S3 not working ??????
+
+		// String workflowPath = folder.getProject().getName() + "/" + User.username + "/" + folder.getName() + ".git";
+		String workflowPath = User.username + "/" + folder.getName() + ".git" + "/";
 		String destBucketName = getCommunityBucketName();
-		String prefix = folder.getFullPath().toString().replaceFirst(sourceBucketName, "").replace("//", "");
+		// String prefix = folder.getFullPath().toString().replaceFirst(sourceBucketName, "").replace("//", "");
 
 		// Move repository from private bucket to community bucket and delete repository from private bucket
 
 		copyFolderInS3(sourceBucketName, workflowPath, destBucketName, sourceBucketName);
-		deleteFilesFromBucket(getAllFiles(sourceBucketName, prefix), sourceBucketName);
+
+		deleteFilesFromBucket(getAllFiles(sourceBucketName, workflowPath), sourceBucketName);
 
 		// Modify remote reference in current local git directory
 

@@ -34,7 +34,7 @@ public class UpdateCommandHandler extends AbstractHandler {
 		final IFolder folder = (IFolder) firstElement;
 		final String parentPath = folder.getParent().getLocation().toString();
 		String remotePath = getRemotePath(folder);
-		GITUtility.pull(folder.getName(), parentPath, remotePath);
+		GITUtility.pull(folder.getName(), parentPath);
 		try {
 			folder.refreshLocal(IFolder.DEPTH_INFINITE, null);
 		}

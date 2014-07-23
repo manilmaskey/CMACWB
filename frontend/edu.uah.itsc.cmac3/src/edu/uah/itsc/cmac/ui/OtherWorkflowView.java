@@ -52,7 +52,6 @@ import org.eclipse.ui.part.ViewPart;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
-import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.util.GITUtility;
 
 /**

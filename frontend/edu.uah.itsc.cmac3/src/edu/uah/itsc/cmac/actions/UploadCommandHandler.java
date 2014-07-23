@@ -37,19 +37,18 @@ public class UploadCommandHandler extends AbstractHandler {
 						return Status.CANCEL_STATUS;
 					}
 					if (firstElement instanceof IFolder) {
-						IFolder folder = (IFolder) firstElement;
-						S3 s3 = new S3();
-						if (!folder.getParent().getName().equalsIgnoreCase(User.username)
-							|| folder.getProject().getName().equalsIgnoreCase(s3.getCommunityBucketName()))
+						IFolder selectedFolder = (IFolder) firstElement;
+						if (selectedFolder.getParent() != selectedFolder.getProject()
+							|| selectedFolder.getProject().getName().equalsIgnoreCase(S3.getCommunityBucketName()))
 							return Status.CANCEL_STATUS;
 
-						String repoName = folder.getName();
-						String repoLocalPath = folder.getParent().getLocation().toString();
-						String project = folder.getProject().getName();
-						String repoRemotePath = REMOTE_URL + project + "/" + User.username;
-
+						String repoName = selectedFolder.getName();
+						String repoLocalPath = selectedFolder.getParent().getLocation().toString();
+						String project = selectedFolder.getProject().getName();
+						String repoRemotePath = REMOTE_URL + project;
+						
 						try {
-							GITUtility.pull(repoName, repoLocalPath, repoRemotePath);
+							GITUtility.pull(repoName, repoLocalPath);
 							GITUtility.commitLocalChanges(repoName, repoLocalPath, "Commit for push", User.username,
 								User.userEmail);
 							GITUtility.push(repoName, repoLocalPath, repoRemotePath);

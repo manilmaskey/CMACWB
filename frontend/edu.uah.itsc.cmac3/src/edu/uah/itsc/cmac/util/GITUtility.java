@@ -19,6 +19,7 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.lib.Repository;
@@ -32,6 +33,7 @@ import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.transport.URIish;
 
+import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.ui.Utilities;
 
 /**
@@ -99,7 +101,6 @@ public class GITUtility {
 	}
 
 	public static void push(String repoName, String repoLocalPath, String repoRemotePath) throws Exception {
-		System.out.println("Pushing from " + repoLocalPath + " to " + repoRemotePath);
 		FileRepositoryBuilder builder = new FileRepositoryBuilder();
 		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
 		Repository repository = builder.setGitDir(localPath).findGitDir().build();
@@ -144,8 +145,7 @@ public class GITUtility {
 
 		// if there are no remote config(s) create a new remote config for amazon S3
 		if (numRefSpec <= 0) {
-			// cmac-test-experiment/shree/test_s3jgit.git
-			URIish uri = new URIish(repoRemotePath + "/" + repoName + ".git");
+			URIish uri = new URIish(repoRemotePath + "/" + User.username + "/" + repoName + ".git");
 			remoteConfig.addURI(uri);
 			remoteConfig.addFetchRefSpec(new RefSpec("+refs/heads/*:refs/remotes/" + remote + "/*"));
 			remoteConfig.addPushRefSpec(pushRefSpec);
@@ -166,11 +166,10 @@ public class GITUtility {
 		repository.close();
 	}
 
-	public static void pull(String repoName, String repoLocalPath, String repoRemotePath) {
+	public static void pull(String repoName, String repoLocalPath) {
 		if (!validRepoName(repoName))
 			return;
 		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
-		System.out.println("Pulling from " + repoRemotePath + " to " + localPath);
 		FileRepositoryBuilder builder = new FileRepositoryBuilder();
 		try {
 			Repository repository = builder.setGitDir(localPath).findGitDir().build();
@@ -222,7 +221,7 @@ public class GITUtility {
 			return null;
 		try {
 			Git git = getGit(repoName, repoLocalPath);
-			Ref tagRef = git.tag().setName(versionName).setMessage(comments).call();
+			Ref tagRef = git.tag().setName(versionName).setMessage(comments).setTagger(new PersonIdent(User.username, User.userEmail)).call();
 			git.getRepository().close();
 			git.close();
 			return tagRef;

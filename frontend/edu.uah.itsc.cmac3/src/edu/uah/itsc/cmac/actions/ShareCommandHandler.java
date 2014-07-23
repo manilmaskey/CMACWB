@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -94,20 +95,24 @@ public class ShareCommandHandler extends AbstractHandler {
 				final Text keywordText = new Text(shell, SWT.BORDER);
 				addSpanData(keywordText);
 
-				org.eclipse.swt.widgets.Button ok = new org.eclipse.swt.widgets.Button(shell, SWT.PUSH);
+				Button ok = new Button(shell, SWT.PUSH);
 				ok.setText("  OK  ");
-				org.eclipse.swt.widgets.Button cancel = new org.eclipse.swt.widgets.Button(shell, SWT.PUSH);
+				Button cancel = new Button(shell, SWT.PUSH);
 				cancel.setText("Cancel");
 				final String nodeID;
+				final boolean isShared;
 				HashMap<String, String> nodeMap = PortalUtilities.getPortalWorkflowDetails(path);
 				if (nodeMap != null) {
 					nodeID = nodeMap.get("nid");
+					isShared = Integer.parseInt(nodeMap.get("isShared")) > 0 ? true : false;
 					titleText.setText((String) nodeMap.get("title"));
 					keywordText.setText((String) nodeMap.get("keywords"));
 					descText.setText(((String) nodeMap.get("description")).replaceAll("\\<.*?\\>", ""));
 				}
-				else
+				else{
 					nodeID = null;
+					isShared = false;
+				}
 
 				ok.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent event) {
@@ -172,9 +177,12 @@ public class ShareCommandHandler extends AbstractHandler {
 
 											// commit and push before sharing
 											String repoName = selectedFolder.getName();
+											String bucketName = selectedFolder.getProject().getName();
 											String repoLocalPath = selectedFolder.getParent().getLocation().toString();
-											String repoRemotePath = REMOTE_URL + S3.getCommunityBucketName()
-												+ path;
+											String repoRemotePath = REMOTE_URL;
+											if (isShared)
+												repoRemotePath = repoRemotePath + S3.getCommunityBucketName() + "/";
+											repoRemotePath = repoRemotePath + bucketName;
 											try {
 												GITUtility.commitLocalChanges(repoName, repoLocalPath,
 													"Commit for share", User.username, User.userEmail);
