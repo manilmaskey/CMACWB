@@ -30,7 +30,7 @@ public class SaveForTrackingWorkflowHandler extends AbstractHandler {
 		final String parentPath = folder.getParent().getLocation().toString();
 		try {
 			GITUtility
-				.commitLocalChanges(folder.getName(), parentPath, "Testing commit", User.username, User.userEmail);
+				.commitLocalChanges(folder.getName(), parentPath, "Local save for workflow", User.username, User.userEmail);
 		}
 		catch (Exception e) {
 			MessageDialog.openError(Display.getDefault().getActiveShell(), "Error!!",

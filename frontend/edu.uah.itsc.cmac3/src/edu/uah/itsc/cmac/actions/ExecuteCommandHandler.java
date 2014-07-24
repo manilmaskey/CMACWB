@@ -1,7 +1,5 @@
 package edu.uah.itsc.cmac.actions;
 
-import java.io.File;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -18,8 +16,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import edu.uah.itsc.aws.User;
-import edu.uah.itsc.cmac.util.PropertyUtility;
+import edu.uah.itsc.aws.S3;
 
 public class ExecuteCommandHandler extends AbstractHandler {
 	private IStructuredSelection	selection	= StructuredSelection.EMPTY;
@@ -51,12 +48,7 @@ public class ExecuteCommandHandler extends AbstractHandler {
 				String file = selectedFile.getName();
 				System.out.println("Selected Folder:" + selectedFolder.getName());
 				// String path = selectedFolder.getFullPath().toString();
-				String workflowOwner = User.username;
-				File workflowPropertyFile = new File(selectedFolder.getLocation().toString() + "/.cmacworkflow");
-				if (workflowPropertyFile.exists()) {
-					PropertyUtility propUtil = new PropertyUtility(workflowPropertyFile.getAbsolutePath());
-					workflowOwner = propUtil.getValue("owner");
-				}
+				String workflowOwner = S3.getWorkflowOwner(selectedFolder.getLocation().toString());
 				String path = "/" + bucket + "/" + workflowOwner + "/" + selectedFolder.getName();
 
 				try {

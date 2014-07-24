@@ -5,7 +5,6 @@ package edu.uah.itsc.cmac.actions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import org.apache.http.HttpResponse;
 import org.eclipse.core.commands.AbstractHandler;
@@ -22,13 +21,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import com.amazonaws.services.s3.model.DeleteObjectsResult;
-import com.amazonaws.services.s3.model.MultiObjectDeleteException;
-import com.amazonaws.services.s3.model.MultiObjectDeleteException.DeleteError;
 
 import edu.uah.itsc.aws.S3;
+import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 
@@ -58,13 +53,38 @@ public class DeleteCommandHandler extends AbstractHandler {
 				amazonS3Service = s3.getAmazonS3Service();
 				final IStructuredSelection selection = (IStructuredSelection) HandlerUtil
 					.getCurrentSelectionChecked(event);
-				deleteFromS3(selection);
-				String bucketName = getBucketName(selection);
 				Object[] selectedObjects = selection.toArray();
 
 				for (Object selectedObject : selectedObjects) {
 					if (selectedObject instanceof IFolder) {
+						IFolder selectedFolder = (IFolder) selectedObject;
+						String path = selectedFolder.getLocation().toString();
+						String workflowOwner = S3.getWorkflowOwner(path);
+						if (!workflowOwner.equalsIgnoreCase(User.username)) {
+
+							MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+								"You can delete workflows from cloud only if you own them. This workflow '"
+									+ selectedFolder.getName() + "' is owned by '" + workflowOwner + "'");
+							if (selectedObjects.length == 1)
+								return null;
+						}
+					}
+				}
+
+				ArrayList<String> deletedFiles = deleteFromS3(selection);
+
+				if (deletedFiles == null || deletedFiles.isEmpty()) {
+					MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+						"Cannot delete the selected workflow");
+					return null;
+				}
+				String bucketName = getBucketName(selection);
+
+				for (Object selectedObject : selectedObjects) {
+					if (selectedObject instanceof IFolder) {
 						String path = ((IFolder) selectedObject).getFullPath().toString();
+						path = ((IFolder) selectedObject).getProject().getName() + "/" + User.username + "/"
+							+ ((IFolder) selectedObject).getName();
 						deleteWorkflowFromPortal(path);
 						((IFolder) selectedObject).delete(true, null);
 						((IFolder) selectedObject).getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -91,7 +111,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 	 * @param selection
 	 * @return
 	 */
-	private void deleteFromS3(final IStructuredSelection selection) {
+	private ArrayList<String> deleteFromS3(final IStructuredSelection selection) {
 		ArrayList<String> allFiles = getAllFiles(selection);
 		System.out.println(allFiles);
 		String bucketName = getBucketName(selection);
@@ -99,6 +119,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 		allFiles = getAllFilesCommunity(selection);
 		System.out.println(allFiles);
 		s3.deleteFilesFromBucket(allFiles, S3.getCommunityBucketName());
+		return allFiles;
 	}
 
 	private void deleteBucketFromPortal(String bucketName) {

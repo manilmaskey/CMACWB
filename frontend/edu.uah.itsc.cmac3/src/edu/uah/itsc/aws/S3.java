@@ -12,6 +12,7 @@ package edu.uah.itsc.aws;
  * Filename: S3.java Author:
  */
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,7 +52,9 @@ import com.amazonaws.services.s3.model.MultiObjectDeleteException.DeleteError;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
+import edu.uah.itsc.cmac.util.FileUtility;
 import edu.uah.itsc.cmac.util.GITUtility;
+import edu.uah.itsc.cmac.util.PropertyUtility;
 
 public class S3 {
 	private static Properties	properties			= null;
@@ -405,6 +408,35 @@ public class S3 {
 					deleteError.getMessage());
 			}
 		}
+	}
+
+	public static void setOwnerProperty(String localPath, String repoOwner) throws IOException {
+		String workflowPropertyFileName = localPath + "/.cmacworkflow";
+		String gitIgnoreFileName = localPath + "/.gitignore";
+		File propFile = new File(workflowPropertyFileName);
+		if (!propFile.exists())
+			propFile.createNewFile();
+
+		File gitIgnoreFile = new File(gitIgnoreFileName);
+		if (!gitIgnoreFile.exists()) {
+			gitIgnoreFile.createNewFile();
+			FileUtility.writeTextFile(gitIgnoreFileName, ".cmacworkflow");
+		}
+
+		PropertyUtility propUtil = new PropertyUtility(workflowPropertyFileName);
+		propUtil.setValue("owner", repoOwner);
+	}
+	
+	
+	public static String getWorkflowOwner(String workflowPath) {
+		String workflowOwner = User.username;
+		File workflowPropertyFile = new File(workflowPath + "/.cmacworkflow");
+		if (workflowPropertyFile.exists()) {
+			PropertyUtility propUtil = new PropertyUtility(workflowPropertyFile.getAbsolutePath());
+			workflowOwner = propUtil.getValue("owner");
+		}
+		
+		return workflowOwner;
 	}
 
 }

@@ -3,9 +3,6 @@
  */
 package edu.uah.itsc.cmac.actions;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -23,9 +20,8 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import edu.uah.itsc.cmac.util.FileUtility;
+import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.cmac.util.GITUtility;
-import edu.uah.itsc.cmac.util.PropertyUtility;
 
 /**
  * @author sshrestha
@@ -92,7 +88,7 @@ public class ImportWorkflowHandler extends AbstractHandler {
 					// ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName));
 					try {
 						GITUtility.cloneRepository(localPath, remotePath);
-						setOwnerProperty(localPath, repoOwner);
+						S3.setOwnerProperty(localPath, repoOwner);
 
 						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).refreshLocal(IProject.DEPTH_INFINITE, null);
 					}
@@ -118,23 +114,6 @@ public class ImportWorkflowHandler extends AbstractHandler {
 		}
 
 		return null;
-	}
-
-	private void setOwnerProperty(final String localPath, final String repoOwner) throws IOException {
-		String workflowPropertyFileName = localPath + "/.cmacworkflow";
-		String gitIgnoreFileName = localPath + "/.gitignore";
-		File propFile = new File(workflowPropertyFileName);
-		if (!propFile.exists())
-			propFile.createNewFile();
-
-		File gitIgnoreFile = new File(gitIgnoreFileName);
-		if (!gitIgnoreFile.exists()) {
-			gitIgnoreFile.createNewFile();
-			FileUtility.writeTextFile(gitIgnoreFileName, ".cmacworkflow");
-		}
-
-		PropertyUtility propUtil = new PropertyUtility(workflowPropertyFileName);
-		propUtil.setValue("owner", repoOwner);
 	}
 
 }

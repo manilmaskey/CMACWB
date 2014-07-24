@@ -4,7 +4,6 @@
 package edu.uah.itsc.cmac.searchview.views;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,9 +39,7 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.cmac.searchview.models.SearchResult;
 import edu.uah.itsc.cmac.searchview.models.SearchResultInterface;
 import edu.uah.itsc.cmac.ui.OtherWorkflowView;
-import edu.uah.itsc.cmac.util.FileUtility;
 import edu.uah.itsc.cmac.util.GITUtility;
-import edu.uah.itsc.cmac.util.PropertyUtility;
 
 /**
  * @author sshrestha
@@ -126,7 +123,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 							protected IStatus run(IProgressMonitor monitor) {
 								try {
 									GITUtility.cloneRepository(localPath, remotePath);
-									setOwnerProperty(localPath, searchResult.getCreator());
+									S3.setOwnerProperty(localPath, searchResult.getCreator());
 
 //									IFolder userFolder = ResourcesPlugin.getWorkspace().getRoot()
 //										.getProject(bucketName).getFolder(User.username);
@@ -202,23 +199,6 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 
 	}
 
-	private void setOwnerProperty(final String localPath, final String repoOwner) throws IOException {
-		String workflowPropertyFileName = localPath + "/.cmacworkflow";
-		String gitIgnoreFileName = localPath + "/.gitignore";
-		File propFile = new File(workflowPropertyFileName);
-		if (!propFile.exists())
-			propFile.createNewFile();
-
-		File gitIgnoreFile = new File(gitIgnoreFileName);
-		if (!gitIgnoreFile.exists()) {
-			gitIgnoreFile.createNewFile();
-			FileUtility.writeTextFile(gitIgnoreFileName, ".cmacworkflow");
-		}
-
-		PropertyUtility propUtil = new PropertyUtility(workflowPropertyFileName);
-		propUtil.setValue("owner", repoOwner);
-	}
-
 	private HashMap<String, String> getPaths(SearchResult searchResult) {
 		String copyFromFolderPath = searchResult.getFolderPath();
 		String folderToCopy = "";
@@ -282,7 +262,7 @@ public class SearchResultView extends ViewPart implements SearchResultInterface 
 					String bucketName = paths.get("bucketName");
 					try {
 						GITUtility.cloneRepository(localPath, remotePath);
-						setOwnerProperty(localPath, creator);
+						S3.setOwnerProperty(localPath, creator);
 						GITUtility.hardReset(workflow, localPath, ref.getTarget().getName());
 						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
 							.refreshLocal(IFolder.DEPTH_INFINITE, null);

@@ -3,7 +3,6 @@
  */
 package edu.uah.itsc.cmac.actions;
 
-import java.io.File;
 import java.util.HashMap;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -15,10 +14,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.uah.itsc.aws.S3;
-import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.util.GITUtility;
-import edu.uah.itsc.cmac.util.PropertyUtility;
 
 /**
  * @author sshrestha
@@ -45,16 +42,10 @@ public class UpdateCommandHandler extends AbstractHandler {
 	}
 
 	private String getRemotePath(IFolder repoFolder) {
-		String workflowOwner = User.username;
 		boolean isShared = false;
 		String remotePath = null;
 
-		File workflowPropertyFile = new File(repoFolder.getLocation().toString() + "/.cmacworkflow");
-
-		if (workflowPropertyFile.exists()) {
-			PropertyUtility propUtil = new PropertyUtility(workflowPropertyFile.getAbsolutePath());
-			workflowOwner = propUtil.getValue("owner");
-		}
+		String workflowOwner = S3.getWorkflowOwner(repoFolder.getLocation().toString());
 
 		String path = "/" + repoFolder.getProject().getName() + "/" + workflowOwner + "/" + repoFolder.getName();
 		HashMap<String, String> nodeMap = PortalUtilities.getPortalWorkflowDetails(path);
