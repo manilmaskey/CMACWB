@@ -130,6 +130,8 @@ public class PortalUtilities {
 	}
 	
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
+		path = "/" + path;
+		path = path.replaceFirst("//", "/");
 		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getWorkflowFeedURL()
 			+ "?field_is_shared=All&field_could_path_value=" + path);
 		JSONParser parser = new JSONParser();

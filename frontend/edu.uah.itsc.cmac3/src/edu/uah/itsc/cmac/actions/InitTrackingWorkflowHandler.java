@@ -8,7 +8,7 @@ import java.io.IOException;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -36,8 +36,8 @@ public class InitTrackingWorkflowHandler extends AbstractHandler {
 		IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
 		Object firstElement = selection.getFirstElement();
 
-		final IFolder folder = (IFolder) firstElement;
-		final String path = folder.getLocation().toOSString();
+		final IProject project = (IProject) firstElement;
+		final String path = project.getLocation().toOSString();
 
 		final Shell shell = new Shell();
 		shell.setText("Enter workflow name");
@@ -89,7 +89,9 @@ public class InitTrackingWorkflowHandler extends AbstractHandler {
 				shell.close();
 				
 				try {
-					folder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+					if (!project.isOpen())
+						project.open(null);
+					project.refreshLocal(IProject.DEPTH_INFINITE, null);
 				}
 				catch (CoreException e1) {
 					e1.printStackTrace();

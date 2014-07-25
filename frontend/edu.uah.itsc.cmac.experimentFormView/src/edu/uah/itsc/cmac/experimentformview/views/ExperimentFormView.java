@@ -1,22 +1,13 @@
 package edu.uah.itsc.cmac.experimentformview.views;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
 import org.apache.http.HttpResponse;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
@@ -42,9 +33,6 @@ import org.json.JSONObject;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
@@ -146,9 +134,7 @@ public class ExperimentFormView extends ViewPart {
 										message.setMessage("Invalid Status Code");
 										return Status.CANCEL_STATUS;
 									}
-									monitor.worked(50);
-									S3 adminS3 = new S3();
-									createFolderInCommunity(experiment.getTitle(), adminS3);
+									//createFolderInCommunity(experiment.getTitle(), adminS3);
 									monitor.worked(75);
 									Thread.sleep(5000);
 									// Since we are using git now, we don't need to create user's folder immediately

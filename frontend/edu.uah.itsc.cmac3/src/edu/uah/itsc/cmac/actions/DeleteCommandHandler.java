@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -26,6 +27,7 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
+import edu.uah.itsc.cmac.ui.SharedWorkflowView;
 
 /**
  * @author sshrestha
@@ -82,9 +84,10 @@ public class DeleteCommandHandler extends AbstractHandler {
 
 				for (Object selectedObject : selectedObjects) {
 					if (selectedObject instanceof IFolder) {
-						String path = ((IFolder) selectedObject).getFullPath().toString();
-						path = ((IFolder) selectedObject).getProject().getName() + "/" + User.username + "/"
-							+ ((IFolder) selectedObject).getName();
+						IFolder selectedFolder = ((IFolder) selectedObject);
+						String path = selectedFolder.getFullPath().toString();
+						path = selectedFolder.getProject().getName() + "/" + User.username + "/"
+							+ selectedFolder.getName();
 						deleteWorkflowFromPortal(path);
 						((IFolder) selectedObject).delete(true, null);
 						((IFolder) selectedObject).getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -99,6 +102,9 @@ public class DeleteCommandHandler extends AbstractHandler {
 					}
 
 				}
+				SharedWorkflowView view = (SharedWorkflowView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+					.getActivePage().findView("edu.uah.itsc.cmac.ui.SharedWorkflowView");
+				view.refreshCommunityResource();
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -116,10 +122,13 @@ public class DeleteCommandHandler extends AbstractHandler {
 		System.out.println(allFiles);
 		String bucketName = getBucketName(selection);
 		s3.deleteFilesFromBucket(allFiles, bucketName);
-		allFiles = getAllFilesCommunity(selection);
-		System.out.println(allFiles);
-		s3.deleteFilesFromBucket(allFiles, S3.getCommunityBucketName());
-		return allFiles;
+		ArrayList<String> allCommunityFiles = getAllFilesCommunity(selection);
+		System.out.println(allCommunityFiles);
+		s3.deleteFilesFromBucket(allCommunityFiles, S3.getCommunityBucketName());
+		if (allFiles != null && !allFiles.isEmpty())
+			return allFiles;
+		else
+			return allCommunityFiles;
 	}
 
 	private void deleteBucketFromPortal(String bucketName) {
@@ -152,6 +161,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 
 		String nodeID;
 		if (nodeMap != null) {
+			System.out.println(nodeMap);
 			nodeID = nodeMap.get("nid");
 		}
 		else
@@ -228,7 +238,8 @@ public class DeleteCommandHandler extends AbstractHandler {
 			if (selectedObject instanceof IFolder) {
 				IFolder selectedFolder = (IFolder) selectedObject;
 				String bucketName = selectedFolder.getProject().getName();
-				String path = selectedFolder.getFullPath().toString().replaceFirst(bucketName, "").replace("//", "");
+				String path = S3.getWorkflowOwner(selectedFolder.getLocation().toString()) + "/"
+					+ selectedFolder.getName();
 				// Since we are only dealing with git repository, add ".git" at the end
 				allFiles.addAll(s3.getAllFiles(bucketName, path + ".git"));
 
@@ -245,7 +256,8 @@ public class DeleteCommandHandler extends AbstractHandler {
 			if (selectedObject instanceof IFolder) {
 				IFolder selectedFolder = (IFolder) selectedObject;
 				String bucketName = selectedFolder.getProject().getName();
-				String path = selectedFolder.getFullPath().toString().replaceFirst(bucketName, "").replace("//", "");
+				String path = S3.getWorkflowOwner(selectedFolder.getLocation().toString()) + "/"
+					+ selectedFolder.getName();
 				// Since we are only dealing with git repository, add ".git" at the end
 				allFiles.addAll(s3.getAllFiles(S3.getCommunityBucketName(), bucketName + "/" + path + ".git"));
 
