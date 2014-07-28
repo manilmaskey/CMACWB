@@ -45,13 +45,16 @@ public class CreateAccountDialog {
 	private static Text	txt_Password2;
 	private static Text	txt_Username;
 	private static Text	txt_Email;
+	private Shell		loginShell;
 	private Display		display;
 
-	public CreateAccountDialog(Display display) {
-		this.display = display;
+	public CreateAccountDialog(Shell loginShell) {
+		this.loginShell = loginShell;
+		this.display = loginShell.getDisplay();
 	}
 
 	public void createContents() {
+		loginShell.setVisible(false);
 		// Shell must be created with style SWT.NO_TRIM
 		final Shell shell = new Shell(display, SWT.NO_TRIM | SWT.ON_TOP);
 		final FillLayout fillLayout = new FillLayout();
@@ -104,7 +107,7 @@ public class CreateAccountDialog {
 		final RowData rowData = new RowData();
 		rowData.width = 360;
 		clbl_UserLogin.setLayoutData(rowData);
-		clbl_UserLogin.setText("CMACWB Create New Account");
+		clbl_UserLogin.setText("Create New Account");
 
 		// Label for the username
 		final CLabel clbl_Username = new CLabel(cmp_Login, SWT.NONE);
@@ -230,6 +233,7 @@ public class CreateAccountDialog {
 						// }
 
 						shell.close();
+						loginShell.close();
 
 					}
 					else
@@ -245,7 +249,7 @@ public class CreateAccountDialog {
 		btn_cancel.addListener(SWT.Selection, new Listener() {
 
 			public void handleEvent(Event e) {
-
+				loginShell.setVisible(true);
 				shell.close();
 			}
 		});

@@ -13,6 +13,20 @@
             </view>
             <view allowMultiple="false" category="edu.uah.itsc.cmac" class="edu.uah.itsc.cmac.ui.NavigatorView" icon="icons/lock-16x16.png" id="edu.uah.itsc.cmac.NavigatorView" name="My Experiments">
             </view>
+            <view
+                  name="Search"
+                  icon="icons/find.png"
+                  category="edu.uah.itsc.cmac"
+                  class="edu.uah.itsc.cmac.searchview.views.SearchView"
+                  id="edu.uah.itsc.cmac.searchview.views.SearchView">
+            </view>
+            <view
+                  name="Search Results"
+                  icon="icons/pictures.png"
+                  category="edu.uah.itsc.cmac"
+                  class="edu.uah.itsc.cmac.searchview.views.SearchResultView"
+                  id="edu.uah.itsc.cmac.searchview.views.SearchResultView">
+            </view>
         </extension>
 
         <extension point="org.eclipse.ui.navigator.viewer">

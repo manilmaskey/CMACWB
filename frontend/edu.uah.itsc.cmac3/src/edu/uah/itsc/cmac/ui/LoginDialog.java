@@ -107,7 +107,7 @@ public class LoginDialog {
 		final RowData rowData = new RowData();
 		rowData.width = 280;
 		clbl_UserLogin.setLayoutData(rowData);
-		clbl_UserLogin.setText("CMACWB Login");
+		clbl_UserLogin.setText("Login");
 
 		// Label for the username
 		final CLabel clbl_Username = new CLabel(cmp_Login, SWT.NONE);
@@ -260,8 +260,7 @@ public class LoginDialog {
 		btn_createAccount.addListener(SWT.Selection, new Listener() {
 
 			public void handleEvent(Event e) {
-				shell.close();
-				CreateAccountDialog createAccountDialog = new CreateAccountDialog(display);
+				CreateAccountDialog createAccountDialog = new CreateAccountDialog(shell);
 				createAccountDialog.createContents();
 			}
 		});
@@ -277,7 +276,7 @@ public class LoginDialog {
 		// Drawing a region which will
 		// form the base of the login
 		Region region = new Region();
-		Rectangle pixel = new Rectangle(1, 1, 488, 210);
+		Rectangle pixel = new Rectangle(1, 1, 530, 210);
 		region.add(pixel);
 		shell.setRegion(region);
 

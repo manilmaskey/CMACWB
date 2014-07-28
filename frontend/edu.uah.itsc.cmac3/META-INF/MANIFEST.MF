@@ -42,8 +42,8 @@ Export-Package: edu.uah.itsc.aws,
  edu.uah.itsc.cmac.actions,
  edu.uah.itsc.cmac.model,
  edu.uah.itsc.cmac.portal,
+ edu.uah.itsc.cmac.searchview.models,
+ edu.uah.itsc.cmac.searchview.views,
  edu.uah.itsc.cmac.ui,
  edu.uah.itsc.cmac.ui.decorators,
  edu.uah.itsc.cmac.util
-Import-Package: org.json.simple,
- org.json.simple.parser

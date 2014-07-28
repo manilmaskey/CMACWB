@@ -120,7 +120,7 @@ public class SearchView extends ViewPart {
 	 * JSON should be adjusted in this method as per required.
 	 */
 
-	protected ArrayList<SearchResult> createSearchResult(String searchText) {
+	public ArrayList<SearchResult> createSearchResult(String searchText) {
 		ArrayList<SearchResult> SearchResults = new ArrayList<SearchResult>();
 
 		String jsonText;
@@ -162,7 +162,7 @@ public class SearchView extends ViewPart {
 					}
 				}
 				searchResult.setCreator(creator);
-				
+
 				Object submittorObject = jsonObject.get("field_submittor");
 				String submittor = "";
 				if (submittorObject instanceof JSONObject) {

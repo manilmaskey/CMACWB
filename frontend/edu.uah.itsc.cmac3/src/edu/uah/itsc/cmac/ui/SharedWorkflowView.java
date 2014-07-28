@@ -5,6 +5,7 @@ package edu.uah.itsc.cmac.ui;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.eclipse.core.resources.IFolder;
@@ -43,6 +44,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.osgi.framework.Bundle;
@@ -51,6 +53,9 @@ import org.osgi.framework.FrameworkUtil;
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.Workflow;
+import edu.uah.itsc.cmac.searchview.models.SearchResult;
+import edu.uah.itsc.cmac.searchview.models.SearchResultInterface;
+import edu.uah.itsc.cmac.searchview.views.SearchView;
 import edu.uah.itsc.cmac.util.GITUtility;
 
 /**
@@ -65,10 +70,12 @@ public class SharedWorkflowView extends ViewPart {
 	private static Image	userImage;
 	private static Image	refreshImage;
 	private static Image	importImage;
+	private static Image	infoImage;
 	// Session directory for shared workflows. This directory does not seem to be deleted. Need to delete it properly.
 	private static File		sessionSharedWorkflowDir;
 	private Action			refreshCommunityAction;
 	private Action			importWorkflowAction;
+	private Action			workflowInfoAction;
 
 	/*
 	 * (non-Javadoc)
@@ -95,10 +102,16 @@ public class SharedWorkflowView extends ViewPart {
 						refreshCommunityAction.setEnabled(true);
 					else
 						refreshCommunityAction.setEnabled(false);
-					if (file.list().length == 0)
+					if (file.list().length == 0) {
 						importWorkflowAction.setEnabled(true);
-					else
+						workflowInfoAction.setEnabled(true);
+
+					}
+					else {
 						importWorkflowAction.setEnabled(false);
+						workflowInfoAction.setEnabled(false);
+
+					}
 				}
 			}
 		});
@@ -106,7 +119,7 @@ public class SharedWorkflowView extends ViewPart {
 		makeActions();
 		hookContextMenu();
 		contributeToActionBars();
-		
+
 		setTitleToolTip("Experiments which contain workflows shared by the community");
 	}
 
@@ -121,6 +134,8 @@ public class SharedWorkflowView extends ViewPart {
 			refreshImage = createImage("icons/refresh-16x16.png");
 		if (importImage == null)
 			importImage = createImage("icons/import.png");
+		if (infoImage == null)
+			infoImage = createImage("icons/info.png");
 	}
 
 	private void hookContextMenu() {
@@ -144,6 +159,7 @@ public class SharedWorkflowView extends ViewPart {
 	private void fillContextMenu(IMenuManager manager) {
 		manager.add(refreshCommunityAction);
 		manager.add(importWorkflowAction);
+		manager.add(workflowInfoAction);
 		// Other plug-ins can contribute there actions here
 		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
@@ -151,6 +167,7 @@ public class SharedWorkflowView extends ViewPart {
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(refreshCommunityAction);
 		manager.add(importWorkflowAction);
+		manager.add(workflowInfoAction);
 	}
 
 	private void makeActions() {
@@ -181,9 +198,56 @@ public class SharedWorkflowView extends ViewPart {
 				return importImage.getImageData();
 			}
 		});
+
+		workflowInfoAction = new Action() {
+			public void run() {
+				showWorkflowInfo();
+			}
+		};
+		workflowInfoAction.setText("Show Info");
+		workflowInfoAction.setToolTipText("Show info of the selected workflow");
+		workflowInfoAction.setImageDescriptor(new ImageDescriptor() {
+			@Override
+			public ImageData getImageData() {
+				return infoImage.getImageData();
+			}
+		});
+
 		refreshCommunityAction.setEnabled(false);
 		importWorkflowAction.setEnabled(false);
+		workflowInfoAction.setEnabled(false);
 
+	}
+
+	private void showWorkflowInfo() {
+		System.out.println("workflowinfo");
+
+		ITreeSelection selection = (ITreeSelection) viewer.getSelection();
+		Object obj = selection.getFirstElement();
+		if (obj instanceof File) {
+			File file = (File) obj;
+			if (file.list().length > 0) {
+				showMessage("Cannot show " + file.getName(), "error");
+				return;
+			}
+			String workflowName = file.getName();
+			String creator = file.getParentFile().getName();
+			String bucketName = file.getParentFile().getParentFile().getName();
+
+			try {
+				SearchView searchView = (SearchView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+					.getActivePage().showView("edu.uah.itsc.cmac.searchview.views.SearchView");
+				ArrayList<SearchResult> searchResults = searchView.createSearchResult("/" + bucketName + "/" + creator
+					+ "/" + workflowName);
+				SearchResultInterface searchResultView = (SearchResultInterface) PlatformUI.getWorkbench()
+					.getActiveWorkbenchWindow().getActivePage()
+					.showView("edu.uah.itsc.cmac.searchview.views.SearchResultView");
+				searchResultView.accept(searchResults);
+			}
+			catch (PartInitException e1) {
+				e1.printStackTrace();
+			}
+		}
 	}
 
 	private void importWorkflow() {
@@ -211,7 +275,8 @@ public class SharedWorkflowView extends ViewPart {
 						GITUtility.cloneRepository(localPath, remotePath);
 						S3.setOwnerProperty(localPath, creator);
 
-						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName).refreshLocal(IProject.DEPTH_INFINITE, null);
+						ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
+							.refreshLocal(IProject.DEPTH_INFINITE, null);
 						Display.getDefault().asyncExec(new Runnable() {
 
 							@Override
@@ -358,7 +423,6 @@ public class SharedWorkflowView extends ViewPart {
 		return imageDcr.createImage();
 	}
 
-	
 	public void refreshCommunityResource() {
 		if (sessionSharedWorkflowDir == null)
 			sessionSharedWorkflowDir = Utilities.createTempDir("sharedWorkflowDir", false);
