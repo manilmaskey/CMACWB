@@ -71,6 +71,17 @@ public class ShareCommandHandler extends AbstractHandler {
 						"You can only share tracking workflows!");
 					return null;
 				}
+
+				if (SharedWorkflowView.isSharedWorkflowByOther(selectedFolder.getProject().getName(),
+					selectedFolder.getName())) {
+					MessageDialog
+						.openError(
+							Display.getDefault().getActiveShell(),
+							"Error",
+							"A workflow with this name is already shared in this experiment. Please choose another workflow name or another experiment");
+					return null;
+				}
+
 				final S3 s3 = new S3();
 				final String path = "/" + selectedFolder.getProject().getName() + "/" + User.username + "/"
 					+ selectedFolder.getName();
@@ -109,7 +120,7 @@ public class ShareCommandHandler extends AbstractHandler {
 					keywordText.setText((String) nodeMap.get("keywords"));
 					descText.setText(((String) nodeMap.get("description")).replaceAll("\\<.*?\\>", ""));
 				}
-				else{
+				else {
 					nodeID = null;
 					isShared = false;
 				}
@@ -212,7 +223,7 @@ public class ShareCommandHandler extends AbstractHandler {
 													+ e.toString());
 											}
 											IProject communityProject = ResourcesPlugin.getWorkspace().getRoot()
-												.getProject(s3.getCommunityBucketName());
+												.getProject(S3.getCommunityBucketName());
 											try {
 												communityProject.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 											}
