@@ -8,7 +8,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.navigator.resources.actions.NewActionProvider;
 
 import edu.uah.itsc.aws.S3;
-import edu.uah.itsc.aws.User;
 
 /**
  * Create the New actions and register then globally in the workbench using CMACEditActionProvider.
@@ -17,9 +16,9 @@ import edu.uah.itsc.aws.User;
  */
 public class CMACNewActionProvider extends NewActionProvider {
 	public void fillContextMenu(IMenuManager menu) {
-		// super.fillContextMenu(menu);
+		//super.fillContextMenu(menu);
 		menu.remove("group.port");
-		menu.remove("group.build");
+		//menu.remove("group.build");
 		menu.remove("group.reorganize");
 		menu.remove("group.properties");
 
@@ -34,13 +33,9 @@ public class CMACNewActionProvider extends NewActionProvider {
 		}
 		else if (selection.getFirstElement() instanceof IFolder) {
 			IFolder selectedFolder = (IFolder) selection.getFirstElement();
-			S3 s3 = new S3();
-			if (selectedFolder.getProject().getName().equals(s3.getCommunityBucketName()))
+			if (selectedFolder.getProject().getName().equals(S3.getCommunityBucketName()))
 				menu.remove("group.new");
 
-			if (selectedFolder.getName().equals(User.username)) {
-				// menu.remove
-			}
 		}
 	}
 }

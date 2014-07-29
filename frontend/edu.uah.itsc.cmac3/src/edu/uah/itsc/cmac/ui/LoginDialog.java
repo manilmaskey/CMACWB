@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
@@ -34,6 +37,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.json.JSONObject;
 import org.osgi.framework.Bundle;
+import org.osgi.service.prefs.BackingStoreException;
+import org.osgi.service.prefs.Preferences;
 
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.Activator;
@@ -200,8 +205,35 @@ public class LoginDialog {
 					// Shreedhan - Store password as well
 					User.password = password;
 
+					// Get preferences
+					Preferences preferences = InstanceScope.INSTANCE.getNode("edu.uah.itsc.cmac.preferences");
+					Preferences prefOwner = preferences.node("workspaceOwnerNode");
+					String owner = prefOwner.get("workspaceOwner", User.username);
+
+					// If the owner is a different user, give warning and ask user if he wants to continue
+					if (!owner.equals(username)) {
+						System.out.println("Not workspace owner");
+						boolean answer = MessageDialog.openQuestion(shell, "Workspace Conflict",
+							"This workspace is owned by '" + owner
+								+ "'. If  you continue the workspace will be merged and it might generate conflicts. "
+								+ "\nAre you sure you want to continue?");
+						if (!answer) {
+							return;
+						}
+					}
+
+					else {
+						prefOwner.put("workspaceOwner", User.username);
+						try {
+							preferences.flush();
+						}
+						catch (BackingStoreException e2) {
+							e2.printStackTrace();
+							System.out.println("Cannot flush preferences");
+						}
+					}
 					// Do not create <username>_$folder$ anymore
-					
+
 					// S3 adminS3 = new S3();
 					// ArrayList<String> allBuckets = adminS3.getAllBuckets();
 					// for (String bucket : allBuckets) {
@@ -326,5 +358,4 @@ public class LoginDialog {
 		}
 		region.dispose();
 	}
-
 }

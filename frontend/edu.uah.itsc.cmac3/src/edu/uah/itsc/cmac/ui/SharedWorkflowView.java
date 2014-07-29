@@ -441,4 +441,15 @@ public class SharedWorkflowView extends ViewPart {
 
 	}
 
+	public static boolean isSharedWorkflow(String bucket, String workflowName) {
+		if (sessionSharedWorkflowDir == null)
+			return false;
+		File workflow = new File(sessionSharedWorkflowDir.getAbsolutePath() + "/" + bucket + "/" + User.username + "/"
+			+ workflowName);
+		if (workflow.exists())
+			return true;
+		else
+			return false;
+	}
+
 }
