@@ -23,6 +23,8 @@ import java.util.Properties;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.RefSpec;
@@ -228,55 +230,18 @@ public class S3 {
 		return communityBucketName;
 	}
 
-	public void shareGITFolder(IFolder folder) {
+	public void shareGITFolder(IFolder folder) throws NoFilepatternException, GitAPIException {
 		String sourceBucketName = folder.getProject().getName();
-		// String workflowPath = folder.getProjectRelativePath().toString().replaceFirst("^/", "");
-		// String workflowPath = folder.getProject().getName() + "/" + User.username + "/" + folder.getName() + ".git";
-
-		// //////
-		// /////
-		// /////
-		// copy object in S3 not working ??????
-
-		// String workflowPath = folder.getProject().getName() + "/" + User.username + "/" + folder.getName() + ".git";
 		String workflowPath = User.username + "/" + folder.getName() + ".git" + "/";
 		String destBucketName = getCommunityBucketName();
-		// String prefix = folder.getFullPath().toString().replaceFirst(sourceBucketName, "").replace("//", "");
+
+		String newRemotePath = "amazon-s3://.jgit@" + getCommunityBucketName() + "/" + folder.getProject().getName()
+			+ "/" + User.username + "/" + folder.getName() + ".git";
+		GITUtility.modifyRemote(folder.getName(), folder.getParent().getLocation().toString(), newRemotePath);
 
 		// Move repository from private bucket to community bucket and delete repository from private bucket
-
 		copyFolderInS3(sourceBucketName, workflowPath, destBucketName, sourceBucketName);
-
-		deleteFilesFromBucket(getAllFiles(sourceBucketName, workflowPath), sourceBucketName);
-
-		// Modify remote reference in current local git directory
-
-		Git git = GITUtility.getGit(folder.getName(), folder.getParent().getLocation().toString());
-		if (git != null) {
-			Repository repository = git.getRepository();
-			// Get the config file, reset origin section with community bucket repository location
-			StoredConfig config = repository.getConfig();
-			config.unsetSection("remote", "origin");
-			String repoCompleteRemotepath = "amazon-s3://.jgit@" + getCommunityBucketName()
-				+ folder.getFullPath().toString() + ".git";
-			config.setString("remote", "origin", "url", repoCompleteRemotepath);
-
-			try {
-				RemoteConfig remoteConfig = new RemoteConfig(config, "origin");
-				remoteConfig.addFetchRefSpec(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
-				remoteConfig.addPushRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
-				remoteConfig.setTagOpt(TagOpt.FETCH_TAGS);
-				remoteConfig.update(config);
-				config.save();
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-			catch (URISyntaxException e) {
-				e.printStackTrace();
-			}
-		}
-
+		deleteFolderInS3(sourceBucketName, workflowPath);
 	}
 
 	private void copyFolderInS3(String sourceBucketName, String sourceFolder, String destBucketName, String destFolder) {
@@ -314,6 +279,11 @@ public class S3 {
 
 		}
 
+	}
+
+	private void deleteFolderInS3(String bucketName, String folderName) {
+		ArrayList<String> allFiles = getAllFiles(bucketName, folderName);
+		deleteFilesFromBucket(allFiles, bucketName);
 	}
 
 	/**
@@ -426,8 +396,7 @@ public class S3 {
 		PropertyUtility propUtil = new PropertyUtility(workflowPropertyFileName);
 		propUtil.setValue("owner", repoOwner);
 	}
-	
-	
+
 	public static String getWorkflowOwner(String workflowPath) {
 		String workflowOwner = User.username;
 		File workflowPropertyFile = new File(workflowPath + "/.cmacworkflow");
@@ -435,7 +404,7 @@ public class S3 {
 			PropertyUtility propUtil = new PropertyUtility(workflowPropertyFile.getAbsolutePath());
 			workflowOwner = propUtil.getValue("owner");
 		}
-		
+
 		return workflowOwner;
 	}
 

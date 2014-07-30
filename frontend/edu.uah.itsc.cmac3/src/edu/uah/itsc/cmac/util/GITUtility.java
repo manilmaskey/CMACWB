@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
@@ -94,8 +95,7 @@ public class GITUtility {
 		Git git = new Git(repository);
 		// git.rm().addFilepattern(".").call();
 		git.add().addFilepattern(".").call();
-		RevCommit commit = git.commit().setMessage(commitMessage).setAuthor(userName, userEmail)
-			.call();
+		RevCommit commit = git.commit().setMessage(commitMessage).setAuthor(userName, userEmail).call();
 		System.out.println("Committed changes: " + commit.getFullMessage());
 		repository.close();
 	}
@@ -175,7 +175,7 @@ public class GITUtility {
 			Repository repository = builder.setGitDir(localPath).findGitDir().build();
 			Git git = new Git(repository);
 			PullResult pullResult = git.pull().call();
-			
+
 			MergeResult mergeResult = pullResult.getMergeResult();
 
 			if (mergeResult.getMergeStatus().equals(MergeResult.MergeStatus.CONFLICTING)) {
@@ -221,7 +221,8 @@ public class GITUtility {
 			return null;
 		try {
 			Git git = getGit(repoName, repoLocalPath);
-			Ref tagRef = git.tag().setName(versionName).setMessage(comments).setTagger(new PersonIdent(User.username, User.userEmail)).call();
+			Ref tagRef = git.tag().setName(versionName).setMessage(comments)
+				.setTagger(new PersonIdent(User.username, User.userEmail)).call();
 			git.getRepository().close();
 			git.close();
 			return tagRef;
@@ -290,6 +291,33 @@ public class GITUtility {
 		DirCache cache = git.rm().addFilepattern(pattern).call();
 		git.close();
 		return cache;
+	}
+
+	public static void modifyRemote(String repoName, String repoLocalPath, String newRemotePath)
+		throws NoFilepatternException, GitAPIException {
+		Git git = getGit(repoName, repoLocalPath);
+		if (git != null) {
+			Repository repository = git.getRepository();
+			// Get the config file, reset origin section with community bucket repository location
+			StoredConfig config = repository.getConfig();
+			config.unsetSection("remote", "origin");
+			config.setString("remote", "origin", "url", newRemotePath);
+
+			try {
+				RemoteConfig remoteConfig = new RemoteConfig(config, "origin");
+				remoteConfig.addFetchRefSpec(new RefSpec("+refs/heads/*:refs/remotes/origin/*"));
+				remoteConfig.addPushRefSpec(new RefSpec("refs/heads/master:refs/heads/master"));
+				remoteConfig.setTagOpt(TagOpt.FETCH_TAGS);
+				remoteConfig.update(config);
+				config.save();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+			catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

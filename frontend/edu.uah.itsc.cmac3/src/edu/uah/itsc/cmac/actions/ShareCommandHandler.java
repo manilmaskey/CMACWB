@@ -198,13 +198,14 @@ public class ShareCommandHandler extends AbstractHandler {
 												GITUtility.commitLocalChanges(repoName, repoLocalPath,
 													"Commit for share", User.username, User.userEmail);
 												GITUtility.push(repoName, repoLocalPath, repoRemotePath);
+												s3.shareGITFolder(selectedFolder);
 											}
 											catch (Exception e) {
-												System.out.println("cannot commit before share: " + e.getMessage());
+												System.out.println("Share: " + e.getMessage());
 												e.printStackTrace();
 												return Status.CANCEL_STATUS;
 											}
-											s3.shareGITFolder(selectedFolder);
+											
 
 											try {
 												Display.getDefault().asyncExec(new Runnable() {

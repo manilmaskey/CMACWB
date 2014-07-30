@@ -457,6 +457,8 @@ public class SharedWorkflowView extends ViewPart {
 			return false;
 		File bucketDir = new File(sessionSharedWorkflowDir.getAbsolutePath() + "/" + bucket);
 		File[] userNames = bucketDir.listFiles();
+		if(userNames == null || userNames.length == 0)
+			return false;
 		for (File userName : userNames) {
 			if (userName.equals(User.username))
 				continue;
