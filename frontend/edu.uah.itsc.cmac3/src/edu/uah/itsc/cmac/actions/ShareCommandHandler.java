@@ -205,7 +205,6 @@ public class ShareCommandHandler extends AbstractHandler {
 												e.printStackTrace();
 												return Status.CANCEL_STATUS;
 											}
-											
 
 											try {
 												Display.getDefault().asyncExec(new Runnable() {

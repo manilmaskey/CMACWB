@@ -102,9 +102,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 					}
 
 				}
-				SharedWorkflowView view = (SharedWorkflowView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-					.getActivePage().findView("edu.uah.itsc.cmac.ui.SharedWorkflowView");
-				view.refreshCommunityResource();
+				SharedWorkflowView.refreshCommunityResource();
 			}
 			catch (Exception e) {
 				e.printStackTrace();

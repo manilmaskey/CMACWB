@@ -1,5 +1,7 @@
 package edu.uah.itsc.cmac.actions;
 
+import java.util.HashMap;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -17,6 +19,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
+import edu.uah.itsc.cmac.portal.PortalPost;
+import edu.uah.itsc.cmac.portal.PortalUtilities;
+import edu.uah.itsc.cmac.portal.Workflow;
 import edu.uah.itsc.cmac.util.GITUtility;
 
 public class UploadCommandHandler extends AbstractHandler {
@@ -46,12 +51,23 @@ public class UploadCommandHandler extends AbstractHandler {
 						String repoLocalPath = selectedFolder.getParent().getLocation().toString();
 						String project = selectedFolder.getProject().getName();
 						String repoRemotePath = REMOTE_URL + project;
-						
+
 						try {
 							GITUtility.pull(repoName, repoLocalPath);
 							GITUtility.commitLocalChanges(repoName, repoLocalPath, "Commit for push", User.username,
 								User.userEmail);
 							GITUtility.push(repoName, repoLocalPath, repoRemotePath);
+
+							String workflowOwner = S3.getWorkflowOwner(selectedFolder.getLocation().toString());
+							String path = "/" + project + "/" + workflowOwner + "/" + repoName;
+							HashMap<String, String> workflowMap = PortalUtilities.getPortalWorkflowDetails(path);
+							if (workflowMap == null) {
+								PortalPost portal = new PortalPost();
+								Workflow workflow = new Workflow(repoName, repoName, path, null, false);
+								workflow.setCreator(User.username);
+								workflow.setSubmittor(User.username);
+								portal.post(PortalUtilities.getNodeRestPoint(), workflow.getJSON());
+							}
 						}
 						catch (final Exception e) {
 							Display.getDefault().syncExec(new Runnable() {

@@ -4,8 +4,8 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+
 import edu.uah.itsc.aws.S3;
-import edu.uah.itsc.aws.User;
 
 public class CMACArtifactPropertyTester extends PropertyTester {
 
@@ -171,6 +171,14 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 			else
 				return false;
 
+		}
+
+		else if (expectedValue.equals("rename")) {
+			if (receiver instanceof IFolder) {
+				return true;
+			}
+			else
+				return false;
 		}
 
 		else

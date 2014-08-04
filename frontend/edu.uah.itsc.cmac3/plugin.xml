@@ -90,6 +90,8 @@
             </command>
             <command id="edu.uah.itsc.cmac.NewFile" name="New CMAC Editor">
             </command>
+            <command description="Rename" id="edu.uah.itsc.cmac.Rename" name="Rename">
+            </command>
             <command description="Refresh the resources" id="edu.uah.itsc.cmac.Refresh" name="Refresh">
             </command>
             <command description="New workflow" id="edu.uah.itsc.cmac.InitTrackingWorkflow" name="New Workflow">
@@ -130,6 +132,16 @@
                         <with variable="selection">
                             <iterate ifEmpty="false" operator="and">
                                 <test property="my.property.namespace.type" value="delete">
+                                </test>
+                            </iterate>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="edu.uah.itsc.cmac.Rename" icon="icons/rename.png" style="push">
+                    <visibleWhen>
+                        <with variable="selection">
+                            <iterate ifEmpty="false" operator="and">
+                                <test property="my.property.namespace.type" value="rename">
                                 </test>
                             </iterate>
                         </with>
@@ -312,6 +324,16 @@
                     <with variable="selection">
                         <iterate ifEmpty="false" operator="and">
                             <test property="my.property.namespace.type" value="delete">
+                            </test>
+                        </iterate>
+                    </with>
+                </enabledWhen>
+            </handler>
+            <handler class="edu.uah.itsc.cmac.actions.RenameHandler" commandId="edu.uah.itsc.cmac.Rename">
+                <enabledWhen>
+                    <with variable="selection">
+                        <iterate ifEmpty="false" operator="and">
+                            <test property="my.property.namespace.type" value="rename">
                             </test>
                         </iterate>
                     </with>

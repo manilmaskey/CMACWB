@@ -22,14 +22,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.TagOpt;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -230,6 +224,9 @@ public class S3 {
 		return communityBucketName;
 	}
 
+	public void renameGITFolder(IFolder folder, String newName) throws IOException {
+	}
+
 	public void shareGITFolder(IFolder folder) throws NoFilepatternException, GitAPIException {
 		String sourceBucketName = folder.getProject().getName();
 		String workflowPath = User.username + "/" + folder.getName() + ".git" + "/";
@@ -244,7 +241,7 @@ public class S3 {
 		deleteFolderInS3(sourceBucketName, workflowPath);
 	}
 
-	private void copyFolderInS3(String sourceBucketName, String sourceFolder, String destBucketName, String destFolder) {
+	public void copyFolderInS3(String sourceBucketName, String sourceFolder, String destBucketName, String destFolder) {
 		ListObjectsRequest lor = new ListObjectsRequest();
 		lor.setBucketName(sourceBucketName);
 		lor.setDelimiter(getDelimiter());
@@ -281,7 +278,73 @@ public class S3 {
 
 	}
 
-	private void deleteFolderInS3(String bucketName, String folderName) {
+	public void copyAllFilesInS3(String sourceBucketName, String sourceFolder, String destBucketName, String destFolder) {
+		ListObjectsRequest lor = new ListObjectsRequest();
+		lor.setBucketName(sourceBucketName);
+		lor.setDelimiter(getDelimiter());
+		lor.setPrefix(sourceFolder);
+
+		ObjectListing filteredObjects = null;
+		try {
+			filteredObjects = getService().listObjects(lor);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Exception listing filtered objects");
+			return;
+		}
+
+		List<String> commonPrefixes = filteredObjects.getCommonPrefixes();
+		for (String currentResource : commonPrefixes) {
+			System.out.println(currentResource);
+			copyAllFilesInS3(sourceBucketName, currentResource, destBucketName, destFolder + "/"
+				+ getDirFromPath(currentResource));
+		}
+		for (S3ObjectSummary objectSummary : filteredObjects.getObjectSummaries()) {
+			String currentResource = objectSummary.getKey();
+			String destResource = destFolder + "/" + currentResource.replaceFirst(sourceFolder, "");
+			CopyObjectRequest copyRequest = new CopyObjectRequest(sourceBucketName, currentResource, destBucketName,
+				destResource);
+			try {
+				amazonS3Service.copyObject(copyRequest);
+			}
+			catch (AmazonClientException ace) {
+				System.out.println("shareFile: AmazonClientException " + ace.toString());
+			}
+
+		}
+
+	}
+
+	private String getFileFromPath(String path) {
+		if (path == null)
+			return null;
+		String[] parts = path.split("/");
+		if (parts != null && parts.length > 0)
+			return parts[parts.length - 1];
+		else
+			return null;
+	}
+
+	private String getDirFromPath(String path) {
+		path = path + "/";
+		path = path.replace("//", "/");
+		if (path == null)
+			return null;
+		String[] parts = path.split("/");
+		if (parts != null && parts.length > 0) {
+			if (path.matches("/$"))
+				return parts[parts.length - 2];
+			else
+				return parts[parts.length - 1];
+
+		}
+		else
+			return null;
+
+	}
+
+	public void deleteFolderInS3(String bucketName, String folderName) {
 		ArrayList<String> allFiles = getAllFiles(bucketName, folderName);
 		deleteFilesFromBucket(allFiles, bucketName);
 	}

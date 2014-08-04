@@ -6,6 +6,8 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
+import edu.uah.itsc.aws.S3;
+import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.ui.SharedWorkflowView;
 
 public class FolderDecorator extends LabelProvider implements ILabelDecorator {
@@ -34,6 +36,8 @@ public class FolderDecorator extends LabelProvider implements ILabelDecorator {
 		boolean isShared = SharedWorkflowView.isSharedWorkflow(folder.getProject().getName(), folderName);
 		if (isShared)
 			return label + " - Shared";
+		else if (!S3.getWorkflowOwner(folder.getLocation().toString()).equalsIgnoreCase(User.username))
+			return label + " - Imported";
 		else
 			return label;
 	}

@@ -18,8 +18,8 @@ public class CMACNewActionProvider extends NewActionProvider {
 		// super.fillContextMenu(menu);
 		menu.remove("group.port");
 		// menu.remove("group.build");
-		// menu.remove("group.reorganize");
 		menu.remove("group.properties");
+		menu.remove("group.reorganize");
 
 		NavigatorView view = (NavigatorView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 			.findView("edu.uah.itsc.cmac.NavigatorView");
@@ -30,7 +30,6 @@ public class CMACNewActionProvider extends NewActionProvider {
 				menu.remove("group.new");
 		}
 		else {
-			menu.remove("group.reorganize");
 			menu.remove("group.new");
 		}
 

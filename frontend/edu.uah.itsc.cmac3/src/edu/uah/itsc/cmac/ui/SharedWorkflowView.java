@@ -64,18 +64,18 @@ import edu.uah.itsc.cmac.util.GITUtility;
  */
 public class SharedWorkflowView extends ViewPart {
 
-	private TreeViewer		viewer;
-	private static Image	sharedImage;
-	private static Image	folderImage;
-	private static Image	userImage;
-	private static Image	refreshImage;
-	private static Image	importImage;
-	private static Image	infoImage;
+	private static TreeViewer	viewer;
+	private static Image		sharedImage;
+	private static Image		folderImage;
+	private static Image		userImage;
+	private static Image		refreshImage;
+	private static Image		importImage;
+	private static Image		infoImage;
 	// Session directory for shared workflows. This directory does not seem to be deleted. Need to delete it properly.
-	private static File		sessionSharedWorkflowDir;
-	private Action			refreshCommunityAction;
-	private Action			importWorkflowAction;
-	private Action			workflowInfoAction;
+	private static File			sessionSharedWorkflowDir;
+	private Action				refreshCommunityAction;
+	private Action				importWorkflowAction;
+	private Action				workflowInfoAction;
 
 	/*
 	 * (non-Javadoc)
@@ -335,7 +335,7 @@ public class SharedWorkflowView extends ViewPart {
 			MessageDialog.openError(viewer.getControl().getShell(), "Shared Experiments", message);
 	}
 
-	private Object createSharedDirectories() {
+	private static Object createSharedDirectories() {
 		if (sessionSharedWorkflowDir == null)
 			sessionSharedWorkflowDir = Utilities.createTempDir("sharedWorkflowDir", false);
 		HashMap<String, Workflow> sharedWorkflows = Utilities.getSharedWorkflows();
@@ -423,7 +423,7 @@ public class SharedWorkflowView extends ViewPart {
 		return imageDcr.createImage();
 	}
 
-	public void refreshCommunityResource() {
+	public static void refreshCommunityResource() {
 		if (sessionSharedWorkflowDir == null)
 			sessionSharedWorkflowDir = Utilities.createTempDir("sharedWorkflowDir", false);
 		Utilities.deleteRecursive(sessionSharedWorkflowDir);
@@ -452,23 +452,23 @@ public class SharedWorkflowView extends ViewPart {
 			return false;
 	}
 
-	public static boolean isSharedWorkflowByOther(String bucket, String workflowName){
+	public static boolean isSharedWorkflowByOther(String bucket, String workflowName) {
 		if (sessionSharedWorkflowDir == null)
 			return false;
 		File bucketDir = new File(sessionSharedWorkflowDir.getAbsolutePath() + "/" + bucket);
 		File[] userNames = bucketDir.listFiles();
-		if(userNames == null || userNames.length == 0)
+		if (userNames == null || userNames.length == 0)
 			return false;
 		for (File userName : userNames) {
-			if (userName.equals(User.username))
+			if (userName.getName().equals(User.username))
 				continue;
 			File workflow = new File(userName.getAbsolutePath() + "/" + workflowName);
 			if (workflow.exists())
 				return true;
 		}
-		
+
 		return false;
-		
+
 	}
-	
+
 }
