@@ -143,7 +143,7 @@ public class ExperimentFormView extends ViewPart {
 									// }
 									buildBucketAsProject(experiment.getTitle(), new NullProgressMonitor());
 									monitor.done();
-									message.setMessage("Added Experiment Successfully");
+									message.setMessage("Experiment is created successfully");
 									Display.getDefault().asyncExec(new Runnable() {
 										public void run() {
 											message.open();
