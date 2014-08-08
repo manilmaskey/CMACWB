@@ -12,9 +12,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Properties;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -25,7 +27,9 @@ import org.json.simple.parser.ParseException;
  * 
  */
 public class PortalUtilities {
-	private static Properties	properties	= null;
+	private static Properties			properties		= null;
+	private static HashSet<PortalUser>	portalUserList	= null;
+	private static JSONParser			parser			= new JSONParser();
 
 	private PortalUtilities() {
 	}
@@ -44,11 +48,9 @@ public class PortalUtilities {
 			}
 		}
 		catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return sb.toString();
@@ -116,7 +118,7 @@ public class PortalUtilities {
 	public static String getExperimentFeedURL() {
 		return getKeyValueFromProperties("experiment_url");
 	}
-	
+
 	public static String getTokenURL() {
 		return getKeyValueFromProperties("token_url");
 	}
@@ -128,13 +130,16 @@ public class PortalUtilities {
 	public static String getPortalLoginURL() {
 		return getKeyValueFromProperties("portal_login_url");
 	}
-	
+
+	public static String getUserListURL() {
+		return getKeyValueFromProperties("user_list_url");
+	}
+
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
 		path = "/" + path;
 		path = path.replaceFirst("//", "/");
 		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getWorkflowFeedURL()
 			+ "?field_is_shared=All&field_could_path_value=" + path);
-		JSONParser parser = new JSONParser();
 		Object obj;
 		try {
 			obj = parser.parse(jsonText);
@@ -166,7 +171,6 @@ public class PortalUtilities {
 	public static HashMap<String, String> getPortalExperimentDetails(String bucketName) {
 		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getExperimentFeedURL() + "?title="
 			+ bucketName);
-		JSONParser parser = new JSONParser();
 		Object obj;
 		try {
 			obj = parser.parse(jsonText);
@@ -191,6 +195,51 @@ public class PortalUtilities {
 			e.printStackTrace();
 			System.out.println("Unable to parse json object");
 			return null;
+		}
+	}
+
+	public static HashSet<PortalUser> getUserList() {
+		if (portalUserList != null)
+			return portalUserList;
+		else {
+			try {
+				PortalPost post = new PortalPost();
+				HttpResponse response = post.get(PortalUtilities.getUserListURL());
+				String jsonText = EntityUtils.toString(response.getEntity());
+				Object obj;
+				obj = parser.parse(jsonText);
+				JSONObject users = (JSONObject) obj;
+
+				if (users == null)
+					return null;
+				JSONArray userArray = (JSONArray) users.get("users");
+				if (userArray == null || userArray.size() == 0)
+					return null;
+				int i = 0;
+				portalUserList = new HashSet<PortalUser>();
+				for (i = 0; i < userArray.size(); i++) {
+					JSONObject user = (JSONObject) userArray.get(i);
+					user = (JSONObject) user.get("user");
+					PortalUser pUser = new PortalUser((String) user.get("name"), (String) user.get("uid"),
+						(String) user.get("email"));
+					portalUserList.add(pUser);
+				}
+
+				return portalUserList;
+			}
+			catch (ParseException e) {
+				e.printStackTrace();
+				System.out.println("Unable to parse json object");
+				return null;
+			}
+			catch (IllegalStateException e) {
+				e.printStackTrace();
+				return null;
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
 		}
 	}
 

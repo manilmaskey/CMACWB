@@ -84,6 +84,8 @@
             </command>
             <command description="Share resource" id="edu.uah.itsc.cmac.Share" name="Share">
             </command>
+            <command description="Allow clone" id="edu.uah.itsc.cmac.AllowClone" name="AllowClone">
+            </command>
             <command description="Import workflow" id="edu.uah.itsc.cmac.ImportWorkflow" name="Import Workflow">
             </command>
             <command description="Delete from cloud" id="edu.uah.itsc.cmac.Delete" name="Delete from cloud">
@@ -170,6 +172,16 @@
                     </visibleWhen>
                 </command>
                 <command commandId="edu.uah.itsc.cmac.Share" style="push" icon="icons/share-16x16.png">
+                    <visibleWhen>
+                        <with variable="activeMenuSelection">
+                            <iterate>
+                                <instanceof value="org.eclipse.core.resources.IFolder">
+                                </instanceof>
+                            </iterate>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="edu.uah.itsc.cmac.AllowClone" style="push" icon="icons/share-16x16.png">
                     <visibleWhen>
                         <with variable="activeMenuSelection">
                             <iterate>
@@ -294,6 +306,16 @@
                     <with variable="selection">
                         <iterate ifEmpty="false" operator="and">
                             <test property="my.property.namespace.type" value="share">
+                            </test>
+                        </iterate>
+                    </with>
+                </enabledWhen>
+            </handler>
+            <handler class="edu.uah.itsc.cmac.actions.AllowCloneCommandHandler" commandId="edu.uah.itsc.cmac.AllowClone">
+                <enabledWhen>
+                    <with variable="selection">
+                        <iterate ifEmpty="false" operator="and">
+                            <test property="my.property.namespace.type" value="allowClone">
                             </test>
                         </iterate>
                     </with>

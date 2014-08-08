@@ -11,7 +11,8 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 
 	@Override
 	public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-		if (expectedValue.equals("upload") || expectedValue.equals("execute") || expectedValue.equals("share")) {
+		if (expectedValue.equals("upload") || expectedValue.equals("execute") || expectedValue.equals("share")
+			|| expectedValue.equals("allowClone")) {
 
 			if (receiver instanceof IProject)
 				return false;
