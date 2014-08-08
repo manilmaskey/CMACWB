@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="GLM Validation Category"
+            id="GLM_Validation_Tool">
+      </category>
+      <view
+            category="GLM_Validation_Tool"
+            class="edu.uah.itsc.glmvalidationtool.views.NavigationView"
+            icon="icons/sample.gif"
+            id="NavigationView"
+            name="Navigation View">
+      </view>
+      <view
+            category="GLM_Validation_Tool"
+            class="edu.uah.itsc.glmvalidationtool.views.DataView"
+            icon="icons/sample.gif"
+            id="DataView"
+            name="Data View">
+      </view>
+      <view
+            category="GLM_Validation_Tool"
+            class="edu.uah.itsc.glmvalidationtool.views.MetricsView"
+            icon="icons/sample.gif"
+            id="MetricsView"
+            name="Metrics View">
+      </view>
+      <view
+            category="GLM_Validation_Tool"
+            class="edu.uah.itsc.glmvalidationtool.views.TimelineView"
+            icon="icons/sample.gif"
+            id="TimelineView"
+            name="Timeline View">
+      </view>
+      <view
+            category="GLM_Validation_Tool"
+            class="edu.uah.itsc.glmvalidationtool.views.ValidationView"
+            icon="icons/sample.gif"
+            id="ValidationView"
+            name="Validation View">
+      </view>
+   </extension>
+   <!--
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <view
+               id="glm_validation_tool.views.SampleView"
+               ratio="0.5"
+               relationship="right"
+               relative="org.eclipse.ui.views.ProblemView">
+         </view>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
+   </extension>
+   -->
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="edu.uah.itsc.glmvalidationtool.views.Perspective"
+            id="edu.uah.itsc.glmvalidationtool.views.Perspective"
+            name="GLM Validation Tool">
+      </perspective>
+   </extension>
+
+</plugin>
