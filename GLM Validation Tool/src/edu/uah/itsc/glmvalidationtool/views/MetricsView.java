@@ -16,7 +16,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.logging.Level;
 
 import org.eclipse.swt.widgets.Composite;
@@ -25,12 +29,26 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.SWT;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.statistics.HistogramDataset;
+import org.jfree.data.time.Hour;
+import org.jfree.data.time.Minute;
+import org.jfree.data.time.RegularTimePeriod;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.SimpleTimePeriod;
+import org.jfree.data.time.TimePeriod;
+import org.jfree.data.time.TimePeriodValue;
+import org.jfree.data.time.TimePeriodValues;
+import org.jfree.data.time.TimePeriodValuesCollection;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesDataItem;
+import org.jfree.data.xy.IntervalXYDataset;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 import edu.uah.itsc.glmvalidationtool.config.Config;
@@ -74,6 +92,12 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	private DataFilter dataFilter = new DataFilter();
 	private Config conf = new Config();
 	private Composite parent = null;
+	private JFreeChart entlnHist;
+	private JFreeChart nldnHist;
+	private JFreeChart gld360Hist;
+	private  JFreeChart glmHist;
+	private long timeInterval;
+	private String flashesPer = "";
 
 	/**
 	 * This is a callback that will allow us
@@ -85,37 +109,26 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 		parent.setLayout(new FillLayout(SWT.VERTICAL));
 
 		// need to do the rest in a method that gets called on DataFilterUpdate.refresh
-		
-//		Composite frameComposite = new Composite(parent, SWT.EMBEDDED
-//                | SWT.NO_BACKGROUND);
-//        frameComposite.setLayout(new FillLayout());
-//        Frame frame = SWT_AWT.new_Frame(frameComposite);
-//        double [] temp = {1.0,2.0,3.0,4.0,5.0};
-        HistogramDataset hist =  new HistogramDataset();
- 
+		     
+		XYDataset entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
+		XYDataset nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
+		XYDataset gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
+		XYDataset glmDataset = readHistogram(conf.getGlmFlashRateLayer());
         
-        ArrayList <Double> arr = readHistogram(conf.getEntlnFlashRateLayer());
-        
-        
-        int index=0;
-        double [] entlnHistVal = new double [arr.size()];
-        for (Double val:arr) {
-        	entlnHistVal[index++]=val;
-        }
+//        entlnHist = createChart(entlnDataset, Color.CYAN, "ENTLN Flash Frequency" + flashesPer);
+//        nldnHist = createChart(nldnDataset, Color.BLUE, "NLDN Flash Frequency" + flashesPer);
+//        gld360Hist = createChart(gld360Dataset, Color.PINK, "GLD360 Flash Frequency" + flashesPer);
+//        glmHist = createChart(glmDataset, Color.MAGENTA, "GLM Flash Frequency" + flashesPer);
 
-        //hist.addSeries(1, temp, 5);
-        hist.addSeries(0, entlnHistVal,arr.size());
-
-                
-//        JFreeChart entlnHist = ChartFactory.createHistogram("ENTLN Flash Frequency", "xAxisLabel", "yAxisLabel", hist, PlotOrientation.VERTICAL, false, false, false);
-//        JFreeChart nldnHist = ChartFactory.createHistogram("NLDN Flash Frequency", "xAxisLabel", "yAxisLabel", hist, PlotOrientation.VERTICAL, false, false, false);
-//        JFreeChart gld360Hist = ChartFactory.createHistogram("GLD360 Flash Frequency", "xAxisLabel", "yAxisLabel", hist, PlotOrientation.VERTICAL, false, false, false);
-//        JFreeChart glmHist = ChartFactory.createHistogram("GLM Flash Frequency", "xAxisLabel", "yAxisLabel", hist, PlotOrientation.VERTICAL, false, false, false);
-        JFreeChart entlnHist = createChart(hist, Color.CYAN, "ENTLN Flash Frequency");
-        JFreeChart nldnHist = createChart(hist, Color.BLUE, "NLDN Flash Frequency");
-        JFreeChart gld360Hist = createChart(hist, Color.PINK, "GLD360 Flash Frequency");
-        JFreeChart glmHist = createChart(hist, Color.MAGENTA, "GLM Flash Frequency");
-        
+        entlnHist = createChart(entlnDataset, Color.CYAN, "");
+        nldnHist = createChart(nldnDataset, Color.BLUE, "");
+        gld360Hist = createChart(gld360Dataset, Color.PINK, "");
+        glmHist = createChart(glmDataset, Color.MAGENTA, "");
+        entlnHist.setTitle("ENTLN Flash Frequency " + flashesPer);
+        nldnHist.setTitle("NLDN Flash Frequency " + flashesPer);
+        gld360Hist.setTitle("GLD360 Flash Frequency " + flashesPer);
+        glmHist.setTitle("GLM Flash Frequency " + flashesPer);
+       
         ChartComposite chartFrame1 = new ChartComposite(parent, SWT.NONE, entlnHist, true);
         ChartComposite chartFrame2 = new ChartComposite(parent, SWT.NONE, nldnHist, true);
         ChartComposite chartFrame3 = new ChartComposite(parent, SWT.NONE, gld360Hist, true);
@@ -123,22 +136,10 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
         
        //chartFrame.setLayout(new RowLayout(SWT.VERTICAL));
         //chartFrame.setLayoutData(new RowData(512, 512));
-		
-		
 
         dataFilter.registerObject(this); // register this object with filter update interface
 // TODO need to fill in refresh method
         
-//		ArrayList<JFreeChart> charts = new ArrayList<JFreeChart>();
-//		
-//		chartFrames = new ChartComposite[charts.length];
-//		
-//		for (int i=0; i<charts.length; i++)
-//		{
-//			chartFrames[i] = new ChartComposite(shell, SWT.NONE, charts[i], true);
-//			chartFrames[i].setLayoutData(new RowData(FRAME_WIDTH, FRAME_HEIGHT));
-//		}
-//
 //		// add listeners to dispose off the chart composites upon close
 //		shell.addListener(SWT.Dispose, new Listener()
 //		{
@@ -174,205 +175,43 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 		
 	}
 
-//	public void displayHistogram(Rectangle bounds)
-//	{
-//		// bounds = canvas.getSourceImage().getBounds(); // DEBUG
-//		final int size = bounds.width * bounds.height;
-////		ImageData imageData = getTargetRegionImageData(bounds);
-//	
-//		double [] redArray = new double [size];
-//		double [] greenArray = new double [size];
-//		double [] blueArray = new double [size];
-//		
-//		// this is to track the pixel values and find out if the histogram
-//		// is being computed for a grayscale image - if so generate only 1 chart
-//		boolean similarHistograms = true;
-//		
-//		// NOTE: better not to handle RGB info manually. Get pixel value and extract RGB 
-//		// values using the palette. Refer notes in getTargetRegionImageData()
-//		RGB rgb = null;
-//		GliderObject go = ((ImageGlider)mImage).getGliderObject();
-//		NetcdfFile cdfFile = go.getNcfile();
-//		GliderChannel rChan = go.getChannels().get(mImage.getRedChan());
-//		GliderChannel gChan = go.getChannels().get(mImage.getGreenChan());
-//		GliderChannel bChan = go.getChannels().get(mImage.getBlueChan());		
-//		for (int j=0, arrayIndex=0; j<bounds.height; j++)
-//		{
-//			for (int i=0; i<bounds.width; i++)
-//			{
-//				try 
-//				{
-//					// tab 5/18/12 line and pixel indices for readScaledPixelValue method were reversed in many locations
-////					redArray[arrayIndex] = rChan.readScaledPixelValue(cdfFile, i, j);
-////					greenArray[arrayIndex] = gChan.readScaledPixelValue(cdfFile, i, j);
-////					blueArray[arrayIndex] = bChan.readScaledPixelValue(cdfFile, i, j);
-//					redArray[arrayIndex] = rChan.readScaledPixelValue(cdfFile,bounds.y+j, bounds.x+i);
-//					greenArray[arrayIndex] = gChan.readScaledPixelValue(cdfFile,bounds.y+j, bounds.x+i);
-//					blueArray[arrayIndex] = bChan.readScaledPixelValue(cdfFile,bounds.y+j, bounds.x+i);
-//				} 
-//				catch (Exception e) 
-//				{
-//					System.err.println("Error in ImageRGB::displayHistogram(Rectangle)");
-//				}
-//				
-//				if (similarHistograms 
-//						&& (blueArray[arrayIndex]!=greenArray[arrayIndex] 
-//						        || greenArray[arrayIndex]!=redArray[arrayIndex]))
-//				{
-//					similarHistograms = false;
-//				}
-//				arrayIndex++;
-//			}
-//		}
-//
-//		/*
-// 		System.err.println("Image Size : [" + imageData.width 
-//				+ "] x [" + imageData.height + "] = " 
-//				+ imageData.width*imageData.height);
-//		int redSum=0;
-//		for (int i=0; i<256; i++)
-//		{
-//			redSum += redArray[i];
-//		}
-//		System.err.println("Red Count : " + redSum);
-//		int greenSum=0;
-//		for (int i=0; i<256; i++)
-//		{
-//			greenSum += redArray[i];
-//		}
-//		System.err.println("Green Count : " + greenSum);
-//		int blueSum=0;
-//		for (int i=0; i<256; i++)
-//		{
-//			blueSum += redArray[i];
-//		}
-//		System.err.println("Blue Count : " + blueSum);
-//		*/
-//		//createDataSets(redArray, greenArray, blueArray);
-//		
-//		//TODO the dataset could be created with different min/max and num of bins
-//		// right now it is only on the scaled values from 0 to 255
-//		HistogramDataset redDataset = new HistogramDataset();
-//		HistogramDataset greenDataset = new HistogramDataset();
-//		HistogramDataset blueDataset = new HistogramDataset();
-//		if (similarHistograms) {
-//			redDataset.addSeries("Grayscale", redArray, 100, rChan.getMin(), rChan.getMax());
-//		} else {
-//			redDataset.addSeries("Red", redArray, 100, rChan.getMin(), rChan.getMax());
-//		}
-//		if (!similarHistograms) {
-//			greenDataset.addSeries("Green", greenArray, 100, gChan.getMin(), gChan.getMax());
-//			blueDataset.addSeries("Blue", blueArray, 100, bChan.getMin(), bChan.getMax());
-//		}
-//
-//		// create channel lables for the chars
-//		String redChLabel=null, greenChLabel=null, blueChLabel=null;
-//		if (mImage instanceof ImageGlider)
-//		{
-//			redChLabel = go.getChannels().get(mImage.getRedChan()).getUnits();
-//			greenChLabel = go.getChannels().get(mImage.getGreenChan()).getUnits();
-//			blueChLabel = go.getChannels().get(mImage.getBlueChan()).getUnits();
-//		}
-//
-//		// create the charts from the datasets
-//		ArrayList<JFreeChart> charts = new ArrayList<JFreeChart>();
-//		JFreeChart redChart = null;
-//		if (similarHistograms) {
-//			redChart = createChart(redDataset, Color.white, redChLabel + " in all 3 channels");
-//		} else {
-//			redChart = createChart(redDataset, Color.red, redChLabel);
-//		}
-//		charts.add(redChart);
-//		
-//		if (!similarHistograms) {
-//			JFreeChart greenChart = createChart(greenDataset, Color.green, greenChLabel);
-//			charts.add(greenChart);
-//			JFreeChart blueChart = createChart(blueDataset, Color.blue, blueChLabel);
-//			charts.add(blueChart);
-//		}
-//		
-//		RegionOfInterest roi = new RegionOfInterest(bounds);
-//		canvas.addImagePart(roi);
-//		HistogramDialog histogramDialog = new HistogramDialog(
-//				Display.getDefault().getActiveShell(), SWT.NONE);
-//		histogramDialog.open(charts.toArray(new JFreeChart[0]), roi);
-//		// this is done from the ImagePart.removePart() 
-//		// canvas.removeImagePart(roi);
-//	}
-//	
-///*
-//	private void createDataSets(int[] redArray, int[] greenArray, int[] blueArray)
-//	{
-//		HistogramDataset redDataset = new HistogramDataset();
-//		int INTERVAL = 5;
-//		int tempR=0, tempG=0, tempB=0;
-//		// row key will be 'Red' - column keys will the array indices
-//		for (int i=0; i<256; i+=INTERVAL)
-//		{
-//			tempR=0; tempG=0; tempB=0;
-//			for (int t=0; (t<INTERVAL) && (i+t<256); t++)
-//			{
-//				tempB += blueArray[i+t];
-//				tempG += greenArray[i+t];
-//				tempR += redArray[i+t];
-//			}
-//			//redDataset.addValue(tempR, "Red", String.valueOf(i+INTERVAL));
-//			//redDataset.addValue(tempG, "Green", String.valueOf(i+INTERVAL));
-//			//redDataset.addValue(tempB, "Blue", String.valueOf(i+INTERVAL));
-//		}
-//		
-//		redDataset.addSeries("Red", new double[]{1,2,3,1,2,2,2,3}, 5, 1, 5);
-//
-//		DefaultCategoryDataset greenDataset = new DefaultCategoryDataset();
-//		// row key will be 'Green' - column keys will the array indices
-//		for (int i=0; i<256; i++)
-//		{
-//			greenDataset.addValue(greenArray[i], "Green", String.valueOf(i));
-//		}
-//
-//		DefaultCategoryDataset blueDataset = new DefaultCategoryDataset();
-//		// row key will be 'Blue' - column keys will the array indices
-//		for (int i=0; i<256; i++)
-//		{
-//			blueDataset.addValue(blueArray[i], "Blue", String.valueOf(i));
-//		}
-//		
-//		JFreeChart redChart = createChart(redDataset, "RGB");
-//		
-//		HistogramView histogramView = null;
-//		try
-//		{
-//			histogramView = (HistogramView) 
-//				getPage().getWorkbenchWindow()
-//				.getActivePage().showView(
-//					HistogramView.ID, null, 
-//					IWorkbenchPage.VIEW_ACTIVATE);
-//		}
-//		catch (Exception e1)
-//		{
-//			e1.printStackTrace();
-//		}
-//		
-//		histogramView.setChart(redChart);
-//	}
-//*/
-//	
-	private ArrayList<Double> readHistogram(String layer)
+	private XYDataset readHistogram(String layer)
 	{
+        final TimePeriodValuesCollection dataset = new TimePeriodValuesCollection();
+
+        final TimePeriodValues s1 = new TimePeriodValues("Series 1");
+ //       long timeInterval = 0; // in milliseconds
 		ArrayList <Double> arr = new ArrayList<>();
 		// check start time to determine whether to group by secs, mins, hours
 		// try to limit to 300 bins for minutes, and seconds, hours is unlimited
 		String timeFormat=null;
+		String appendTime = "";
 		// within 5 minutes, use seconds
-		if ((dataFilter.getEndTimeMilli() - dataFilter.getStartTimeMilli()) < 300000)
+		if ((dataFilter.getEndTimeMilli() - dataFilter.getStartTimeMilli()) < 300000) {
 			timeFormat = "'YYYY-MM-DD HH24:MI:SS TZ'";
+			timeInterval = 1000; // second
+			flashesPer = "(/sec)";
+//			series = new TimeSeries("Time series data", Second.class);
+		}
 		// 5 hours
-		else if ((dataFilter.getEndTimeMilli() - dataFilter.getStartTimeMilli()) < 18000000) 
+		else if ((dataFilter.getEndTimeMilli() - dataFilter.getStartTimeMilli()) < 18000000) {
 			timeFormat = "'YYYY-MM-DD HH24:MI TZ'";
-		else 
+			timeInterval = 60000; // minute
+			appendTime = ":00";
+			flashesPer = "(/min)";
+//			series = new TimeSeries("Time series data", Minute.class);
+		}
+		else  {
 			timeFormat = "'YYYY-MM-DD HH24 TZ'";
+			timeInterval = 3600000;  // hour
+			appendTime = ":00:00";
+			flashesPer = "(/hr)";
+//			series = new TimeSeries("Time series data", Hour.class);
+		}
 		
 		try {
+			
+			
  //   		String url = "jdbc:postgresql://54.83.58.23/glm_vv"; 
     		 
 //			queryString = "viewparams=" + URLEncoder.encode("starttime:'"+ startDate + "';endtime:'"+ endDate + "'"+ ";minlon:"+ MinLon + ";maxlon:"+ MaxLon + ";minlat:"+ MinLat + ";maxlat:"+ MaxLat , "UTF-8");
@@ -397,7 +236,44 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	            }
 	            String [] fields = inputLine.split(",");
 	            count = Double.parseDouble(fields[2]);
+	            String binTime = fields[1].trim() + appendTime;
+	            
+	            System.out.println("binTime " + binTime);
+	            Timestamp ts = Timestamp.valueOf(binTime);
+	            
 				arr.add(count);
+//	    		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));	
+	    		Date startDate = new Date(ts.getTime());
+	    		Date endDate = new Date(ts.getTime()+timeInterval-1);
+	    		
+	    		s1.add(new SimpleTimePeriod(startDate, endDate), count);
+	                
+//	            final DateFormat df = DateFormat.getInstance();                       
+//	            try {
+//	                final Date d0 = df.parse("11/5/2003 0:00:00.000");
+//	                final Date d1 = df.parse("11/5/2003 0:15:00.000");
+//	                final Date d2 = df.parse("11/5/2003 0:30:00.000");
+//	                final Date d3 = df.parse("11/5/2003 0:45:00.000");
+//	                final Date d4 = df.parse("11/5/2003 1:00:00.001");
+//	                final Date d5 = df.parse("11/5/2003 1:14:59.999");
+//	                final Date d6 = df.parse("11/5/2003 1:30:00.000");
+//	                final Date d7 = df.parse("11/5/2003 1:45:00.000");
+//	                final Date d8 = df.parse("11/5/2003 2:00:00.000");
+//	                final Date d9 = df.parse("11/5/2003 2:15:00.000");
+//	                    
+//	                s1.add(new SimpleTimePeriod(d0, d1), 0.39);
+//	                //s1.add(new SimpleTimePeriod(d1, d2), 0.338);
+//	                s1.add(new SimpleTimePeriod(d2, d3), 0.225);
+//	                s1.add(new SimpleTimePeriod(d3, d4), 0.235);
+//	                s1.add(new SimpleTimePeriod(d4, d5), 0.238);
+//	                s1.add(new SimpleTimePeriod(d5, d6), 0.236);
+//	                s1.add(new SimpleTimePeriod(d6, d7), 0.25);
+//	                s1.add(new SimpleTimePeriod(d7, d8), 0.238);
+//	                s1.add(new SimpleTimePeriod(d8, d9), 0.215);
+//	            }
+//	            catch (Exception e) {
+//	                System.out.println(e.toString());
+//	            }
 	        }
 	        in.close();			 
 			
@@ -405,22 +281,35 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
-		return arr;
+        dataset.addSeries(s1);
+        dataset.setDomainIsPointsInTime(false);
+		return dataset;
 
 	}
-	private JFreeChart createChart(HistogramDataset histDataset, Color color, String axisLabel)
+	private JFreeChart createChart(XYDataset histDataset, Color color, String axisLabel)
 	{
-		JFreeChart chart = ChartFactory.createHistogram(
+//		JFreeChart chart = ChartFactory.createHistogram(
+//				null, // the chart title is set on the dialog's shell
+//				axisLabel, // domain axis label
+//				null, //"Frequency", // range axis label
+//				histDataset, // data
+//				PlotOrientation.VERTICAL, // orientation
+//				false, // include legend
+//				false, // tooltips?
+//				false // URLs?
+//				);
+		JFreeChart chart = ChartFactory.createXYBarChart(
 				null, // the chart title is set on the dialog's shell
 				axisLabel, // domain axis label
+				true,
 				null, //"Frequency", // range axis label
-				histDataset, // data
+				(IntervalXYDataset) histDataset, // data
 				PlotOrientation.VERTICAL, // orientation
 				false, // include legend
 				false, // tooltips?
 				false // URLs?
 				);
-
+//title, xAxisLabel, dateAxis, yAxisLabel, dataset, orientation, legend, tooltips, urls
 		XYPlot xyplot = (XYPlot) chart.getPlot();
 		xyplot.setBackgroundPaint(Color.WHITE);
 //		plot.setDomainGridlinePaint(Color.white);
@@ -430,13 +319,22 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 //		xyplot.setForegroundAlpha(0.85f);
         NumberAxis rangeaxis = (NumberAxis)xyplot.getRangeAxis();
         rangeaxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        rangeaxis.setTickLabelsVisible(false);
+        rangeaxis.setTickLabelsVisible(true);
         rangeaxis.setTickMarksVisible(true);
-        NumberAxis binaxis = (NumberAxis) xyplot.getDomainAxis();
-        binaxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        
+//        NumberAxis binaxis = (NumberAxis) xyplot.getDomainAxis();
+//        binaxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+//        binaxis.setTickLabelsVisible(true);
+//        binaxis.setTickMarksVisible(true);
+//        binaxis.setMinorTickMarksVisible(true);
+        DateAxis binaxis = (DateAxis) xyplot.getDomainAxis();
+
+        binaxis.setStandardTickUnits(binaxis.createStandardDateTickUnits(TimeZone.getTimeZone("GMT")));
         binaxis.setTickLabelsVisible(true);
         binaxis.setTickMarksVisible(true);
         binaxis.setMinorTickMarksVisible(true);
+        
+        
         XYBarRenderer xybarrenderer = (XYBarRenderer)xyplot.getRenderer();
         xybarrenderer.setDrawBarOutline(false);
         xybarrenderer.setBarPainter(new StandardXYBarPainter());
@@ -446,6 +344,8 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
         
         return chart;
 	}
+	
+// this version reads directly from database, not geoserver
 //	private ArrayList<Integer> readHistogram(String table)
 //	{
 //		ArrayList <Integer> arr = new ArrayList<>();
@@ -488,6 +388,112 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 //		return arr;
 //
 //	}
+	
+	
+
+///**
+// * This demo shows a bar chart with time based data where the time periods are slightly
+// * irregular.
+// *
+// */
+//public class TimePeriodValuesDemo3 extends ApplicationFrame {
+//
+//    /**
+//     * Creates a new demo instance.
+//     *
+//     * @param title  the frame title.
+//     */
+//    public TimePeriodValuesDemo3(final String title) {
+//
+//        super(title);
+//
+//        final XYDataset data1 = createDataset();
+//        final XYItemRenderer renderer1 = new XYBarRenderer();
+//        
+//        final DateAxis domainAxis = new DateAxis("Date");
+//        final ValueAxis rangeAxis = new NumberAxis("Value");
+//        
+//        final XYPlot plot = new XYPlot(data1, domainAxis, rangeAxis, renderer1);
+//
+//        final JFreeChart chart = new JFreeChart("Time Period Values Demo 3", plot);
+//        final ChartPanel chartPanel = new ChartPanel(chart);
+//        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+//        chartPanel.setMouseZoomable(true, false);
+//        setContentPane(chartPanel);
+//
+//    }
+
+    // ****************************************************************************
+    // * JFREECHART DEVELOPER GUIDE                                               *
+    // * The JFreeChart Developer Guide, written by David Gilbert, is available   *
+    // * to purchase from Object Refinery Limited:                                *
+    // *                                                                          *
+    // * http://www.object-refinery.com/jfreechart/guide.html                     *
+    // *                                                                          *
+    // * Sales are used to provide funding for the JFreeChart project - please    * 
+    // * support us so that we can continue developing free software.             *
+    // ****************************************************************************
+    
+    /**
+     * Creates a dataset, consisting of two series of monthly data.
+     *
+     * @return the dataset.
+     */
+//    public XYDataset createDataset() {
+//
+//        final TimePeriodValues s1 = new TimePeriodValues("Series 1");
+//        
+//        final DateFormat df = DateFormat.getInstance();
+//        try {
+//            final Date d0 = df.parse("11/5/2003 0:00:00.000");
+//            final Date d1 = df.parse("11/5/2003 0:15:00.000");
+//            final Date d2 = df.parse("11/5/2003 0:30:00.000");
+//            final Date d3 = df.parse("11/5/2003 0:45:00.000");
+//            final Date d4 = df.parse("11/5/2003 1:00:00.001");
+//            final Date d5 = df.parse("11/5/2003 1:14:59.999");
+//            final Date d6 = df.parse("11/5/2003 1:30:00.000");
+//            final Date d7 = df.parse("11/5/2003 1:45:00.000");
+//            final Date d8 = df.parse("11/5/2003 2:00:00.000");
+//            final Date d9 = df.parse("11/5/2003 2:15:00.000");
+//                
+//            s1.add(new SimpleTimePeriod(d0, d1), 0.39);
+//            //s1.add(new SimpleTimePeriod(d1, d2), 0.338);
+//            s1.add(new SimpleTimePeriod(d2, d3), 0.225);
+//            s1.add(new SimpleTimePeriod(d3, d4), 0.235);
+//            s1.add(new SimpleTimePeriod(d4, d5), 0.238);
+//            s1.add(new SimpleTimePeriod(d5, d6), 0.236);
+//            s1.add(new SimpleTimePeriod(d6, d7), 0.25);
+//            s1.add(new SimpleTimePeriod(d7, d8), 0.238);
+//            s1.add(new SimpleTimePeriod(d8, d9), 0.215);
+//        }
+//        catch (Exception e) {
+//            System.out.println(e.toString());
+//        }
+//
+//        final TimePeriodValuesCollection dataset = new TimePeriodValuesCollection();
+//        dataset.addSeries(s1);
+//        dataset.setDomainIsPointsInTime(false);
+//
+//        return dataset;
+//
+//    }
+
+//    /**
+//     * Starting point for the demonstration application.
+//     *
+//     * @param args  ignored.
+//     */
+//    public static void main(final String[] args) {
+//
+//        final TimePeriodValuesDemo3 demo = new TimePeriodValuesDemo3("Time Period Values Demo 3");
+//        demo.pack();
+//        RefineryUtilities.centerFrameOnScreen(demo);
+//        demo.setVisible(true);
+//
+//    }
+//
+//}
+
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */
@@ -498,6 +504,32 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	@Override
 	public void refresh() {
 		// TODO Auto-generated method stub
-		
+		XYDataset entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
+		XYDataset nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
+		XYDataset gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
+		XYDataset glmDataset = readHistogram(conf.getGlmFlashRateLayer());
+        
+		// reset data 
+        entlnHist.getXYPlot().setDataset(entlnDataset);
+        nldnHist.getXYPlot().setDataset(nldnDataset);
+        gld360Hist.getXYPlot().setDataset(gld360Dataset);
+        glmHist.getXYPlot().setDataset(glmDataset);
+        
+        // reset scaling of plots
+        entlnHist.getXYPlot().getDomainAxis().setAutoRange(true);
+        entlnHist.getXYPlot().getRangeAxis().setAutoRange(true);
+        nldnHist.getXYPlot().getDomainAxis().setAutoRange(true);
+        nldnHist.getXYPlot().getRangeAxis().setAutoRange(true);
+        gld360Hist.getXYPlot().getDomainAxis().setAutoRange(true);
+        gld360Hist.getXYPlot().getRangeAxis().setAutoRange(true);
+        glmHist.getXYPlot().getDomainAxis().setAutoRange(true);
+        glmHist.getXYPlot().getRangeAxis().setAutoRange(true);
+        
+        // reset titles
+        entlnHist.setTitle("ENTLN Flash Frequency " + flashesPer);
+        nldnHist.setTitle("NLDN Flash Frequency " + flashesPer);
+        gld360Hist.setTitle("GLD360 Flash Frequency " + flashesPer);
+        glmHist.setTitle("GLM Flash Frequency " + flashesPer);
+
 	}
 }
