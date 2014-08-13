@@ -33,6 +33,7 @@ import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.statistics.HistogramDataset;
@@ -115,19 +116,19 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 		XYDataset gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
 		XYDataset glmDataset = readHistogram(conf.getGlmFlashRateLayer());
         
-//        entlnHist = createChart(entlnDataset, Color.CYAN, "ENTLN Flash Frequency" + flashesPer);
-//        nldnHist = createChart(nldnDataset, Color.BLUE, "NLDN Flash Frequency" + flashesPer);
-//        gld360Hist = createChart(gld360Dataset, Color.PINK, "GLD360 Flash Frequency" + flashesPer);
-//        glmHist = createChart(glmDataset, Color.MAGENTA, "GLM Flash Frequency" + flashesPer);
+//        entlnHist = createChart(entlnDataset, Color.CYAN, "ENTLN Flash Rate" + flashesPer);
+//        nldnHist = createChart(nldnDataset, Color.BLUE, "NLDN Flash Rate" + flashesPer);
+//        gld360Hist = createChart(gld360Dataset, Color.PINK, "GLD360 Flash Rate" + flashesPer);
+//        glmHist = createChart(glmDataset, Color.MAGENTA, "GLM Flash Rate" + flashesPer);
 
         entlnHist = createChart(entlnDataset, Color.CYAN, "");
         nldnHist = createChart(nldnDataset, Color.BLUE, "");
         gld360Hist = createChart(gld360Dataset, Color.PINK, "");
         glmHist = createChart(glmDataset, Color.MAGENTA, "");
-        entlnHist.setTitle("ENTLN Flash Frequency " + flashesPer);
-        nldnHist.setTitle("NLDN Flash Frequency " + flashesPer);
-        gld360Hist.setTitle("GLD360 Flash Frequency " + flashesPer);
-        glmHist.setTitle("GLM Flash Frequency " + flashesPer);
+        entlnHist.setTitle("ENTLN Flash Rate " + flashesPer);
+        nldnHist.setTitle("NLDN Flash Rate " + flashesPer);
+        gld360Hist.setTitle("GLD360 Flash Rate " + flashesPer);
+        glmHist.setTitle("GLM Flash Rate " + flashesPer);
        
         ChartComposite chartFrame1 = new ChartComposite(parent, SWT.NONE, entlnHist, true);
         ChartComposite chartFrame2 = new ChartComposite(parent, SWT.NONE, nldnHist, true);
@@ -244,7 +245,8 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 				arr.add(count);
 //	    		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));	
 	    		Date startDate = new Date(ts.getTime());
-	    		Date endDate = new Date(ts.getTime()+timeInterval-1);
+//	    		Date endDate = new Date(ts.getTime()+timeInterval-1);
+	    		Date endDate = new Date(ts.getTime()+timeInterval);
 	    		
 	    		s1.add(new SimpleTimePeriod(startDate, endDate), count);
 	                
@@ -309,6 +311,8 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 				false, // tooltips?
 				false // URLs?
 				);
+//		XYBarRenderer renderer = (XYBarRenderer) chart.getXYPlot().getRenderer();
+//	    renderer..setItemMargin(.1);
 //title, xAxisLabel, dateAxis, yAxisLabel, dataset, orientation, legend, tooltips, urls
 		XYPlot xyplot = (XYPlot) chart.getPlot();
 		xyplot.setBackgroundPaint(Color.WHITE);
@@ -337,6 +341,7 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
         
         XYBarRenderer xybarrenderer = (XYBarRenderer)xyplot.getRenderer();
         xybarrenderer.setDrawBarOutline(false);
+        xybarrenderer.setMargin(0.1);
         xybarrenderer.setBarPainter(new StandardXYBarPainter());
         xybarrenderer.setShadowVisible(false);
         
@@ -526,10 +531,10 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
         glmHist.getXYPlot().getRangeAxis().setAutoRange(true);
         
         // reset titles
-        entlnHist.setTitle("ENTLN Flash Frequency " + flashesPer);
-        nldnHist.setTitle("NLDN Flash Frequency " + flashesPer);
-        gld360Hist.setTitle("GLD360 Flash Frequency " + flashesPer);
-        glmHist.setTitle("GLM Flash Frequency " + flashesPer);
+        entlnHist.setTitle("ENTLN Flash Rate " + flashesPer);
+        nldnHist.setTitle("NLDN Flash Rate " + flashesPer);
+        gld360Hist.setTitle("GLD360 Flash Rate " + flashesPer);
+        glmHist.setTitle("GLM Flash Rate " + flashesPer);
 
 	}
 }

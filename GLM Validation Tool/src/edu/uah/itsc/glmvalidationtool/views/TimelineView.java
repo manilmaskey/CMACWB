@@ -29,18 +29,27 @@ package edu.uah.itsc.glmvalidationtool.views;
 //import org.eclipse.nebula.widgets.ganttchart.GanttEvent;
 //import org.eclipse.nebula.widgets.datechooser.DateChooser;
 
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.nebula.widgets.cdatetime.CDT;
 import org.eclipse.nebula.widgets.cdatetime.CDateTime;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Scale;
+import org.eclipse.ui.internal.views.ViewsPlugin;
 import org.eclipse.ui.part.ViewPart;
 
 import edu.uah.itsc.glmvalidationtool.data.DataFilter;
@@ -80,6 +89,8 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 	private WWEvent wwEvent = new WWEvent();
     private Sector selectedSector = null;
 
+    Action playAction, drawBoxAction, stopAction, refreshAction, clearAction;
+
 	/**
 	 * The constructor.
 	 */
@@ -94,6 +105,8 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 	public void createPartControl(Composite parent) {
 		
 
+
+ 
 		GridLayout grid = new GridLayout();
 	    parent.setLayout(grid);
 		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
@@ -104,7 +117,8 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 	    cdtStart = new CDateTime(parent, CDT.BORDER | CDT.DROP_DOWN | CDT.CLOCK_24_HOUR | CDT.COMPACT);
 //	    cdtStart.setPattern("'Starting Time' EEEE, MMMM d '@' hh:mm:ss 'GMT'");
 	    cdtStart.setFormat(CDT.DATE_LONG | CDT.TIME_MEDIUM);
-	    cdtStart.setPattern("'Starting Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
+//	    cdtStart.setPattern("'Starting Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
+	    cdtStart.setPattern("'Start:' MM/dd/yyyy HH:mm:SS ");
 		cdtStart.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, false, false));
 		cdtStart.setSelection(cal.getTime());
 	    cdtStart.addSelectionListener(new SelectionListener() {
@@ -124,7 +138,8 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 		cal.setTimeInMillis(dataFilter.getEndTimeMilli());
 	    cdtEnd = new CDateTime(parent, CDT.BORDER | CDT.DROP_DOWN | CDT.CLOCK_24_HOUR | CDT.COMPACT);
 	    cdtEnd.setFormat(CDT.DATE_LONG | CDT.TIME_MEDIUM);
-	    cdtEnd.setPattern("'Ending Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
+//	    cdtEnd.setPattern("'Ending Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
+	    cdtEnd.setPattern("'End:' MM/dd/yyyy HH:mm:SS ");
 //	    cdtEnd.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 	    cdtEnd.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, false, false));
 	    cdtEnd.setSelection(cal.getTime());
@@ -143,60 +158,68 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 
 	    });
 	    
-	    final Button buttonDraw = new Button(parent, SWT.PUSH);
-	    buttonDraw.setText("Draw Bounding Box");
-	    buttonDraw.setToolTipText("Press this button then press and drag button 1 on globe");
-	    buttonDraw.addSelectionListener(new SelectionListener() {
-
-		      public void widgetSelected(SelectionEvent event) {
-		    	  wwEvent.enableSelectors();
-		    	  selectedSector = null;
-		      }
-
-		      public void widgetDefaultSelected(SelectionEvent event) {
-		    	  wwEvent.enableSelectors();
-		    	  selectedSector = null;
-		      }
-		    });
-
-	    final Button buttonDrawCancel = new Button(parent, SWT.PUSH);
-	    buttonDrawCancel.setText("Cancel Drawn Box");
-	    buttonDrawCancel.addSelectionListener(new SelectionListener() {
-
-		      public void widgetSelected(SelectionEvent event) {
-		    	  wwEvent.disableSelectors();
-		      }
-
-		      public void widgetDefaultSelected(SelectionEvent event) {
-		    	  wwEvent.disableSelectors();
-		      }
-		    });
+//	    final Button buttonDraw = new Button(parent, SWT.PUSH);
+//	    buttonDraw.setText("Draw Bounding Box");
+//	    buttonDraw.setToolTipText("Press this button then press and drag button 1 on globe");
+//	    buttonDraw.addSelectionListener(new SelectionListener() {
+//
+//		      public void widgetSelected(SelectionEvent event) {
+//		    	  wwEvent.enableSelectors();
+//		    	  selectedSector = null;
+//		      }
+//
+//		      public void widgetDefaultSelected(SelectionEvent event) {
+//		    	  wwEvent.enableSelectors();
+//		    	  selectedSector = null;
+//		      }
+//		    });
+//
+//	    final Button buttonDrawCancel = new Button(parent, SWT.PUSH);
+//	    buttonDrawCancel.setText("Cancel Drawn Box");
+//	    buttonDrawCancel.addSelectionListener(new SelectionListener() {
+//
+//		      public void widgetSelected(SelectionEvent event) {
+//		    	  wwEvent.disableSelectors();
+//		      }
+//
+//		      public void widgetDefaultSelected(SelectionEvent event) {
+//		    	  wwEvent.disableSelectors();
+//		      }
+//		    });
+//	    
+//	    
+//	    final Button buttonApply = new Button(parent, SWT.PUSH);
+//	    buttonApply.setText("Apply Changes");
+//
+//	    buttonApply.addSelectionListener(new SelectionListener() {
+//
+//	      public void widgetSelected(SelectionEvent event) {
+//	    	if (selectedSector!=null) {	    		
+//	      	  	dataFilter.setBoundingBox(selectedSector.getMinLongitude().degrees, selectedSector.getMaxLongitude().degrees, selectedSector.getMinLatitude().degrees, selectedSector.getMaxLatitude().degrees);
+//	    		selectedSector=null;
+//		    	wwEvent.disableSelectors();
+//	    	}
+//	        dataFilter.refreshObjects();
+//	      }
+//
+//	      public void widgetDefaultSelected(SelectionEvent event) {
+//		    	if (selectedSector!=null) {	    		
+//		      	  	dataFilter.setBoundingBox(selectedSector.getMinLongitude().degrees, selectedSector.getMaxLongitude().degrees, selectedSector.getMinLatitude().degrees, selectedSector.getMaxLatitude().degrees);
+//		    		selectedSector=null;
+//			    	wwEvent.disableSelectors();
+//		    	}
+//		        dataFilter.refreshObjects();
+//		  }
+//
+//	    });
+	    Scale scale = new Scale (parent, SWT.BORDER);
+		Rectangle clientArea = parent.getClientArea ();
+		scale.setBounds (clientArea.x, clientArea.y, 200, 64);
+		scale.setMaximum (40);
+		scale.setPageIncrement (5);
 	    
-	    
-	    final Button buttonApply = new Button(parent, SWT.PUSH);
-	    buttonApply.setText("Apply Changes");
-
-	    buttonApply.addSelectionListener(new SelectionListener() {
-
-	      public void widgetSelected(SelectionEvent event) {
-	    	if (selectedSector!=null) {	    		
-	      	  	dataFilter.setBoundingBox(selectedSector.getMinLongitude().degrees, selectedSector.getMaxLongitude().degrees, selectedSector.getMinLatitude().degrees, selectedSector.getMaxLatitude().degrees);
-	    		selectedSector=null;
-		    	wwEvent.disableSelectors();
-	    	}
-	        dataFilter.refreshObjects();
-	      }
-
-	      public void widgetDefaultSelected(SelectionEvent event) {
-		    	if (selectedSector!=null) {	    		
-		      	  	dataFilter.setBoundingBox(selectedSector.getMinLongitude().degrees, selectedSector.getMaxLongitude().degrees, selectedSector.getMinLatitude().degrees, selectedSector.getMaxLatitude().degrees);
-		    		selectedSector=null;
-			    	wwEvent.disableSelectors();
-		    	}
-		        dataFilter.refreshObjects();
-		  }
-
-	    });
+	    createActions();
+	    createToolbar();
 	 
 		
 //	    cal = new DateChooser(parent, SWT.BORDER | SWT.MULTI);
@@ -246,7 +269,105 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 //		new GanttEvent(ganttChart, null, "Event_2", start, end, start, end, 0);
 	}
 
+    public void createActions() {
+           playAction = new Action("Start Animation") {
+                public void run() { 
+                           StartAnimation();
+                   }
+           };
+           playAction.setImageDescriptor(getImageDescriptor("nav_go.gif"));
 
+           stopAction = new Action("Stop Animation") {
+                   public void run() {
+                           StopAnimation();
+                   }
+           };
+           stopAction.setImageDescriptor(getImageDescriptor("suspend_co.gif"));
+
+           drawBoxAction = new Action("Draw Bounding Box") {
+                   public void run() {
+                           DrawBox();
+                   }
+           };
+ //          drawBoxAction.setImageDescriptor(getImageDescriptor("rectangle.jpg"));
+           drawBoxAction.setImageDescriptor(getImageDescriptor("draw-rectangle.png"));
+
+           clearAction = new Action("Clear Drawn Bounding Box") {
+               public void run() {
+                       ClearBox();
+               }
+           };
+//          drawBoxAction.setImageDescriptor(getImageDescriptor("rectangle.jpg"));
+           clearAction.setImageDescriptor(getImageDescriptor("delete_edit.gif"));
+
+           
+           refreshAction = new Action("Refresh display using current time and bounding box") {
+               public void run() {
+                       DrawCurrent();
+               }
+           };
+           refreshAction.setImageDescriptor(getImageDescriptor("nav_refresh.gif"));
+           
+   }
+    private void StartAnimation()
+    {
+    	
+    }
+    private void StopAnimation()
+    {
+    	
+    }
+    private void DrawBox()
+    {
+  	  wwEvent.enableSelectors();
+  	  selectedSector = null;    	
+    }
+    private void ClearBox()
+    {
+    	wwEvent.disableSelectors();	
+    }
+    private void DrawCurrent()
+    {
+    	if (selectedSector!=null) {	    		
+      	  	dataFilter.setBoundingBox(selectedSector.getMinLongitude().degrees, selectedSector.getMaxLongitude().degrees, selectedSector.getMinLatitude().degrees, selectedSector.getMaxLatitude().degrees);
+    		selectedSector=null;
+	    	wwEvent.disableSelectors();
+    	}
+        dataFilter.refreshObjects();
+    }
+    /**
+     * Create toolbar.
+     */
+    private void createToolbar() {
+            IToolBarManager mgr = getViewSite().getActionBars().getToolBarManager();
+            mgr.add(playAction);
+            mgr.add(stopAction);
+            mgr.add(drawBoxAction);
+            mgr.add(clearAction);
+            mgr.add(refreshAction);
+    }
+
+ 
+  /**
+     * Returns the image descriptor with the given relative path.
+     */
+    private ImageDescriptor getImageDescriptor(String relativePath) {
+            String iconPath = "icons/";
+//            try {
+            	return ImageDescriptor.createFromFile(this.getClass(), "/icons/"+relativePath);
+//            	InputStream input = getClass().getResourceAsStream("/icons/histogram-16x16.gif");  
+//            	input.
+//            	ViewsPlugin plugin = ViewsPlugin.getDefault();
+//                URL installURL = plugin..getDescriptor().getInstallURL();
+//                URL url = new URL(installURL, iconPath + relativePath);
+//                return ImageDescriptor..createFromURL(url);             
+//            }
+//            catch (MalformedURLException e) {
+//                    // should not happen
+//                    return ImageDescriptor.getMissingImageDescriptor();
+//            }
+    }
+	
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */

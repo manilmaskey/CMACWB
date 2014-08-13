@@ -7,8 +7,9 @@ import java.util.ArrayList;
 public class DataFilter {
 	
 	private static double MinLon =-180.0, MaxLon=180.0, MinLat=-90.0, MaxLat=90.0;
-	private static long StartMilli, EndMilli, IncrementMilli;
+	private static long StartMilli, EndMilli;
 	private static ArrayList<Object> updateObjects = new ArrayList<>();
+	private static long TimeIntervalStart, TimeIntervalEnd, TimeIntervalIncrement;
 	
 	public DataFilter()
 	{
@@ -63,11 +64,6 @@ public class DataFilter {
 		EndMilli = millisecs;
 		
 	}
-	public void setTimeIncrement(long millisecs)
-	{
-		IncrementMilli = millisecs;
-		
-	}
 	public void setStartTime(int year, int month, int day, int hour, int minute, int second, int milli) 
 	{
 		StartMilli = DataUtil.dateToMilliseconds(year, month, day, hour, minute, second, milli);
@@ -85,10 +81,6 @@ public class DataFilter {
 	public long getEndTimeMilli()
 	{
 		return EndMilli;
-	}
-	public long getIncrementMilli()
-	{
-		return IncrementMilli;
 	}
 	public String getCqlString()
 	{
@@ -169,6 +161,24 @@ public class DataFilter {
 			return null;
 		}
 		return queryString;
+	}
+	public static long getTimeIntervalStart() {
+		return TimeIntervalStart;
+	}
+	public static void setTimeIntervalStart(long timeIntervalStart) {
+		TimeIntervalStart = timeIntervalStart;
+	}
+	public static long getTimeIntervalEnd() {
+		return TimeIntervalEnd;
+	}
+	public static void setTimeIntervalEnd(long timeIntervalEnd) {
+		TimeIntervalEnd = timeIntervalEnd;
+	}
+	public static long getTimeIntervalIncrement() {
+		return TimeIntervalIncrement;
+	}
+	public static void setTimeIntervalIncrement(long timeIntervalIncrement) {
+		TimeIntervalIncrement = timeIntervalIncrement;
 	}
 	
 	// BBOX(the_geom, -90, 40, -60, 45)

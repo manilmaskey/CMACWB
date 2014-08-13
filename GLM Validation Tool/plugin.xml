@@ -13,35 +13,35 @@
             class="edu.uah.itsc.glmvalidationtool.views.NavigationView"
             icon="icons/sample.gif"
             id="NavigationView"
-            name="Navigation View">
+            name="Project">
       </view>
       <view
             category="GLM_Validation_Tool"
             class="edu.uah.itsc.glmvalidationtool.views.DataView"
             icon="icons/sample.gif"
             id="DataView"
-            name="Data View">
+            name="Lightning Data View">
       </view>
       <view
             category="GLM_Validation_Tool"
             class="edu.uah.itsc.glmvalidationtool.views.MetricsView"
             icon="icons/sample.gif"
             id="MetricsView"
-            name="Metrics View">
+            name="Flash Rate View">
       </view>
       <view
             category="GLM_Validation_Tool"
             class="edu.uah.itsc.glmvalidationtool.views.TimelineView"
             icon="icons/sample.gif"
             id="TimelineView"
-            name="Timeline View">
+            name="Animation Controls">
       </view>
       <view
             category="GLM_Validation_Tool"
             class="edu.uah.itsc.glmvalidationtool.views.ValidationView"
             icon="icons/sample.gif"
             id="ValidationView"
-            name="Validation View">
+            name="GLM Coincidence View">
       </view>
    </extension>
    <!--
