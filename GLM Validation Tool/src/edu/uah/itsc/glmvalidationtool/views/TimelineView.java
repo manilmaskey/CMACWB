@@ -29,10 +29,18 @@ package edu.uah.itsc.glmvalidationtool.views;
 //import org.eclipse.nebula.widgets.ganttchart.GanttEvent;
 //import org.eclipse.nebula.widgets.datechooser.DateChooser;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 
 import org.eclipse.jface.action.Action;
@@ -44,14 +52,19 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Scale;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.internal.views.ViewsPlugin;
 import org.eclipse.ui.part.ViewPart;
+import org.jfree.data.time.SimpleTimePeriod;
 
+import edu.uah.itsc.glmvalidationtool.config.Config;
 import edu.uah.itsc.glmvalidationtool.data.DataFilter;
 import edu.uah.itsc.glmvalidationtool.data.DataFilterUpdate;
 import gov.nasa.worldwind.geom.Sector;
@@ -84,10 +97,15 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 //	static DateChooser cal;
 //	static List selectedDates;
 //	static DateFormat df;
-	private CDateTime cdtStart, cdtEnd;
+	private CDateTime cdtCurrent, cdtDisplayInterval;
+	private CDateTime cdtAnimationStart, cdtAnimationEnd;
 	private DataFilter dataFilter = new DataFilter();
 	private WWEvent wwEvent = new WWEvent();
     private Sector selectedSector = null;
+    private Config conf = new Config();
+    
+    private Text timeRangeText;
+    private Scale scale;
 
     Action playAction, drawBoxAction, stopAction, refreshAction, clearAction;
 
@@ -107,56 +125,190 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 
 
  
-		GridLayout grid = new GridLayout();
-	    parent.setLayout(grid);
+//		GridLayout grid = new GridLayout();
+//		parent.setLayout(grid);
+
+		parent.setLayout(new FillLayout(SWT.VERTICAL));
+
 		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-		cal.setTimeInMillis(dataFilter.getStartTimeMilli());
+		
 		dataFilter.registerObject(this);
 
-	    
-	    cdtStart = new CDateTime(parent, CDT.BORDER | CDT.DROP_DOWN | CDT.CLOCK_24_HOUR | CDT.COMPACT);
-//	    cdtStart.setPattern("'Starting Time' EEEE, MMMM d '@' hh:mm:ss 'GMT'");
-	    cdtStart.setFormat(CDT.DATE_LONG | CDT.TIME_MEDIUM);
-//	    cdtStart.setPattern("'Starting Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
-	    cdtStart.setPattern("'Start:' MM/dd/yyyy HH:mm:SS ");
-		cdtStart.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, false, false));
-		cdtStart.setSelection(cal.getTime());
-	    cdtStart.addSelectionListener(new SelectionListener() {
+		refreshTimeRange();
+			
+		Group dateAnimationGroup = new Group(parent, SWT.SHADOW_NONE);
+		dateAnimationGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		
+		// need to make this configurable
+		cal.setTimeInMillis(dataFilter.getDataEndTimeMilli()-1000*60*5); // last 5 minutes
+	    cdtAnimationStart = new CDateTime(dateAnimationGroup, CDT.BORDER | CDT.DROP_DOWN | CDT.CLOCK_24_HOUR | CDT.COMPACT);
+//	    cdtAnimationStart.setPattern("'Starting Time' EEEE, MMMM d '@' hh:mm:ss 'GMT'");
+	    cdtAnimationStart.setFormat(CDT.DATE_LONG | CDT.TIME_MEDIUM);
+//	    cdtAnimationStart.setPattern("'Starting Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
+	    cdtAnimationStart.setPattern("'Start Time:' MM/dd/yyyy HH:mm:ss ");
+//		cdtAnimationStart.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, false, false));
+		cdtAnimationStart.setSelection(cal.getTime());
+	    cdtAnimationStart.addSelectionListener(new SelectionListener() {
+	    	@Override
+			public void widgetDefaultSelected(SelectionEvent event) {
+			System.out.println("Start time: " + cdtAnimationStart.getSelection());
+			if ((cdtAnimationStart.getSelection().getTime()<dataFilter.getDataStartTimeMilli()))
+				cdtAnimationStart.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
+			if ((cdtAnimationStart.getSelection().getTime()>dataFilter.getDataEndTimeMilli()))
+				cdtAnimationStart.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
+			if (cdtAnimationStart.getSelection().getTime()>=cdtAnimationEnd.getSelection().getTime())
+				cdtAnimationStart.setSelection(new Date (cdtAnimationEnd.getSelection().getTime()-dataFilter.getDisplayIntervalMilli()));
+			if (cdtCurrent.getSelection().getTime()<cdtAnimationStart.getSelection().getTime())
+				cdtCurrent.setSelection(cdtAnimationStart.getSelection());			
+			scale.setMaximum ((int)(cdtAnimationEnd.getSelection().getTime() - cdtAnimationStart.getSelection().getTime()));
+			scale.setPageIncrement ((int)dataFilter.getDisplayIntervalMilli());
+			scale.setSelection((int)(cdtCurrent.getSelection().getTime()-cdtAnimationStart.getSelection().getTime()));
+	    	}
+
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				System.out.println("Start time: " + cdtAnimationStart.getSelection());
+				if ((cdtAnimationStart.getSelection().getTime()<dataFilter.getDataStartTimeMilli()))
+					cdtAnimationStart.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
+				if ((cdtAnimationStart.getSelection().getTime()>dataFilter.getDataEndTimeMilli()))
+					cdtAnimationStart.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
+				if (cdtAnimationStart.getSelection().getTime()>=cdtAnimationEnd.getSelection().getTime())
+					cdtAnimationStart.setSelection(new Date (cdtAnimationEnd.getSelection().getTime()-dataFilter.getDisplayIntervalMilli()));
+				if (cdtCurrent.getSelection().getTime()<cdtAnimationStart.getSelection().getTime())
+					cdtCurrent.setSelection(cdtAnimationStart.getSelection());
+				scale.setMaximum ((int)(cdtAnimationEnd.getSelection().getTime() - cdtAnimationStart.getSelection().getTime()));
+				scale.setPageIncrement ((int)dataFilter.getDisplayIntervalMilli());
+				scale.setSelection((int)(cdtCurrent.getSelection().getTime()-cdtAnimationStart.getSelection().getTime()));
+			}
+	    });
+	    cal.setTimeInMillis(dataFilter.getDataEndTimeMilli());
+	    cdtAnimationEnd = new CDateTime(dateAnimationGroup, CDT.BORDER | CDT.DROP_DOWN | CDT.CLOCK_24_HOUR | CDT.COMPACT);
+//	    cdtAnimationEnd.setPattern("'Starting Time' EEEE, MMMM d '@' hh:mm:ss 'GMT'");
+	    cdtAnimationEnd.setFormat(CDT.DATE_LONG | CDT.TIME_MEDIUM);
+//	    cdtAnimationEnd.setPattern("'Starting Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
+	    cdtAnimationEnd.setPattern("'End Time:' MM/dd/yyyy HH:mm:ss ");
+//		cdtAnimationEnd.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, false, false));
+		cdtAnimationEnd.setSelection(cal.getTime());
+	    cdtAnimationEnd.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetDefaultSelected(SelectionEvent event) {
+				System.out.println("End time: " + cdtAnimationEnd.getSelection());
+				if ((cdtAnimationEnd.getSelection().getTime()>dataFilter.getDataEndTimeMilli()))
+					cdtAnimationEnd.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
+				if ((cdtAnimationEnd.getSelection().getTime()<dataFilter.getDataStartTimeMilli()))
+					cdtAnimationEnd.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
+				if (cdtAnimationEnd.getSelection().getTime()<=cdtAnimationStart.getSelection().getTime())
+					cdtAnimationEnd.setSelection(new Date (cdtAnimationStart.getSelection().getTime()+dataFilter.getDisplayIntervalMilli()));
+				if (cdtCurrent.getSelection().getTime()>cdtAnimationEnd.getSelection().getTime())
+					cdtCurrent.setSelection(new Date(cdtAnimationEnd.getSelection().getTime()));
+				scale.setMaximum ((int)(cdtAnimationEnd.getSelection().getTime() - cdtAnimationStart.getSelection().getTime()));
+				scale.setPageIncrement ((int)dataFilter.getDisplayIntervalMilli());
+				scale.setSelection((int)(cdtCurrent.getSelection().getTime()-cdtAnimationStart.getSelection().getTime()));
+			}
+
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+				System.out.println("End time: " + cdtAnimationEnd.getSelection());
+				if ((cdtAnimationEnd.getSelection().getTime()>dataFilter.getDataEndTimeMilli()))
+					cdtAnimationEnd.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
+				if ((cdtAnimationEnd.getSelection().getTime()<dataFilter.getDataStartTimeMilli()))
+					cdtAnimationEnd.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
+				if (cdtAnimationEnd.getSelection().getTime()<=cdtAnimationStart.getSelection().getTime())
+					cdtAnimationEnd.setSelection(new Date (cdtAnimationStart.getSelection().getTime()+dataFilter.getDisplayIntervalMilli()));
+				if (cdtCurrent.getSelection().getTime()>cdtAnimationEnd.getSelection().getTime())
+					cdtCurrent.setSelection(new Date(cdtAnimationEnd.getSelection().getTime()));
+				scale.setMaximum ((int)(cdtAnimationEnd.getSelection().getTime() - cdtAnimationStart.getSelection().getTime()));
+				scale.setPageIncrement ((int)dataFilter.getDisplayIntervalMilli());
+				scale.setSelection((int)(cdtCurrent.getSelection().getTime()-cdtAnimationStart.getSelection().getTime()));
+			}
+	    });
+		
+		
+	    scale = new Scale (parent, SWT.BORDER);
+		Rectangle clientArea = parent.getClientArea ();
+		scale.setBounds (clientArea.x, clientArea.y, 200, 64);
+		scale.setMaximum ((int)(cdtAnimationEnd.getSelection().getTime() - cdtAnimationStart.getSelection().getTime()));
+		scale.setPageIncrement ((int)dataFilter.getDisplayIntervalMilli());
+
+		scale.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				// TODO Auto-generated method stub
+				int position = scale.getSelection();
+				cdtCurrent.setSelection(new Date(cdtAnimationStart.getSelection().getTime() + position));
+				dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// TODO Auto-generated method stub
+				int position = scale.getSelection();
+				cdtCurrent.setSelection(new Date(cdtAnimationStart.getSelection().getTime() + position));
+				dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
+				
+			}
+			
+			
+		});
+		
+		
+		
+		Group dateGroup = new Group(parent, SWT.SHADOW_NONE);
+		dateGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
+		
+		cal.setTimeInMillis(dataFilter.getCurrentTimeMilli());
+	    cdtCurrent = new CDateTime(dateGroup, CDT.BORDER | CDT.DROP_DOWN | CDT.CLOCK_24_HOUR | CDT.COMPACT);
+//	    cdtCurrent.setPattern("'Starting Time' EEEE, MMMM d '@' hh:mm:ss 'GMT'");
+	    cdtCurrent.setFormat(CDT.DATE_LONG | CDT.TIME_MEDIUM);
+//	    cdtCurrent.setPattern("'Starting Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
+	    cdtCurrent.setPattern("'Current Time:' MM/dd/yyyy HH:mm:ss ");
+//		cdtCurrent.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, false, false));
+		cdtCurrent.setSelection(cal.getTime());
+	    cdtCurrent.addSelectionListener(new SelectionListener() {
 			@Override
 				public void widgetDefaultSelected(SelectionEvent event) {
 					// set data filter value
-					dataFilter.setStartTime(cdtStart.getSelection().getTime());
+					dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
 				}
 
 			@Override
 				public void widgetSelected(SelectionEvent event) {
-					System.out.println("Start time: " + cdtStart.getSelection());
-					dataFilter.setStartTime(cdtStart.getSelection().getTime());
+					System.out.println("Start time: " + cdtCurrent.getSelection());
+					dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
 				}
 
 	    });
-		cal.setTimeInMillis(dataFilter.getEndTimeMilli());
-	    cdtEnd = new CDateTime(parent, CDT.BORDER | CDT.DROP_DOWN | CDT.CLOCK_24_HOUR | CDT.COMPACT);
-	    cdtEnd.setFormat(CDT.DATE_LONG | CDT.TIME_MEDIUM);
-//	    cdtEnd.setPattern("'Ending Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
-	    cdtEnd.setPattern("'End:' MM/dd/yyyy HH:mm:SS ");
-//	    cdtEnd.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-	    cdtEnd.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, false, false));
-	    cdtEnd.setSelection(cal.getTime());
-	    cdtEnd.addSelectionListener(new SelectionListener() {
+		cal.setTimeInMillis(dataFilter.getDisplayIntervalMilli());
+	    cdtDisplayInterval = new CDateTime(dateGroup, CDT.BORDER | CDT.DROP_DOWN | CDT.CLOCK_24_HOUR | CDT.COMPACT);
+	    cdtDisplayInterval.setFormat(CDT.DATE_LONG | CDT.TIME_MEDIUM);
+//	    cdtDisplayInterval.setPattern("'Ending Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
+	    cdtDisplayInterval.setPattern("'Displayed range:' HH:mm:ss ");
+//	    cdtDisplayInterval.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+//	    cdtDisplayInterval.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, false, false));
+	    cdtDisplayInterval.setSelection(cal.getTime());
+	    cdtDisplayInterval.addSelectionListener(new SelectionListener() {
 			@Override
 				public void widgetDefaultSelected(SelectionEvent event) {
 					// set data filter value
-					dataFilter.setEndTime(cdtEnd.getSelection().getTime());
+					dataFilter.setDisplayInterval(cdtDisplayInterval.getSelection().getHours(), cdtDisplayInterval.getSelection().getMinutes(), cdtDisplayInterval.getSelection().getSeconds());
 				}
 
 			@Override
 				public void widgetSelected(SelectionEvent event) {
-					System.out.println("End time: " + cdtEnd.getSelection());
-					dataFilter.setEndTime(cdtEnd.getSelection().getTime());
+					System.out.println("DisplayInterval: " + cdtDisplayInterval.getSelection().getHours() + ":" + cdtDisplayInterval.getSelection().getMinutes() + ":" + cdtDisplayInterval.getSelection().getSeconds());
+					dataFilter.setDisplayInterval(cdtDisplayInterval.getSelection().getHours(), cdtDisplayInterval.getSelection().getMinutes(), cdtDisplayInterval.getSelection().getSeconds());
 				}
 
 	    });
+
+		timeRangeText = new Text(parent, SWT.CENTER);
+		Date startDate = new Date(dataFilter.getDataStartTimeMilli());
+		Date endDate = new Date(dataFilter.getDataEndTimeMilli());
+		timeRangeText.setText("Data Available: "+ startDate.toString() + " -> " + endDate.toString());
+
+	    createActions();
+	    createToolbar();
 	    
 //	    final Button buttonDraw = new Button(parent, SWT.PUSH);
 //	    buttonDraw.setText("Draw Bounding Box");
@@ -212,61 +364,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 //		  }
 //
 //	    });
-	    Scale scale = new Scale (parent, SWT.BORDER);
-		Rectangle clientArea = parent.getClientArea ();
-		scale.setBounds (clientArea.x, clientArea.y, 200, 64);
-		scale.setMaximum (40);
-		scale.setPageIncrement (5);
-	    
-	    createActions();
-	    createToolbar();
 	 
-		
-//	    cal = new DateChooser(parent, SWT.BORDER | SWT.MULTI);
-//	    cal.addSelectionListener(new SelectionListener() {
-//			@Override
-//				public void widgetDefaultSelected(SelectionEvent event) {
-//				}
-//
-//			@Override
-//				public void widgetSelected(SelectionEvent event) {
-//					selectedDates.removeAll();
-//					for (Iterator it = cal.getSelectedDates().iterator(); it.hasNext(); ) {
-//						Date d = (Date) it.next();
-//						selectedDates.add(df.format(d));
-//					}
-//				}
-//
-//	    });
-//
-//	    df = DateFormat.getDateInstance(DateFormat.MEDIUM);
-//	    selectedDates = new List(parent, SWT.BORDER);
-//	    GridData data = new GridData();
-//	    data.widthHint  = 100;
-//	    data.heightHint = 100;
-//	    selectedDates.setLayoutData(data);
-
-		
-//		// initialize a parent composite with a grid layout manager
-//        GridLayout gridLayout = new GridLayout();
-//        gridLayout.numColumns = 1;
-//        parent.setLayout(gridLayout);
-//        DateTime calendar = new DateTime(parent, SWT.CALENDAR);
-//        DateTime date = new DateTime(parent, SWT.DATE);
-//        DateTime time = new DateTime(parent, SWT.TIME);
-//        // Date Selection as a drop-down
-//        DateTime dateD = new DateTime(parent, SWT.DATE | SWT.DROP_DOWN);
-		
-//		GanttChart ganttChart = new GanttChart(parent, SWT.MULTI);
-//		Calendar start = GregorianCalendar.getInstance();
-//		Calendar end = GregorianCalendar.getInstance();
-//		end.add(Calendar.DATE, 5);
-//		new GanttEvent(ganttChart, null, "Event_1", start, end, start, end, 0);
-//		start = GregorianCalendar.getInstance();
-//		end = GregorianCalendar.getInstance();
-//		start.add(Calendar.DATE, 6);
-//		end.add(Calendar.DATE, 8);
-//		new GanttEvent(ganttChart, null, "Event_2", start, end, start, end, 0);
 	}
 
     public void createActions() {
@@ -367,6 +465,113 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 //                    return ImageDescriptor.getMissingImageDescriptor();
 //            }
     }
+    void refreshTimeRange()
+    {
+		MaxMin maxmin = new MaxMin();
+		long dateMax, dateMin;
+		getDateRange(maxmin, conf.getEntlnDateRangeLayer()); 
+		dateMax = maxmin.getMax();
+		dateMin = maxmin.getMin();
+		getDateRange(maxmin, conf.getNldnDateRangeLayer()); 
+		dateMax = Math.max(dateMax, maxmin.getMax());
+		dateMin = Math.min(dateMin, maxmin.getMin());
+		getDateRange(maxmin, conf.getGld360DateRangeLayer()); 
+		dateMax = Math.max(dateMax, maxmin.getMax());
+		dateMin = Math.min(dateMin, maxmin.getMin());
+		getDateRange(maxmin, conf.getGlmDateRangeLayer()); 
+		dateMax = Math.max(dateMax, maxmin.getMax());
+		dateMin = Math.min(dateMin, maxmin.getMin());
+
+		dataFilter.setDataStartTime(dateMin);
+		dataFilter.setDataEndTime(dateMax);
+		Calendar start = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		Calendar end = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		start.setTimeInMillis(dateMin);
+		end.setTimeInMillis(dateMax);
+		System.out.println("Data from " + new Date(start.getTimeInMillis()).toString() + " to " + new Date(end.getTimeInMillis()).toString());
+    }
+    private class MaxMin 
+    {
+		long max,min;
+    	
+    	public long getMax() {
+			return max;
+		}
+
+		public void setMax(long max) {
+			this.max = max;
+		}
+
+		public long getMin() {
+			return min;
+		}
+
+		public void setMin(long min) {
+			this.min = min;
+		}
+
+    }
+    
+    void getDateRange(MaxMin maxmin, String layer)
+    {
+		String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + layer; 
+        System.out.println(httpString);
+        
+        try {
+			URL url = new URL(httpString);
+			
+			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+
+			String inputLine;
+			int index=0;
+			boolean firstTime=true;
+			double count;
+			while ((inputLine = in.readLine()) != null) {
+			    System.out.println(inputLine);
+			    if (firstTime) { // skip header line then parse out the counts
+			    	firstTime=false;
+			    	continue; 
+			    }
+			    String [] fields = inputLine.split(",");
+			    String minTime = fields[1].trim();
+			    String maxTime = fields[2].trim();
+			    
+			    
+			    System.out.println("minTime " + minTime + " maxTime " + maxTime);
+//	            DateFormat df = DateFormat.getInstance();                       
+//	            Date d0 = df.parse(minTime);
+//	            min = d0.getTime();
+//	            d0 = df.parse(maxTime);
+//	            max = d0.getTime();
+	            
+			    Date minDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").parse(minTime);
+			    Date maxDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").parse(maxTime);
+			    maxmin.setMin(minDate.getTime());
+			    maxmin.setMax(maxDate.getTime());
+			    System.out.println("parsed minTime " + minDate.toString() + " maxTime " + maxDate.toString());
+	            
+//			    Timestamp ts = Timestamp.valueOf(minTime);
+//			    min = ts.getTime();
+//			    ts = Timestamp.valueOf(maxTime);
+//			    max = ts.getTime();
+			    
+			}
+			in.close();
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}			 
+		
+    }
 	
 	/**
 	 * Passing the focus request to the viewer's control.
@@ -379,15 +584,19 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 	public void refresh() {
 		// TODO Auto-generated method stub
 		System.out.println("TimelineView.refresh");
-		if ((cdtStart==null)||(cdtEnd==null)||cdtStart.isDisposed() || cdtEnd.isDisposed()) {
+		if ((cdtCurrent==null)||(cdtDisplayInterval==null)||cdtCurrent.isDisposed() || cdtDisplayInterval.isDisposed()) {
 			System.err.println("Warning: widget disposed");
 			return;
 		}
 		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-		cal.setTimeInMillis(dataFilter.getStartTimeMilli());
-		cdtStart.setSelection(cal.getTime());		
-		cal.setTimeInMillis(dataFilter.getEndTimeMilli());
-		cdtEnd.setSelection(cal.getTime());		
+		cal.setTimeInMillis(dataFilter.getCurrentTimeMilli());
+		cdtCurrent.setSelection(cal.getTime());		
+		cal.setTimeInMillis(dataFilter.getDisplayIntervalMilli());
+		cdtDisplayInterval.setSelection(cal.getTime());	
+		
+		Date startDate = new Date(dataFilter.getDataStartTimeMilli());
+		Date endDate = new Date(dataFilter.getDataEndTimeMilli());
+		timeRangeText.setText("Data Available: "+ startDate.toString() + " -> " + endDate.toString());
 	}
 
 	@Override

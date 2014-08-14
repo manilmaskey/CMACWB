@@ -188,14 +188,16 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 		String timeFormat=null;
 		String appendTime = "";
 		// within 5 minutes, use seconds
-		if ((dataFilter.getEndTimeMilli() - dataFilter.getStartTimeMilli()) < 300000) {
+//		if ((dataFilter.getEndTimeMilli() - dataFilter.getStartTimeMilli()) < 300000) {
+		if (dataFilter.getDisplayIntervalMilli() < 300000) {
 			timeFormat = "'YYYY-MM-DD HH24:MI:SS TZ'";
 			timeInterval = 1000; // second
 			flashesPer = "(/sec)";
 //			series = new TimeSeries("Time series data", Second.class);
 		}
 		// 5 hours
-		else if ((dataFilter.getEndTimeMilli() - dataFilter.getStartTimeMilli()) < 18000000) {
+//		else if ((dataFilter.getEndTimeMilli() - dataFilter.getStartTimeMilli()) < 18000000) {
+		else if (dataFilter.getDisplayIntervalMilli() < 18000000) {
 			timeFormat = "'YYYY-MM-DD HH24:MI TZ'";
 			timeInterval = 60000; // minute
 			appendTime = ":00";

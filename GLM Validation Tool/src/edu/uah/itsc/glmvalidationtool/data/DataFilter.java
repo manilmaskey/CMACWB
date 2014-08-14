@@ -7,9 +7,10 @@ import java.util.ArrayList;
 public class DataFilter {
 	
 	private static double MinLon =-180.0, MaxLon=180.0, MinLat=-90.0, MaxLat=90.0;
-	private static long StartMilli, EndMilli;
+	// Time ranges are set up to return CurrentTime - DisplayInterval for currently displayed data
+	private static long CurrentTime, DisplayInterval = 1000;
 	private static ArrayList<Object> updateObjects = new ArrayList<>();
-	private static long TimeIntervalStart, TimeIntervalEnd, TimeIntervalIncrement;
+	private static long DataStartTime, DataEndTime;
 	
 	public DataFilter()
 	{
@@ -54,38 +55,75 @@ public class DataFilter {
 		return MaxLat;
 	}
 	
-	public void setStartTime(long millisecs)
+	// methods for database time range
+	public void setDataStartTime(long millisecs)
 	{
-		StartMilli = millisecs;
+		DataStartTime = millisecs;
 	
 	}
-	public void setEndTime(long millisecs)
+	public void setDataEndTime(long millisecs)
 	{
-		EndMilli = millisecs;
+		DataEndTime = millisecs;
 		
 	}
-	public void setStartTime(int year, int month, int day, int hour, int minute, int second, int milli) 
+	public void setDataStartTime(int year, int month, int day, int hour, int minute, int second, int milli) 
 	{
-		StartMilli = DataUtil.dateToMilliseconds(year, month, day, hour, minute, second, milli);
+		DataStartTime = DataUtil.dateToMilliseconds(year, month, day, hour, minute, second, milli);
 		
 	}
-	public void setEndTime(int year, int month, int day, int hour, int minute, int second, int milli) 
+	public void setDataEndTime(int year, int month, int day, int hour, int minute, int second, int milli) 
 	{
-		EndMilli = DataUtil.dateToMilliseconds(year, month, day, hour, minute, second, milli);
+		DataEndTime = DataUtil.dateToMilliseconds(year, month, day, hour, minute, second, milli);
 		
 	}
-	public long getStartTimeMilli()
+	public long getDataStartTimeMilli()
 	{
-		return StartMilli;
+		return DataStartTime;
 	}
-	public long getEndTimeMilli()
+	public long getDataEndTimeMilli()
 	{
-		return EndMilli;
+		return DataEndTime;
 	}
+	public void setCurrentTime(long millisecs)
+	{
+		CurrentTime = millisecs;
+	}
+	public void setCurrentTime(int year, int month, int day, int hour, int minute, int second, int milli) 
+	{
+		CurrentTime = DataUtil.dateToMilliseconds(year, month, day, hour, minute, second, milli);
+		
+	}
+	public long getCurrentTimeMilli()
+	{
+		return CurrentTime;
+	}
+	public long getDisplayIntervalMilli()
+	{
+		return DisplayInterval;
+	}
+	public void setDisplayInterval(long millisecs)
+	{
+		DisplayInterval = millisecs;
+	}
+	public void setDisplayInterval(int hour, int minute, int second) 
+	{
+		DisplayInterval = 1000 * (second + 60*minute + 3600*hour); // milliseconds
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	// these are for currently displayed time interval
 	public String getCqlString()
 	{
-		String startDate = DataUtil.millisecondsToSQLTimeStampString(StartMilli);
-		String endDate = DataUtil.millisecondsToSQLTimeStampString(EndMilli);
+		String startDate = DataUtil.millisecondsToSQLTimeStampString(CurrentTime - DisplayInterval);
+		String endDate = DataUtil.millisecondsToSQLTimeStampString(CurrentTime);
 		
 		
 		String queryString;
@@ -122,8 +160,10 @@ public class DataFilter {
 	}
 	public String getViewParamString()
 	{
-		String startDate = DataUtil.millisecondsToSQLTimeStampString(StartMilli);
-		String endDate = DataUtil.millisecondsToSQLTimeStampString(EndMilli);
+//		String startDate = DataUtil.millisecondsToSQLTimeStampString(StartMilli);
+//		String endDate = DataUtil.millisecondsToSQLTimeStampString(EndMilli);
+		String startDate = DataUtil.millisecondsToSQLTimeStampString(CurrentTime - DisplayInterval);
+		String endDate = DataUtil.millisecondsToSQLTimeStampString(CurrentTime);
 		
 		
 		String queryString;
@@ -146,8 +186,10 @@ public class DataFilter {
 	}
 	public String getValidationParamString()
 	{
-		String startDate = DataUtil.millisecondsToSQLTimeStampString(StartMilli);
-		String endDate = DataUtil.millisecondsToSQLTimeStampString(EndMilli);
+//		String startDate = DataUtil.millisecondsToSQLTimeStampString(StartMilli);
+//		String endDate = DataUtil.millisecondsToSQLTimeStampString(EndMilli);
+		String startDate = DataUtil.millisecondsToSQLTimeStampString(CurrentTime - DisplayInterval);
+		String endDate = DataUtil.millisecondsToSQLTimeStampString(CurrentTime);
 		
 		
 		String queryString;
@@ -161,24 +203,6 @@ public class DataFilter {
 			return null;
 		}
 		return queryString;
-	}
-	public static long getTimeIntervalStart() {
-		return TimeIntervalStart;
-	}
-	public static void setTimeIntervalStart(long timeIntervalStart) {
-		TimeIntervalStart = timeIntervalStart;
-	}
-	public static long getTimeIntervalEnd() {
-		return TimeIntervalEnd;
-	}
-	public static void setTimeIntervalEnd(long timeIntervalEnd) {
-		TimeIntervalEnd = timeIntervalEnd;
-	}
-	public static long getTimeIntervalIncrement() {
-		return TimeIntervalIncrement;
-	}
-	public static void setTimeIntervalIncrement(long timeIntervalIncrement) {
-		TimeIntervalIncrement = timeIntervalIncrement;
 	}
 	
 	// BBOX(the_geom, -90, 40, -60, 45)

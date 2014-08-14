@@ -312,4 +312,54 @@ public class Config implements Getters,Setters{
 		// TODO Auto-generated method stub
 		return keyValuePair.getProperty("GlmFlashRateLayer", defaults.getGlmFlashRateLayer());
 	}
+
+	@Override
+	public void setEntlnDateRangeLayer(String entlnDateRangeayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("EntlnDateRangeLayer", entlnDateRangeayer);
+	}
+
+	@Override
+	public void setNldnDateRangeLayer(String nldnDateRangeLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("NldnDateRangeLayer", nldnDateRangeLayer);		
+	}
+
+	@Override
+	public void setGld360DateRangeLayer(String gld360DateRangeLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("Gld360DateRangeLayer", gld360DateRangeLayer);
+		
+	}
+
+	@Override
+	public void setGlmDateRangeLayer(String glmDateRangeLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("GlmDateRangeLayer", glmDateRangeLayer);		
+		
+	}
+
+	@Override
+	public String getEntlnDateRangeLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("EntlnDateRangeLayer", defaults.getEntlnDateRangeLayer());
+	}
+
+	@Override
+	public String getNldnDateRangeLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("NldnDateRangeLayer", defaults.getNldnDateRangeLayer());
+	}
+
+	@Override
+	public String getGld360DateRangeLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("Gld360DateRangeLayer", defaults.getGld360DateRangeLayer());
+	}
+
+	@Override
+	public String getGlmDateRangeLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("GlmDateRangeLayer", defaults.getGlmDateRangeLayer());
+	}
 }

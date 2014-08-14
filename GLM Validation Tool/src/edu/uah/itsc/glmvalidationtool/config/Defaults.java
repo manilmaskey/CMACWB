@@ -21,10 +21,16 @@ public class Defaults implements Getters{
 	private static String glmFlashTable = "flash_proxy_view";
 	private static String glmEventTable = "event_proxy";
 	
-	private static String ndlnFlashRateLayer = "ndln_flash_count";
+	private static String nldnFlashRateLayer = "nldn_flash_count";
 	private static String glmFlashRateLayer = "glm_count";
 	private static String entlnFlashRateLayer = "etln_flash_count";
 	private static String gld360FlashRateLayer = "gld360_count";
+
+	// date range geoserver layers
+	private static String nldnDateRangeLayer = "nldn_flash_date_range";
+	private static String glmDateRangeLayer = "glm_date_range";
+	private static String entlnDateRangeLayer = "etln_flash_date_range";
+	private static String gld360DateRangeLayer = "gld360_date_range";
 
 	// intersection SQL Geoserver layers
 	private static String entlnFlashGlmIntersectionTable = "glm_intersection";
@@ -169,7 +175,7 @@ public class Defaults implements Getters{
 	@Override
 	public String getNldnFlashRateLayer() {
 		// TODO Auto-generated method stub
-		return ndlnFlashRateLayer;
+		return nldnFlashRateLayer;
 	}
 
 	@Override
@@ -182,6 +188,30 @@ public class Defaults implements Getters{
 	public String getGlmFlashRateLayer() {
 		// TODO Auto-generated method stub
 		return glmFlashRateLayer;
+	}
+
+	@Override
+	public String getEntlnDateRangeLayer() {
+		// TODO Auto-generated method stub
+		return entlnDateRangeLayer;
+	}
+
+	@Override
+	public String getNldnDateRangeLayer() {
+		// TODO Auto-generated method stub
+		return nldnDateRangeLayer;
+	}
+
+	@Override
+	public String getGld360DateRangeLayer() {
+		// TODO Auto-generated method stub
+		return gld360DateRangeLayer;
+	}
+
+	@Override
+	public String getGlmDateRangeLayer() {
+		// TODO Auto-generated method stub
+		return glmDateRangeLayer;
 	}
 
 }
