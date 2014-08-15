@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -89,6 +88,7 @@ public class DeleteCommandHandler extends AbstractHandler {
 						path = selectedFolder.getProject().getName() + "/" + User.username + "/"
 							+ selectedFolder.getName();
 						deleteWorkflowFromPortal(path);
+						deleteNotificationFromPortal(path);
 						((IFolder) selectedObject).delete(true, null);
 						((IFolder) selectedObject).getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
 					}
@@ -156,6 +156,23 @@ public class DeleteCommandHandler extends AbstractHandler {
 
 	private void deleteWorkflowFromPortal(String path) {
 		HashMap<String, String> nodeMap = PortalUtilities.getPortalWorkflowDetails(path);
+
+		String nodeID;
+		if (nodeMap != null) {
+			System.out.println(nodeMap);
+			nodeID = nodeMap.get("nid");
+		}
+		else
+			nodeID = null;
+		if (nodeID != null && nodeID.length() > 0) {
+			PortalPost portalPost = new PortalPost();
+			HttpResponse response = portalPost.delete(PortalUtilities.getNodeRestPoint() + "/" + nodeID);
+			System.out.println(response);
+		}
+	}
+
+	private void deleteNotificationFromPortal(String path) {
+		HashMap<String, String> nodeMap = PortalUtilities.getPortalNotificationDetails(path);
 
 		String nodeID;
 		if (nodeMap != null) {

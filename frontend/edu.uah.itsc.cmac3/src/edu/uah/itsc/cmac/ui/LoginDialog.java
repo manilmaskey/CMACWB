@@ -1,8 +1,6 @@
 package edu.uah.itsc.cmac.ui;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
@@ -28,12 +26,12 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.json.JSONObject;
 import org.osgi.framework.Bundle;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
+import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.Activator;
 import edu.uah.itsc.cmac.portal.PortalConnector;
@@ -233,11 +231,8 @@ public class LoginDialog {
 			}
 			try {
 				jgitFile.createNewFile();
-				String content = "accesskey: " + User.awsAccessKey + "\nsecretkey: " + User.awsSecretKey;
-				FileWriter fw = new FileWriter(jgitFile.getAbsoluteFile());
-				BufferedWriter bw = new BufferedWriter(fw);
-				bw.write(content);
-				bw.close();
+				S3 s3 = new S3();
+				s3.createJgitContents(jgitFile, false);
 			}
 			catch (IOException e1) {
 				e1.printStackTrace();

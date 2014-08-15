@@ -21,10 +21,11 @@ public class Workflow {
 	private String	path;
 	private String	keywords;
 	private String	programs;
+	private String	resourceUsageInfo;
 	private Date	startTime;
 	private Date	endTime;
-	private String	resourceUsageInfo;
 	private boolean	isShared;
+	private String	allowCloneTo;
 
 	public Workflow() {
 		super();
@@ -61,6 +62,10 @@ public class Workflow {
 			jsonData.put("field_could_path", getComplexObject("value", path));
 		if (keywords != null && !keywords.isEmpty())
 			jsonData.put("field_keywords", new JSONObject("{'und':'" + keywords + "'}"));
+		if (allowCloneTo != null && !allowCloneTo.isEmpty())
+			jsonData.put("field_allow_clone_to", getComplexObjectArray(null, allowCloneTo.split(",")));
+		else
+			jsonData.put("field_allow_clone_to", new JSONObject("{'und':'_none'}"));
 		// jsonData.put("field_keywords", getComplexObject(keywords));
 		// jsonData.put("field_tags", getComplexObject(keywords));
 		// jsonData.put("field_start_time",
@@ -83,6 +88,28 @@ public class Workflow {
 
 		undArrayObject.put(key, value);
 		undArray.put(undArrayObject);
+		undObject.put("und", undArray);
+		return undObject;
+
+	}
+
+	private JSONObject getComplexObjectArray(String key, String[] values) throws JSONException {
+		JSONObject undObject = new JSONObject();
+		JSONArray undArray = new JSONArray();
+
+		/*
+		 * This method will return a JSONObject similar to "field_is_shared": { "und": [ { "value": "1" } ] }
+		 */
+		for (String value : values) {
+			if (key != null) {
+				JSONObject undArrayObject = new JSONObject();
+				undArrayObject.put(key, value);
+				undArray.put(undArrayObject);
+			}
+			else
+				undArray.put(value);
+		}
+
 		undObject.put("und", undArray);
 		return undObject;
 
@@ -256,7 +283,7 @@ public class Workflow {
 	public String getBucket() {
 		if (path == null || path.isEmpty())
 			return null;
-		
+
 		String[] parts = path.split("/");
 		return parts[1];
 	}
@@ -264,10 +291,17 @@ public class Workflow {
 	public String getWorkflowName() {
 		if (path == null || path.isEmpty())
 			return null;
-		
+
 		String[] parts = path.split("/");
 		return parts[parts.length - 1];
 	}
 
-	
+	public String getAllowCloneTo() {
+		return allowCloneTo;
+	}
+
+	public void setAllowCloneTo(String allowCloneTo) {
+		this.allowCloneTo = allowCloneTo;
+	}
+
 }

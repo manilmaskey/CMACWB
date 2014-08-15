@@ -12,7 +12,9 @@ package edu.uah.itsc.aws;
  * Filename: S3.java Author:
  */
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -471,4 +473,15 @@ public class S3 {
 		return workflowOwner;
 	}
 
+	public void createJgitContents(File jgitFile, boolean withAdminRights) throws IOException {
+		String content = null;
+		if (withAdminRights)
+			content = "accesskey: " + awsAdminAccessKey + "\nsecretkey: " + awsAdminSecretKey;
+		else
+			content = "accesskey: " + User.awsAccessKey + "\nsecretkey: " + User.awsSecretKey;
+		FileWriter fw = new FileWriter(jgitFile.getAbsoluteFile());
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write(content);
+		bw.close();
+	}
 }

@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
@@ -315,6 +314,24 @@ public class GITUtility {
 				e.printStackTrace();
 			}
 			catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void removeRemote(String repoName, String repoLocalPath) throws NoFilepatternException,
+		GitAPIException {
+		Git git = getGit(repoName, repoLocalPath);
+		if (git != null) {
+			Repository repository = git.getRepository();
+			// Get the config file, reset origin section with community bucket repository location
+			StoredConfig config = repository.getConfig();
+			config.unsetSection("remote", "origin");
+
+			try {
+				config.save();
+			}
+			catch (IOException e) {
 				e.printStackTrace();
 			}
 		}

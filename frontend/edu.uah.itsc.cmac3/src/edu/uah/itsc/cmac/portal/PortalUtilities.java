@@ -11,8 +11,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Properties;
 
 import org.apache.http.HttpResponse;
@@ -27,9 +27,9 @@ import org.json.simple.parser.ParseException;
  * 
  */
 public class PortalUtilities {
-	private static Properties			properties		= null;
-	private static HashSet<PortalUser>	portalUserList	= null;
-	private static JSONParser			parser			= new JSONParser();
+	private static Properties				properties		= null;
+	private static ArrayList<PortalUser>	portalUserList	= null;
+	private static JSONParser				parser			= new JSONParser();
 
 	private PortalUtilities() {
 	}
@@ -135,6 +135,10 @@ public class PortalUtilities {
 		return getKeyValueFromProperties("user_list_url");
 	}
 
+	public static String getNotificationURL() {
+		return getKeyValueFromProperties("notification_url");
+	}
+
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
 		path = "/" + path;
 		path = path.replaceFirst("//", "/");
@@ -159,6 +163,45 @@ public class PortalUtilities {
 			map.put("description", workflow.get("description").toString());
 			map.put("keywords", workflow.get("keywords").toString());
 			map.put("isShared", workflow.get("isShared").toString());
+			map.put("creator", workflow.get("creator").toString());
+			map.put("submittor", workflow.get("submittor").toString());
+			map.put("allow_clone_to", workflow.get("allow_clone_to").toString());
+
+			return map;
+		}
+		catch (ParseException e) {
+			e.printStackTrace();
+			System.out.println("Unable to parse json object");
+			return null;
+		}
+	}
+
+	public static HashMap<String, String> getPortalNotificationDetails(String path) {
+		path = "/" + path;
+		path = path.replaceFirst("//", "/");
+		String jsonText = PortalUtilities.getDataFromURL(PortalUtilities.getNotificationURL() + "?field_path_value="
+			+ path);
+		Object obj;
+		try {
+			obj = parser.parse(jsonText);
+			JSONObject workflows = (JSONObject) obj;
+
+			if (workflows == null)
+				return null;
+			JSONArray workFlowArray = (JSONArray) workflows.get("notifications");
+			if (workFlowArray == null || workFlowArray.size() == 0)
+				return null;
+			JSONObject workflow = (JSONObject) workFlowArray.get(0);
+			workflow = (JSONObject) workflow.get("notification");
+			HashMap<String, String> map = new HashMap<String, String>();
+			map.put("nid", workflow.get("nid").toString());
+			map.put("path", workflow.get("path").toString());
+			map.put("title", workflow.get("title").toString());
+			map.put("description", workflow.get("description").toString());
+			map.put("recipient", workflow.get("recipient").toString());
+			map.put("notSeenBy", workflow.get("not_seen_by").toString());
+			map.put("clonePath", workflow.get("clone_path").toString());
+
 			return map;
 		}
 		catch (ParseException e) {
@@ -198,7 +241,7 @@ public class PortalUtilities {
 		}
 	}
 
-	public static HashSet<PortalUser> getUserList() {
+	public static ArrayList<PortalUser> getUserList() {
 		if (portalUserList != null)
 			return portalUserList;
 		else {
@@ -216,7 +259,7 @@ public class PortalUtilities {
 				if (userArray == null || userArray.size() == 0)
 					return null;
 				int i = 0;
-				portalUserList = new HashSet<PortalUser>();
+				portalUserList = new ArrayList<PortalUser>();
 				for (i = 0; i < userArray.size(); i++) {
 					JSONObject user = (JSONObject) userArray.get(i);
 					user = (JSONObject) user.get("user");
