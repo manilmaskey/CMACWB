@@ -90,15 +90,15 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	 */
 	public static final String ID = "MetricsView";
 
-	private DataFilter dataFilter = new DataFilter();
-	private Config conf = new Config();
-	private Composite parent = null;
-	private JFreeChart entlnHist;
-	private JFreeChart nldnHist;
-	private JFreeChart gld360Hist;
-	private  JFreeChart glmHist;
-	private long timeInterval;
-	private String flashesPer = "";
+	private static DataFilter dataFilter = new DataFilter();
+	private static Config conf = new Config();
+	private static Composite parent = null;
+	private static JFreeChart entlnHist;
+	private static JFreeChart nldnHist;
+	private static JFreeChart gld360Hist;
+	private  static JFreeChart glmHist;
+	private static long timeInterval;
+	private static String flashesPer = "";
 
 	/**
 	 * This is a callback that will allow us
@@ -111,10 +111,14 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 
 		// need to do the rest in a method that gets called on DataFilterUpdate.refresh
 		     
-		XYDataset entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
-		XYDataset nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
-		XYDataset gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
-		XYDataset glmDataset = readHistogram(conf.getGlmFlashRateLayer());
+//		XYDataset entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
+//		XYDataset nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
+//		XYDataset gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
+//		XYDataset glmDataset = readHistogram(conf.getGlmFlashRateLayer());
+		XYDataset entlnDataset = null;
+		XYDataset nldnDataset = null;
+		XYDataset gld360Dataset = null;
+		XYDataset glmDataset = null;
         
 //        entlnHist = createChart(entlnDataset, Color.CYAN, "ENTLN Flash Rate" + flashesPer);
 //        nldnHist = createChart(nldnDataset, Color.BLUE, "NLDN Flash Rate" + flashesPer);
@@ -232,7 +236,7 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	        boolean firstTime=true;
 	        double count;
 	        while ((inputLine = in.readLine()) != null) {
-	            System.out.println(inputLine);
+//	            System.out.println(inputLine);
 	            if (firstTime) { // skip header line then parse out the counts
 	            	firstTime=false;
 	            	continue; 
@@ -241,7 +245,7 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	            count = Double.parseDouble(fields[2]);
 	            String binTime = fields[1].trim() + appendTime;
 	            
-	            System.out.println("binTime " + binTime);
+//	            System.out.println("binTime " + binTime);
 	            Timestamp ts = Timestamp.valueOf(binTime);
 	            
 				arr.add(count);
@@ -284,6 +288,7 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return null;
 		} 
         dataset.addSeries(s1);
         dataset.setDomainIsPointsInTime(false);

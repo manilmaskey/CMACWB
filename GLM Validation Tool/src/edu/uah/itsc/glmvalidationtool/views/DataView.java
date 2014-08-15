@@ -329,13 +329,15 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 //		worldmap.setEnabled(false);
 //        dataFilter.setStartTime(2011, 8, 4, 0, 0, 0, 0);
 //        dataFilter.setEndTime(2011, 8, 4, 0, 5, 0, 0);
-        dataFilter.setCurrentTime(2011, 8, 4, 0, 5, 0, 0);       
-        dataFilter.setDisplayInterval(0, 1, 0);
 
+		
+//		dataFilter.setCurrentTime(2011, 8, 4, 0, 5, 0, 0);       
+//        dataFilter.setDisplayInterval(0, 1, 0);       
+//        dataFilter.setBoundingBox(-92.0, -82.5, 32.0, 38.5);
         
-        dataFilter.setBoundingBox(-92.0, -82.5, 32.0, 38.5);
         dataFilter.registerObject(this); // register this object with filter update interface
-        dataFilter.refreshObjects(); // this will cause the interface refresh to be called
+        
+//        dataFilter.refreshObjects(); // this will cause the interface refresh to be called
         
 //		addLightningLayers();
 	}

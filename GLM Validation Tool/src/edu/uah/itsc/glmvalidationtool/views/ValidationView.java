@@ -282,7 +282,7 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
         dataFilter.registerObject(this); // register this object with filter update interface
 //        dataFilter.refreshObjects(); // this will cause the interface refresh to be called
 
-		addGlmLayers();
+//		addGlmLayers();
 	}
 
 	public void linkDataView() {
