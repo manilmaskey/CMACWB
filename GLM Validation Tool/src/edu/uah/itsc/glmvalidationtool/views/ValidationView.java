@@ -73,7 +73,8 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
     private AnnotationPointPlacemark placeMark;
     private Config conf = new Config();
 
-    private RenderableLayer glmValidationLayer=null;
+//    private RenderableLayer glmValidationLayer=null;
+    private GlmValidationLayer glmValidationLayer=null;
     private RenderableLayer boundingBoxLayer=null;
 
 	private GlobeAnnotation tooltipAnnotation;
@@ -282,7 +283,7 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
         dataFilter.registerObject(this); // register this object with filter update interface
 //        dataFilter.refreshObjects(); // this will cause the interface refresh to be called
 
-//		addGlmLayers();
+//		refreshGlmLayers();
 	}
 
 	public void linkDataView() {
@@ -301,37 +302,6 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 	}
 	public void setFocus() {
 	}
-	
-//	public void addImage(GliderImage image) throws IOException
-//	{
-//		//TODO debug statements - remove later
-//		System.err.println("Drawable Realized : " + this.wwd.isDrawableRealized());
-//		System.err.println("GL Init Event fired : " + this.wwd.isGLInitEventFired());
-//		while (!this.wwd.isGLInitEventFired())
-//		{
-//			try 
-//			{
-//				Thread.sleep(1000);
-//				System.err.println("GL Init Event fired (after waiting 1 sec) : " 
-//						+ this.wwd.isGLInitEventFired());
-//			}
-//			catch (InterruptedException e) 
-//			{
-//				e.printStackTrace();
-//			}
-//		}
-//
-//		this.wwd.addImage(image);
-//		//TODO come up with an acceptable alternative
-//		// tried releasing image source to free the heap, after image is added to earth view
-//		// but when earth view window is closed, opened again and the image is added again
-//		// the gliderimage now has no source - exception occurs
-//		// fixed this by creating the glider image again when user clicks on earth view option
-//		// but that takes about 10 - 15 seconds
-//		// so temporarily disabled this resource release
-//		//image.releaseImageSource();
-//		this.layerManager.update();
-//	}
 	
 	/**
 	 * This method allows the caller to add a shapeLayer to the 3D view.
@@ -368,26 +338,6 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 			Logger.getAnonymousLogger().log(Level.WARNING,"An error occurred while removing the provided shape layer from the 3D globe");
 		}
 	}
-	
-//	public void removeImage(GliderImage image)
-//	{
-//		this.wwd.removeImage(image);
-//		this.layerManager.update();
-//	}
-//    public Set<GliderImage> getImages()
-//    {
-//        return this.wwd.getImages();
-//    }
-//
-//    public boolean containsImage(GliderImage image)
-//    {
-//        return this.wwd.containsImage(image);
-//    }
-//    
-//    public void moveToImage(GliderImage image)
-//    {
-//    	this.moveToSector(image.getSector(), null);
-//    }
 
     public void moveToSector(Sector sector, Double altitude)
     {
@@ -420,24 +370,17 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
     }
     
     // need to pass in lightning data as a common data structure or json object
-    private void addGlmLayers() 
+    private void refreshGlmLayers() 
     {
-//        Blinker blinker;
-//        Timer updater;
-//        long updateTime;
                 
-        if (glmValidationLayer!=null) {
-        	this.removeLayer(glmValidationLayer);
+        if (glmValidationLayer==null) {
+        	glmValidationLayer = new GlmValidationLayer(conf.getIntersectionTable(), "GLM Coincidence", this.tooltipAnnotation);
+	        this.addLayer(glmValidationLayer);
         }
         try {
 	    	// GLM intersection Data 
-	        GlmValidationLoader json = new GlmValidationLoader();
-	        glmValidationLayer = new RenderableLayer();
-	        glmValidationLayer.setName("GLM Coincidence");
-	        glmValidationLayer.addRenderable(this.tooltipAnnotation);
-	        System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashGlmIntersectionTable() + "&" + dataFilter.getValidationParamString());
-			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashGlmIntersectionTable() + "&" + dataFilter.getValidationParamString()), glmValidationLayer);
-	        this.addLayer(glmValidationLayer);
+	        glmValidationLayer.readCsvData();
+	        glmValidationLayer.displayPoints();
         }
         catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
@@ -449,42 +392,46 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 			System.err.println("error loading layer "+ e.getMessage());
 	//		e.printStackTrace();
 		}
-		if (boundingBoxLayer!=null) {
-			this.removeLayer(boundingBoxLayer);
-		}
-		boundingBoxLayer = new RenderableLayer();
-		boundingBoxLayer.setName("Bounding Box");
-
-        // Create and set an attribute bundle.
-        ShapeAttributes normalAttributes = new BasicShapeAttributes();
-        normalAttributes.setInteriorMaterial(Material.YELLOW);
-        normalAttributes.setOutlineOpacity(0.5);
-        normalAttributes.setInteriorOpacity(0.8);
-        normalAttributes.setOutlineMaterial(Material.GREEN);
-        normalAttributes.setOutlineWidth(2);
-        normalAttributes.setDrawOutline(true);
-        normalAttributes.setDrawInterior(false);
-        normalAttributes.setEnableLighting(true);
-
-        ShapeAttributes highlightAttributes = new BasicShapeAttributes(normalAttributes);
-        highlightAttributes.setOutlineMaterial(Material.WHITE);
-        highlightAttributes.setOutlineOpacity(1);
         
-        // Create a polygon, set some of its properties and set its attributes.
-        ArrayList<Position> pathPositions = new ArrayList<Position>();
-        pathPositions.add(Position.fromDegrees(dataFilter.getMinLat(), dataFilter.getMinLon(), 10000));
-        pathPositions.add(Position.fromDegrees(dataFilter.getMinLat(), dataFilter.getMaxLon(), 10000));
-        pathPositions.add(Position.fromDegrees(dataFilter.getMaxLat(), dataFilter.getMaxLon(), 10000));
-        pathPositions.add(Position.fromDegrees(dataFilter.getMaxLat(), dataFilter.getMinLon(), 10000));
-        Polygon pgon = new Polygon(pathPositions);
-        pgon.setValue(AVKey.DISPLAY_NAME, "Bounding Box");
-
-        pgon.setAltitudeMode(WorldWind.ABSOLUTE);
-        pgon.setAttributes(normalAttributes);
-        pgon.setHighlightAttributes(highlightAttributes);
-         
-        boundingBoxLayer.addRenderable(pgon);
-	    this.addLayer(boundingBoxLayer);
+  		// create or redraw bounding box
+ 		if (boundingBoxLayer==null) {
+ 			boundingBoxLayer = new RenderableLayer();
+ 			boundingBoxLayer.setName("Bounding Box");
+ 		    this.addLayer(boundingBoxLayer);
+ 		}
+ 		else {
+ 			boundingBoxLayer.removeAllRenderables();
+ 		}
+ 		
+ 	    // Create and set an attribute bundle.
+ 	    ShapeAttributes normalAttributes = new BasicShapeAttributes();
+ 	    normalAttributes.setInteriorMaterial(Material.YELLOW);
+ 	    normalAttributes.setOutlineOpacity(0.5);
+ 	    normalAttributes.setInteriorOpacity(0.8);
+ 	    normalAttributes.setOutlineMaterial(Material.GREEN);
+ 	    normalAttributes.setOutlineWidth(2);
+ 	    normalAttributes.setDrawOutline(true);
+ 	    normalAttributes.setDrawInterior(false);
+ 	    normalAttributes.setEnableLighting(true);
+ 	
+ 	    ShapeAttributes highlightAttributes = new BasicShapeAttributes(normalAttributes);
+ 	    highlightAttributes.setOutlineMaterial(Material.WHITE);
+ 	    highlightAttributes.setOutlineOpacity(1);
+ 	    
+ 	    // Create a polygon, set some of its properties and set its attributes.
+ 	    ArrayList<Position> pathPositions = new ArrayList<Position>();
+ 	    pathPositions.add(Position.fromDegrees(DataFilter.getMinLat(), DataFilter.getMinLon(), 10000));
+ 	    pathPositions.add(Position.fromDegrees(DataFilter.getMinLat(), DataFilter.getMaxLon(), 10000));
+ 	    pathPositions.add(Position.fromDegrees(DataFilter.getMaxLat(), DataFilter.getMaxLon(), 10000));
+ 	    pathPositions.add(Position.fromDegrees(DataFilter.getMaxLat(), DataFilter.getMinLon(), 10000));
+ 	    Polygon pgon = new Polygon(pathPositions);
+ 	    pgon.setValue(AVKey.DISPLAY_NAME, "Bounding Box");
+ 	
+ 	    pgon.setAltitudeMode(WorldWind.ABSOLUTE);
+ 	    pgon.setAttributes(normalAttributes);
+ 	    pgon.setHighlightAttributes(highlightAttributes);
+ 	     
+ 	    boundingBoxLayer.addRenderable(pgon);
 	    
     
     }
@@ -528,8 +475,8 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
        sb.append("Layer: </b>");
        sb.append(annotation.getValue("LayerName") + "<br></br>");
        sb.append("<b>");
-       sb.append("Time: </b>");
-       sb.append(annotation.getValue("Time") + "<br></br>");
+       sb.append("Date/Time: </b>");
+       sb.append(annotation.getValue("Date") + "<br></br>");
        sb.append("<b>");
        sb.append("ENTLN count: </b>");
        sb.append(annotation.getValue("entlncount")+ "<br></br>");
@@ -547,7 +494,76 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 	@Override
 	public void refresh() {
 		// TODO Auto-generated method stub
-		addGlmLayers();
+		refreshGlmLayers();
 	}
+	
+	// original geojson version 
+	
+//    // need to pass in lightning data as a common data structure or json object
+//    private void addGlmLayers() 
+//    {
+//                
+//        if (glmValidationLayer!=null) {
+//        	this.removeLayer(glmValidationLayer);
+//        }
+//        try {
+//	    	// GLM intersection Data 
+//	        GlmValidationGeojsonLoader json = new GlmValidationGeojsonLoader();
+//	        glmValidationLayer = new RenderableLayer();
+//	        glmValidationLayer.setName("GLM Coincidence");
+//	        glmValidationLayer.addRenderable(this.tooltipAnnotation);
+//	        System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashGlmIntersectionTable() + "&" + dataFilter.getValidationParamString());
+//			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashGlmIntersectionTable() + "&" + dataFilter.getValidationParamString()), glmValidationLayer);
+//	        this.addLayer(glmValidationLayer);
+//        }
+//        catch (URISyntaxException e) {
+//			// TODO Auto-generated catch block
+//			System.err.println("error loading layer "+ e.getReason());
+//	//		e.printStackTrace();
+//		}
+//	    catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			System.err.println("error loading layer "+ e.getMessage());
+//	//		e.printStackTrace();
+//		}
+//		if (boundingBoxLayer!=null) {
+//			this.removeLayer(boundingBoxLayer);
+//		}
+//		boundingBoxLayer = new RenderableLayer();
+//		boundingBoxLayer.setName("Bounding Box");
+//
+//        // Create and set an attribute bundle.
+//        ShapeAttributes normalAttributes = new BasicShapeAttributes();
+//        normalAttributes.setInteriorMaterial(Material.YELLOW);
+//        normalAttributes.setOutlineOpacity(0.5);
+//        normalAttributes.setInteriorOpacity(0.8);
+//        normalAttributes.setOutlineMaterial(Material.GREEN);
+//        normalAttributes.setOutlineWidth(2);
+//        normalAttributes.setDrawOutline(true);
+//        normalAttributes.setDrawInterior(false);
+//        normalAttributes.setEnableLighting(true);
+//
+//        ShapeAttributes highlightAttributes = new BasicShapeAttributes(normalAttributes);
+//        highlightAttributes.setOutlineMaterial(Material.WHITE);
+//        highlightAttributes.setOutlineOpacity(1);
+//        
+//        // Create a polygon, set some of its properties and set its attributes.
+//        ArrayList<Position> pathPositions = new ArrayList<Position>();
+//        pathPositions.add(Position.fromDegrees(dataFilter.getMinLat(), dataFilter.getMinLon(), 10000));
+//        pathPositions.add(Position.fromDegrees(dataFilter.getMinLat(), dataFilter.getMaxLon(), 10000));
+//        pathPositions.add(Position.fromDegrees(dataFilter.getMaxLat(), dataFilter.getMaxLon(), 10000));
+//        pathPositions.add(Position.fromDegrees(dataFilter.getMaxLat(), dataFilter.getMinLon(), 10000));
+//        Polygon pgon = new Polygon(pathPositions);
+//        pgon.setValue(AVKey.DISPLAY_NAME, "Bounding Box");
+//
+//        pgon.setAltitudeMode(WorldWind.ABSOLUTE);
+//        pgon.setAttributes(normalAttributes);
+//        pgon.setHighlightAttributes(highlightAttributes);
+//         
+//        boundingBoxLayer.addRenderable(pgon);
+//	    this.addLayer(boundingBoxLayer);
+//	    
+//    
+//    }
  
 }

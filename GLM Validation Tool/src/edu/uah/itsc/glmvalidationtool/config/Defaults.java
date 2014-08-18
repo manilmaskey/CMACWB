@@ -33,10 +33,7 @@ public class Defaults implements Getters{
 	private static String gld360DateRangeLayer = "gld360_date_range";
 
 	// intersection SQL Geoserver layers
-	private static String entlnFlashGlmIntersectionTable = "glm_intersection";
-//	private static String entlnFlashGlmIntersectionTable = "glm_flash_entln_intersection";
-	private static String nldnFlashGlmIntersectionTable = "glm_flash_nldn_intersection";
-	private static String gld360FlashGlmIntersectionTable = "glm_flash_gld360_intersection";
+	private static String intersectionTable = "glm_intersection";
 	
 	private static String serviceString = "/geoserver/GLM/ows?service=WFS&version=1.0.0&outputFormat=application/json&request=GetFeature&typeName=GLM:";
 	private static String serviceStringCsv = "/geoserver/GLM/ows?service=WFS&version=1.0.0&outputFormat=csv&request=GetFeature&typeName=GLM:";
@@ -119,27 +116,15 @@ public class Defaults implements Getters{
 	}
 
 	@Override
-	public String getEntlnFlashGlmIntersectionTable() {
+	public String getIntersectionTable() {
 		// TODO Auto-generated method stub
-		return entlnFlashGlmIntersectionTable;
+		return intersectionTable;
 	}
 
 	@Override
 	public String getServiceStringCsv() {
 		// TODO Auto-generated method stub
 		return serviceStringCsv;
-	}
-
-	@Override
-	public String getNldnFlashGlmIntersectionTable() {
-		// TODO Auto-generated method stub
-		return nldnFlashGlmIntersectionTable;
-	}
-
-	@Override
-	public String getGld360GlmIntersectionTable() {
-		// TODO Auto-generated method stub
-		return gld360FlashGlmIntersectionTable;
 	}
 
 	@Override

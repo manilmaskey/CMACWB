@@ -1,6 +1,7 @@
 package edu.uah.itsc.glmvalidationtool.views;
 
 import java.awt.Color;
+
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -13,9 +14,10 @@ import gov.nasa.worldwind.render.AnnotationAttributes;
 import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwindx.examples.GeoJSONLoader;
 
-public class GlmValidationLoader extends GeoJSONLoader{
+public class GroundNetworkGeojsonLoader extends GeoJSONLoader{
 
 	
+	Color color = Color.YELLOW;
 	// this allows us to set up a shared attribute between all points of layer
 	AnnotationAttributes pointAttrs = new AnnotationAttributes();
 
@@ -23,6 +25,10 @@ public class GlmValidationLoader extends GeoJSONLoader{
     //********************  Primitive Geometry Construction  *******//
     //**************************************************************//
 
+	public GroundNetworkGeojsonLoader(Color col)
+	{
+		color = col;
+	}
 	
     protected Renderable createPoint(GeoJSONGeometry owner, Position pos, AnnotationAttributes attrs,
             AVList properties, String layerName)
@@ -44,40 +50,29 @@ public class GlmValidationLoader extends GeoJSONLoader{
                 p.setValue(AVKey.PROPERTIES, properties);
             
             
-            p.setValue("Time", properties.getValue("datetime"));
             p.setValue("LayerName", layerName);
-            p.setValue("entlncount", properties.getValue("entlncount"));
-            p.setValue("nldncount", properties.getValue("nldncount"));
-            p.setValue("gldcount", properties.getValue("gldcount"));
+            Object obj = properties.getValue("datetime");
+            if (obj==null) obj = properties.getValue("start_datetime");
+            p.setValue("Date", obj);
+            
+            obj=properties.getValue("measured_value");
+            if (obj==null) obj = properties.getValue("energy");
            
-            double entlnCnt = (double)properties.getValue("entlncount");
-            double nldnCnt = (double)properties.getValue("nldncount");
-            double gld360Cnt = (double)properties.getValue("gldcount");
+            p.setValue("Value", obj);
+
 //            p.setValue("Date", entry.getDate());
 //            p.setValue("Time", entry.getTime());
 //            p.setValue("Lat", entry.getLat());
 //            p.setValue("Lon", entry.getLon());
 //            p.setValue("Current", entry.getValue());
             
+            p.setValue("DisplayColor", color);
+            
             p.getAttributes().setOpacity(1.0);
+//            p.getAttributes().setTextColor(color);
             p.getAttributes().setScale(1);
             
-            int instrumentCnt = (entlnCnt>0?1:0) + (nldnCnt>0?1:0) + (gld360Cnt>0?1:0);
 
-//            System.out.println("instrumentCnt " + instrumentCnt);
-            if (instrumentCnt==0) {
-            	p.setValue("DisplayColor", Color.RED);
-//                p.getAttributes().setTextColor(Color.RED);
-            }
-            else if(instrumentCnt==1) {
-            	p.setValue("DisplayColor", Color.YELLOW);
-//                p.getAttributes().setTextColor(Color.YELLOW);  	
-            }
-            else {
-            	p.setValue("DisplayColor", Color.GREEN);
-//                p.getAttributes().setTextColor(Color.GREEN);  	
-            }
-            	
             return p;
         }
 

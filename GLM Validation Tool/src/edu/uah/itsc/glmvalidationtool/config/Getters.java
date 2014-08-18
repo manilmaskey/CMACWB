@@ -18,9 +18,8 @@ public interface Getters {
 	public String getGld360Table();
 	public String getGlmFlashTable();
 	public String getGlmEventTable();
-	public String getEntlnFlashGlmIntersectionTable();
-	public String getNldnFlashGlmIntersectionTable();
-	public String getGld360GlmIntersectionTable();
+	
+	public String getIntersectionTable();
 	
 	public String getEntlnFlashRateLayer();
 	public String getNldnFlashRateLayer();

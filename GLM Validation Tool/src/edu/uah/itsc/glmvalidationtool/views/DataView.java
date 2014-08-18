@@ -75,10 +75,17 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 	private LightningData nldnStrokes;
 	private LightningData gld360;
 	
-	private RenderableLayer entlnFlashLayer=null;
-	private RenderableLayer nldnFlashLayer=null;
-	private RenderableLayer gld360Layer=null;
-	private RenderableLayer glmLayer=null;
+	// original Geojson layers, changed to use csv
+//	private RenderableLayer entlnFlashLayer=null;
+//	private RenderableLayer nldnFlashLayer=null;
+//	private RenderableLayer gld360Layer=null;
+//	private RenderableLayer glmLayer=null;
+
+	private GroundNetworkLayer entlnFlashLayer=null;
+	private GroundNetworkLayer nldnFlashLayer=null;
+	private GroundNetworkLayer gld360Layer=null;
+	private GroundNetworkLayer glmLayer=null;
+	
 	private RenderableLayer boundingBoxLayer=null;
 	
     private AnnotationPointPlacemark placeMark;
@@ -534,138 +541,86 @@ public class DataView extends ViewPart implements DataFilterUpdate{
     }
     
     // need to pass in lightning data as a common data structure or json object
-    private void addLightningLayers() 
+    private void refreshLighningLayers() 
     {
-//        Blinker blinker;
- //       Timer updater;
- //       long updateTime;
         
-        
-        GroundNetworkLoader json;
-
+        // create or redraw lightning layers
     	// ENTLN Flash Data 
-        if (entlnFlashLayer!=null) {
-        	this.removeLayer(entlnFlashLayer);
-        }
-        try {
-            json = new GroundNetworkLoader(Color.CYAN);
-            entlnFlashLayer = new RenderableLayer();
-            entlnFlashLayer.setName("ENTLN Flash");
-            entlnFlashLayer.addRenderable(this.tooltipAnnotation);
-            System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString());
-			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString()), entlnFlashLayer);
-//			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getCqlString()), layer);
+        if (entlnFlashLayer==null) {
+        	entlnFlashLayer = new GroundNetworkLayer(conf.getEntlnFlashTable(), "ENTLN Flash", Color.CYAN, this.tooltipAnnotation);
 	        this.addLayer(entlnFlashLayer);
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			System.err.println("error loading layer " + e.getReason());
-		}
-        catch (Exception e) {
-			// TODO Auto-generated catch block
-			System.err.println("error loading layer " + e.getMessage());
-		}
-    	// NLDN Flash Data 
-        if (nldnFlashLayer!=null) {
-        	this.removeLayer(nldnFlashLayer);
+        }
+        if (nldnFlashLayer==null) {
+        	nldnFlashLayer = new GroundNetworkLayer(conf.getNldnFlashTable(), "NLDN Flash", Color.BLUE, this.tooltipAnnotation);
+	        this.addLayer(nldnFlashLayer);
+        }
+        if (gld360Layer==null) {
+        	gld360Layer = new GroundNetworkLayer(conf.getGld360Table(), "GLD360", Color.PINK, this.tooltipAnnotation);
+	        this.addLayer(gld360Layer);
+        }
+        if (glmLayer==null) {
+        	glmLayer = new GroundNetworkLayer(conf.getGlmFlashTable(), "GLM Flash", Color.MAGENTA, this.tooltipAnnotation);
+	        this.addLayer(glmLayer);
         }
         try {
-        	json = new GroundNetworkLoader(Color.BLUE);
-        	nldnFlashLayer = new RenderableLayer();
-        	nldnFlashLayer.setName("NLDN Flash");
-        	nldnFlashLayer.addRenderable(this.tooltipAnnotation);
-            System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getNldnFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString());
-			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getNldnFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString()), nldnFlashLayer);
-        	this.addLayer(nldnFlashLayer);
-        } catch (URISyntaxException e) {
-        	// TODO Auto-generated catch block
-        	System.err.println("error loading layer " + e.getReason());
+//        	entlnFlashLayer.clearPoints();
+//            entlnFlashLayer.readCsvData(conf.getEntlnFlashTable());
+//            entlnFlashLayer.displayPoints();
+        	entlnFlashLayer.readCsvData();
+        	nldnFlashLayer.readCsvData();
+        	gld360Layer.readCsvData();
+        	glmLayer.readCsvData();
+        	
+        	entlnFlashLayer.displayPoints();
+        	nldnFlashLayer.displayPoints();
+        	gld360Layer.displayPoints();
+        	glmLayer.displayPoints();
         }
         catch (Exception e) {
-        	// TODO Auto-generated catch block
-        	System.err.println("error loading layer " + e.getMessage());
-        }
-	        
-
-	    // GLD360 Data 
-        if (gld360Layer!=null) {
-        	this.removeLayer(gld360Layer);
-        }
-	    try {
-	        json = new GroundNetworkLoader(Color.PINK);
-	        gld360Layer = new RenderableLayer();
-	        gld360Layer.setName("GLD360");
-	        gld360Layer.addRenderable(this.tooltipAnnotation);
-            System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getGld360Table() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString());
-			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getGld360Table() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString()), gld360Layer);
-	        this.addLayer(gld360Layer);
-	    } catch (URISyntaxException e) {
-	    	// TODO Auto-generated catch block
-	    	System.err.println("error loading layer " + e.getReason());
-	    }
-	    catch (Exception e) {
-	    	// TODO Auto-generated catch block
-	    	System.err.println("error loading layer " + e.getMessage());
-	    }
-
-			// GLM Flash Data 
-        if (glmLayer!=null) {
-        	this.removeLayer(glmLayer);
-        }
-		try {
-		    json = new GroundNetworkLoader(Color.MAGENTA);
-		    glmLayer = new RenderableLayer();
-		    glmLayer.setName("GLM Flash");
-		    glmLayer.addRenderable(this.tooltipAnnotation);
-            System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getGlmFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString());
-			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getGlmFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString()), glmLayer);
-		    this.addLayer(glmLayer);
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			System.err.println("error loading layer " + e.getReason());
-		}
-		catch (Exception e) {
 			// TODO Auto-generated catch block
 			System.err.println("error loading layer " + e.getMessage());
 		}
-		
-		if (boundingBoxLayer!=null) {
-			this.removeLayer(boundingBoxLayer);
-		}
-		boundingBoxLayer = new RenderableLayer();
-		boundingBoxLayer.setName("Bounding Box");
-
-        // Create and set an attribute bundle.
-        ShapeAttributes normalAttributes = new BasicShapeAttributes();
-        normalAttributes.setInteriorMaterial(Material.YELLOW);
-        normalAttributes.setOutlineOpacity(0.5);
-        normalAttributes.setInteriorOpacity(0.8);
-        normalAttributes.setOutlineMaterial(Material.GREEN);
-        normalAttributes.setOutlineWidth(2);
-        normalAttributes.setDrawOutline(true);
-        normalAttributes.setDrawInterior(false);
-        normalAttributes.setEnableLighting(true);
-
-        ShapeAttributes highlightAttributes = new BasicShapeAttributes(normalAttributes);
-        highlightAttributes.setOutlineMaterial(Material.WHITE);
-        highlightAttributes.setOutlineOpacity(1);
         
-        // Create a polygon, set some of its properties and set its attributes.
-        ArrayList<Position> pathPositions = new ArrayList<Position>();
-        pathPositions.add(Position.fromDegrees(dataFilter.getMinLat(), dataFilter.getMinLon(), 10000));
-        pathPositions.add(Position.fromDegrees(dataFilter.getMinLat(), dataFilter.getMaxLon(), 10000));
-        pathPositions.add(Position.fromDegrees(dataFilter.getMaxLat(), dataFilter.getMaxLon(), 10000));
-        pathPositions.add(Position.fromDegrees(dataFilter.getMaxLat(), dataFilter.getMinLon(), 10000));
-        Polygon pgon = new Polygon(pathPositions);
-        pgon.setValue(AVKey.DISPLAY_NAME, "Bounding Box");
-
-        pgon.setAltitudeMode(WorldWind.ABSOLUTE);
-        pgon.setAttributes(normalAttributes);
-        pgon.setHighlightAttributes(highlightAttributes);
-         
-        boundingBoxLayer.addRenderable(pgon);
-	    this.addLayer(boundingBoxLayer);
+ 		// create or redraw bounding box
+		if (boundingBoxLayer==null) {
+			boundingBoxLayer = new RenderableLayer();
+			boundingBoxLayer.setName("Bounding Box");
+		    this.addLayer(boundingBoxLayer);
+		}
+		else {
+			boundingBoxLayer.removeAllRenderables();
+		}
 		
-       
+	    // Create and set an attribute bundle.
+	    ShapeAttributes normalAttributes = new BasicShapeAttributes();
+	    normalAttributes.setInteriorMaterial(Material.YELLOW);
+	    normalAttributes.setOutlineOpacity(0.5);
+	    normalAttributes.setInteriorOpacity(0.8);
+	    normalAttributes.setOutlineMaterial(Material.GREEN);
+	    normalAttributes.setOutlineWidth(2);
+	    normalAttributes.setDrawOutline(true);
+	    normalAttributes.setDrawInterior(false);
+	    normalAttributes.setEnableLighting(true);
+	
+	    ShapeAttributes highlightAttributes = new BasicShapeAttributes(normalAttributes);
+	    highlightAttributes.setOutlineMaterial(Material.WHITE);
+	    highlightAttributes.setOutlineOpacity(1);
+	    
+	    // Create a polygon, set some of its properties and set its attributes.
+	    ArrayList<Position> pathPositions = new ArrayList<Position>();
+	    pathPositions.add(Position.fromDegrees(DataFilter.getMinLat(), DataFilter.getMinLon(), 10000));
+	    pathPositions.add(Position.fromDegrees(DataFilter.getMinLat(), DataFilter.getMaxLon(), 10000));
+	    pathPositions.add(Position.fromDegrees(DataFilter.getMaxLat(), DataFilter.getMaxLon(), 10000));
+	    pathPositions.add(Position.fromDegrees(DataFilter.getMaxLat(), DataFilter.getMinLon(), 10000));
+	    Polygon pgon = new Polygon(pathPositions);
+	    pgon.setValue(AVKey.DISPLAY_NAME, "Bounding Box");
+	
+	    pgon.setAltitudeMode(WorldWind.ABSOLUTE);
+	    pgon.setAttributes(normalAttributes);
+	    pgon.setHighlightAttributes(highlightAttributes);
+	     
+	    boundingBoxLayer.addRenderable(pgon);
+		      
     }
      
     private void highlight(Object o)
@@ -724,54 +679,141 @@ public class DataView extends ViewPart implements DataFilterUpdate{
         return sb.toString();
     }
 
-//
-//    private class Blinker
-//    {
-//        private LightningAnnotation annotation;
-//        private double initialScale, initialOpacity;
-//        private int steps = 10;
-//        private int step = 0;
-//        private int delay = 100;
-//        private Timer timer;
-//
-//        private Blinker(LightningAnnotation ea)
-//        {
-//            this.annotation = ea;
-//            this.initialScale = this.annotation.getAttributes().getScale();
-//            this.initialOpacity = this.annotation.getAttributes().getOpacity();
-//            this.timer = new Timer(delay, new ActionListener()
-//            {
-//			   @Override
-//               public void actionPerformed(ActionEvent event)
-//                {
-//                    annotation.getAttributes().setScale(initialScale * (1f + 7f * ((float) step / (float) steps)));
-//                    annotation.getAttributes().setOpacity(initialOpacity * (1f - ((float) step / (float) steps)));
-//                    step = step == steps ? 0 : step + 1;
-//                    getWwd().redraw();
-//                }
-//
-//            });
-//            start();
-//        }
-//
-//        private void stop()
-//        {
-//            timer.stop();
-//            step = 0;
-//            this.annotation.getAttributes().setScale(initialScale);
-//            this.annotation.getAttributes().setOpacity(initialOpacity);
-//        }
-//
-//        private void start()
-//        {
-//            timer.start();
-//        }
-//    }
-
 	@Override
 	public void refresh() {
 		// TODO Auto-generated method stub
-		addLightningLayers();
+		refreshLighningLayers();
 	}
+	// this original version used GeoJson as input
+	
+    // need to pass in lightning data as a common data structure or json object
+//    private void addLightningLayers() 
+//    {
+//        
+//        GroundNetworkGeojsonLoader json;
+//
+//    	// ENTLN Flash Data 
+//        if (entlnFlashLayer!=null) {
+//        	this.removeLayer(entlnFlashLayer);
+//        }
+//        try {
+//            json = new GroundNetworkGeojsonLoader(Color.CYAN);
+//            entlnFlashLayer = new RenderableLayer();
+//            entlnFlashLayer.setName("ENTLN Flash");
+//            entlnFlashLayer.addRenderable(this.tooltipAnnotation);
+//            System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString());
+//			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString()), entlnFlashLayer);
+////			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getCqlString()), layer);
+//	        this.addLayer(entlnFlashLayer);
+//		} catch (URISyntaxException e) {
+//			// TODO Auto-generated catch block
+//			System.err.println("error loading layer " + e.getReason());
+//		}
+//        catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			System.err.println("error loading layer " + e.getMessage());
+//		}
+//    	// NLDN Flash Data 
+//        if (nldnFlashLayer!=null) {
+//        	this.removeLayer(nldnFlashLayer);
+//        }
+//        try {
+//        	json = new GroundNetworkGeojsonLoader(Color.BLUE);
+//        	nldnFlashLayer = new RenderableLayer();
+//        	nldnFlashLayer.setName("NLDN Flash");
+//        	nldnFlashLayer.addRenderable(this.tooltipAnnotation);
+//            System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getNldnFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString());
+//			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getNldnFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString()), nldnFlashLayer);
+//        	this.addLayer(nldnFlashLayer);
+//        } catch (URISyntaxException e) {
+//        	// TODO Auto-generated catch block
+//        	System.err.println("error loading layer " + e.getReason());
+//        }
+//        catch (Exception e) {
+//        	// TODO Auto-generated catch block
+//        	System.err.println("error loading layer " + e.getMessage());
+//        }
+//	        
+//
+//	    // GLD360 Data 
+//        if (gld360Layer!=null) {
+//        	this.removeLayer(gld360Layer);
+//        }
+//	    try {
+//	        json = new GroundNetworkGeojsonLoader(Color.PINK);
+//	        gld360Layer = new RenderableLayer();
+//	        gld360Layer.setName("GLD360");
+//	        gld360Layer.addRenderable(this.tooltipAnnotation);
+//            System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getGld360Table() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString());
+//			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getGld360Table() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString()), gld360Layer);
+//	        this.addLayer(gld360Layer);
+//	    } catch (URISyntaxException e) {
+//	    	// TODO Auto-generated catch block
+//	    	System.err.println("error loading layer " + e.getReason());
+//	    }
+//	    catch (Exception e) {
+//	    	// TODO Auto-generated catch block
+//	    	System.err.println("error loading layer " + e.getMessage());
+//	    }
+//
+//			// GLM Flash Data 
+//        if (glmLayer!=null) {
+//        	this.removeLayer(glmLayer);
+//        }
+//		try {
+//		    json = new GroundNetworkGeojsonLoader(Color.MAGENTA);
+//		    glmLayer = new RenderableLayer();
+//		    glmLayer.setName("GLM Flash");
+//		    glmLayer.addRenderable(this.tooltipAnnotation);
+//            System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getGlmFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString());
+//			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getGlmFlashTable() + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString()), glmLayer);
+//		    this.addLayer(glmLayer);
+//		} catch (URISyntaxException e) {
+//			// TODO Auto-generated catch block
+//			System.err.println("error loading layer " + e.getReason());
+//		}
+//		catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			System.err.println("error loading layer " + e.getMessage());
+//		}
+//		
+//		if (boundingBoxLayer!=null) {
+//			this.removeLayer(boundingBoxLayer);
+//		}
+//		boundingBoxLayer = new RenderableLayer();
+//		boundingBoxLayer.setName("Bounding Box");
+//
+//        // Create and set an attribute bundle.
+//        ShapeAttributes normalAttributes = new BasicShapeAttributes();
+//        normalAttributes.setInteriorMaterial(Material.YELLOW);
+//        normalAttributes.setOutlineOpacity(0.5);
+//        normalAttributes.setInteriorOpacity(0.8);
+//        normalAttributes.setOutlineMaterial(Material.GREEN);
+//        normalAttributes.setOutlineWidth(2);
+//        normalAttributes.setDrawOutline(true);
+//        normalAttributes.setDrawInterior(false);
+//        normalAttributes.setEnableLighting(true);
+//
+//        ShapeAttributes highlightAttributes = new BasicShapeAttributes(normalAttributes);
+//        highlightAttributes.setOutlineMaterial(Material.WHITE);
+//        highlightAttributes.setOutlineOpacity(1);
+//        
+//        // Create a polygon, set some of its properties and set its attributes.
+//        ArrayList<Position> pathPositions = new ArrayList<Position>();
+//        pathPositions.add(Position.fromDegrees(dataFilter.getMinLat(), dataFilter.getMinLon(), 10000));
+//        pathPositions.add(Position.fromDegrees(dataFilter.getMinLat(), dataFilter.getMaxLon(), 10000));
+//        pathPositions.add(Position.fromDegrees(dataFilter.getMaxLat(), dataFilter.getMaxLon(), 10000));
+//        pathPositions.add(Position.fromDegrees(dataFilter.getMaxLat(), dataFilter.getMinLon(), 10000));
+//        Polygon pgon = new Polygon(pathPositions);
+//        pgon.setValue(AVKey.DISPLAY_NAME, "Bounding Box");
+//
+//        pgon.setAltitudeMode(WorldWind.ABSOLUTE);
+//        pgon.setAttributes(normalAttributes);
+//        pgon.setHighlightAttributes(highlightAttributes);
+//         
+//        boundingBoxLayer.addRenderable(pgon);
+//	    this.addLayer(boundingBoxLayer);
+//		      
+//    }
 
 }
