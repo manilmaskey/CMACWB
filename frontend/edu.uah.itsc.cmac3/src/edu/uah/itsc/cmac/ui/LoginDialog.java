@@ -1,6 +1,8 @@
 package edu.uah.itsc.cmac.ui;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
@@ -233,6 +235,7 @@ public class LoginDialog {
 				jgitFile.createNewFile();
 				S3 s3 = new S3();
 				s3.createJgitContents(jgitFile, false);
+				createSciDBFile();
 			}
 			catch (IOException e1) {
 				e1.printStackTrace();
@@ -253,5 +256,23 @@ public class LoginDialog {
 
 	private void finish() {
 		shell.setCursor(new Cursor(display, SWT.CURSOR_ARROW));
+	}
+
+	private void createSciDBFile() throws IOException {
+		String homeDir = System.getProperty("user.home");
+		File sciDBFile = new File(homeDir + "/.cwb_aes");
+		if (sciDBFile.exists()) {
+			sciDBFile.delete();
+		}
+		if (User.sciDBUserName != null && User.sciDBPassword != null) {
+			sciDBFile.createNewFile();
+			String content = "{\n\"username\": \"" + User.sciDBUserName + "\",\n\"password\": \"" + User.sciDBPassword
+				+ "\"\n}";
+			FileWriter fw = new FileWriter(sciDBFile.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(content);
+			bw.close();
+			sciDBFile.deleteOnExit();
+		}
 	}
 }
