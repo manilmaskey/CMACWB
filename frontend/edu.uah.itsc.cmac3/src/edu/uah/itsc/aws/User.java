@@ -19,6 +19,8 @@ public class User {
 	public static String					password;
 	public static String					awsAccessKey;
 	public static String					awsSecretKey;
+	public static String					sciDBUserName;
+	public static String					sciDBPassword;
 	public static String					rootFolder;
 	public static String					sessionID;
 	public static String					sessionName;
