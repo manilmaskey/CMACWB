@@ -23,6 +23,9 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.logging.Level;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
 import org.eclipse.swt.layout.FillLayout;
@@ -99,6 +102,8 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	private  static JFreeChart glmHist;
 	private static long timeInterval;
 	private static String flashesPer = "";
+	private static boolean enableFlag=true;
+	Action enableAction;
 
 	/**
 	 * This is a callback that will allow us
@@ -142,6 +147,25 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
        //chartFrame.setLayout(new RowLayout(SWT.VERTICAL));
         //chartFrame.setLayoutData(new RowData(512, 512));
 
+        enableAction = new Action("Disable plot display") {
+            public void run() {
+                if (enableFlag) { // action is to disable
+             		enableAction.setToolTipText("Enable plot display");
+             		enableAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/icon_reg_disable_16x16.gif"));
+                }
+                else {
+             		enableAction.setToolTipText("Disable plot display");
+             		enableAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/icon_reg_enable_16x16.gif"));                	
+                }
+                enableFlag = !enableFlag;
+           }
+        };
+//       drawBoxAction.setImageDescriptor(getImageDescriptor("rectangle.jpg"));
+        enableAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/icon_reg_enable_16x16.gif"));
+        IToolBarManager mgr = getViewSite().getActionBars().getToolBarManager();
+        mgr.add(enableAction);
+
+        
         dataFilter.registerObject(this); // register this object with filter update interface
 // TODO need to fill in refresh method
         
@@ -515,12 +539,19 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 
 	@Override
 	public void refresh() {
-		// TODO Auto-generated method stub
-		XYDataset entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
-		XYDataset nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
-		XYDataset gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
-		XYDataset glmDataset = readHistogram(conf.getGlmFlashRateLayer());
-        
+//		// TODO Auto-generated method stub
+		XYDataset entlnDataset = null;
+		XYDataset nldnDataset = null;
+		XYDataset gld360Dataset = null;
+		XYDataset glmDataset = null;
+		if (enableFlag) {
+			entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
+			nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
+			gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
+			glmDataset = readHistogram(conf.getGlmFlashRateLayer());
+	        
+		}
+		
 		// reset data 
         entlnHist.getXYPlot().setDataset(entlnDataset);
         nldnHist.getXYPlot().setDataset(nldnDataset);

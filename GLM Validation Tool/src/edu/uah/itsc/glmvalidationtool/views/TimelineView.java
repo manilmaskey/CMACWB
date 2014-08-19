@@ -162,30 +162,11 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 	    cdtAnimationStart.addSelectionListener(new SelectionListener() {
 	    	@Override
 			public void widgetDefaultSelected(SelectionEvent event) {
-			System.out.println("Start time: " + cdtAnimationStart.getSelection());
-			if ((cdtAnimationStart.getSelection().getTime()<dataFilter.getDataStartTimeMilli()))
-				cdtAnimationStart.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
-			if ((cdtAnimationStart.getSelection().getTime()>dataFilter.getDataEndTimeMilli()))
-				cdtAnimationStart.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
-			if (cdtAnimationStart.getSelection().getTime()>=cdtAnimationEnd.getSelection().getTime())
-				cdtAnimationStart.setSelection(new Date (cdtAnimationEnd.getSelection().getTime()-dataFilter.getDisplayIntervalMilli()));
-			if (cdtCurrent.getSelection().getTime()<cdtAnimationStart.getSelection().getTime())
-				cdtCurrent.setSelection(cdtAnimationStart.getSelection());	
-			resetScale();
+	    		cdtAnimationStartSelected();
 	    	}
-
 			@Override
 			public void widgetSelected(SelectionEvent event) {
-				System.out.println("Start time: " + cdtAnimationStart.getSelection());
-				if ((cdtAnimationStart.getSelection().getTime()<dataFilter.getDataStartTimeMilli()))
-					cdtAnimationStart.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
-				if ((cdtAnimationStart.getSelection().getTime()>dataFilter.getDataEndTimeMilli()))
-					cdtAnimationStart.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
-				if (cdtAnimationStart.getSelection().getTime()>=cdtAnimationEnd.getSelection().getTime())
-					cdtAnimationStart.setSelection(new Date (cdtAnimationEnd.getSelection().getTime()-dataFilter.getDisplayIntervalMilli()));
-				if (cdtCurrent.getSelection().getTime()<cdtAnimationStart.getSelection().getTime())
-					cdtCurrent.setSelection(cdtAnimationStart.getSelection());
-				resetScale();
+				cdtAnimationStartSelected();
 			}
 	    });
 	    cal.setTimeInMillis(dataFilter.getDataEndTimeMilli());
@@ -199,35 +180,18 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 	    cdtAnimationEnd.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetDefaultSelected(SelectionEvent event) {
-				System.out.println("End time: " + cdtAnimationEnd.getSelection());
-				if ((cdtAnimationEnd.getSelection().getTime()>dataFilter.getDataEndTimeMilli()))
-					cdtAnimationEnd.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
-				if ((cdtAnimationEnd.getSelection().getTime()<dataFilter.getDataStartTimeMilli()))
-					cdtAnimationEnd.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
-				if (cdtAnimationEnd.getSelection().getTime()<=cdtAnimationStart.getSelection().getTime())
-					cdtAnimationEnd.setSelection(new Date (cdtAnimationStart.getSelection().getTime()+dataFilter.getDisplayIntervalMilli()));
-				if (cdtCurrent.getSelection().getTime()>cdtAnimationEnd.getSelection().getTime())
-					cdtCurrent.setSelection(new Date(cdtAnimationEnd.getSelection().getTime()));
-				resetScale();
+				cdtAnimationEndSelected();
 			}
 
 			@Override
 			public void widgetSelected(SelectionEvent event) {
-				System.out.println("End time: " + cdtAnimationEnd.getSelection());
-				if ((cdtAnimationEnd.getSelection().getTime()>dataFilter.getDataEndTimeMilli()))
-					cdtAnimationEnd.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
-				if ((cdtAnimationEnd.getSelection().getTime()<dataFilter.getDataStartTimeMilli()))
-					cdtAnimationEnd.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
-				if (cdtAnimationEnd.getSelection().getTime()<=cdtAnimationStart.getSelection().getTime())
-					cdtAnimationEnd.setSelection(new Date (cdtAnimationStart.getSelection().getTime()+dataFilter.getDisplayIntervalMilli()));
-				if (cdtCurrent.getSelection().getTime()>cdtAnimationEnd.getSelection().getTime())
-					cdtCurrent.setSelection(new Date(cdtAnimationEnd.getSelection().getTime()));
-				resetScale();
+				cdtAnimationEndSelected();
 			}
 	    });
 		
 		
-	    scale = new Scale (parent, SWT.BORDER);
+//	    scale = new Scale (parent, SWT.BORDER);
+	    scale = new Scale (parent, SWT.NONE);
 		Rectangle clientArea = parent.getClientArea ();
 		scale.setBounds (clientArea.x, clientArea.y, 200, 64);
 		scale.setMaximum ((int)(cdtAnimationEnd.getSelection().getTime() - cdtAnimationStart.getSelection().getTime()));
@@ -237,22 +201,13 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				// TODO Auto-generated method stub
-				int position = scale.getSelection();
-				cdtCurrent.setSelection(new Date(cdtAnimationStart.getSelection().getTime() + position));
-				dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
+				scaleSelected();
 			}
 
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
-				// TODO Auto-generated method stub
-				int position = scale.getSelection();
-				cdtCurrent.setSelection(new Date(cdtAnimationStart.getSelection().getTime() + position));
-				dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
-				
+				scaleSelected();				
 			}
-			
-			
 		});
 		
 		
@@ -295,12 +250,14 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 				public void widgetDefaultSelected(SelectionEvent event) {
 					// set data filter value
 					dataFilter.setDisplayInterval(cdtDisplayInterval.getSelection().getHours(), cdtDisplayInterval.getSelection().getMinutes(), cdtDisplayInterval.getSelection().getSeconds());
+					resetScale();
 				}
 
 			@Override
 				public void widgetSelected(SelectionEvent event) {
 					System.out.println("DisplayInterval: " + cdtDisplayInterval.getSelection().getHours() + ":" + cdtDisplayInterval.getSelection().getMinutes() + ":" + cdtDisplayInterval.getSelection().getSeconds());
 					dataFilter.setDisplayInterval(cdtDisplayInterval.getSelection().getHours(), cdtDisplayInterval.getSelection().getMinutes(), cdtDisplayInterval.getSelection().getSeconds());
+					resetScale();
 				}
 
 	    });
@@ -316,64 +273,47 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 		
 		createActions();
 	    createToolbar();
-	    
-	    
-	    
-//	    final Button buttonDraw = new Button(parent, SWT.PUSH);
-//	    buttonDraw.setText("Draw Bounding Box");
-//	    buttonDraw.setToolTipText("Press this button then press and drag button 1 on globe");
-//	    buttonDraw.addSelectionListener(new SelectionListener() {
-//
-//		      public void widgetSelected(SelectionEvent event) {
-//		    	  wwEvent.enableSelectors();
-//		    	  selectedSector = null;
-//		      }
-//
-//		      public void widgetDefaultSelected(SelectionEvent event) {
-//		    	  wwEvent.enableSelectors();
-//		    	  selectedSector = null;
-//		      }
-//		    });
-//
-//	    final Button buttonDrawCancel = new Button(parent, SWT.PUSH);
-//	    buttonDrawCancel.setText("Cancel Drawn Box");
-//	    buttonDrawCancel.addSelectionListener(new SelectionListener() {
-//
-//		      public void widgetSelected(SelectionEvent event) {
-//		    	  wwEvent.disableSelectors();
-//		      }
-//
-//		      public void widgetDefaultSelected(SelectionEvent event) {
-//		    	  wwEvent.disableSelectors();
-//		      }
-//		    });
-//	    
-//	    
-//	    final Button buttonApply = new Button(parent, SWT.PUSH);
-//	    buttonApply.setText("Apply Changes");
-//
-//	    buttonApply.addSelectionListener(new SelectionListener() {
-//
-//	      public void widgetSelected(SelectionEvent event) {
-//	    	if (selectedSector!=null) {	    		
-//	      	  	dataFilter.setBoundingBox(selectedSector.getMinLongitude().degrees, selectedSector.getMaxLongitude().degrees, selectedSector.getMinLatitude().degrees, selectedSector.getMaxLatitude().degrees);
-//	    		selectedSector=null;
-//		    	wwEvent.disableSelectors();
-//	    	}
-//	        dataFilter.refreshObjects();
-//	      }
-//
-//	      public void widgetDefaultSelected(SelectionEvent event) {
-//		    	if (selectedSector!=null) {	    		
-//		      	  	dataFilter.setBoundingBox(selectedSector.getMinLongitude().degrees, selectedSector.getMaxLongitude().degrees, selectedSector.getMinLatitude().degrees, selectedSector.getMaxLatitude().degrees);
-//		    		selectedSector=null;
-//			    	wwEvent.disableSelectors();
-//		    	}
-//		        dataFilter.refreshObjects();
-//		  }
-//
-//	    });
-	 
+	   	 
+	}
+	private void cdtAnimationStartSelected()
+	{
+		System.out.println("Start time: " + cdtAnimationStart.getSelection());
+		if ((cdtAnimationStart.getSelection().getTime()<dataFilter.getDataStartTimeMilli()))
+			cdtAnimationStart.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
+		if ((cdtAnimationStart.getSelection().getTime()>dataFilter.getDataEndTimeMilli()))
+			cdtAnimationStart.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
+		if (cdtAnimationStart.getSelection().getTime()>=cdtAnimationEnd.getSelection().getTime())
+			cdtAnimationStart.setSelection(new Date (cdtAnimationEnd.getSelection().getTime()-dataFilter.getDisplayIntervalMilli()));
+		if (cdtCurrent.getSelection().getTime()<cdtAnimationStart.getSelection().getTime())
+			cdtCurrent.setSelection(cdtAnimationStart.getSelection());
+		resetScale();
+	}
+	private void cdtAnimationEndSelected()
+	{
+		System.out.println("End time: " + cdtAnimationEnd.getSelection());
+		if ((cdtAnimationEnd.getSelection().getTime()>dataFilter.getDataEndTimeMilli()))
+			cdtAnimationEnd.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
+		if ((cdtAnimationEnd.getSelection().getTime()<dataFilter.getDataStartTimeMilli()))
+			cdtAnimationEnd.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
+		if (cdtAnimationEnd.getSelection().getTime()<=cdtAnimationStart.getSelection().getTime())
+			cdtAnimationEnd.setSelection(new Date (cdtAnimationStart.getSelection().getTime()+dataFilter.getDisplayIntervalMilli()));
+		if (cdtCurrent.getSelection().getTime()>cdtAnimationEnd.getSelection().getTime())
+			cdtCurrent.setSelection(new Date(cdtAnimationEnd.getSelection().getTime()));
+		resetScale();	
+	}
+	private void scaleSelected()
+	{
+		// set selection to nearest interval
+		int position = scale.getSelection();
+
+		int nearestTick = (position + (int)dataFilter.getDisplayIntervalMilli()/2) / (int)dataFilter.getDisplayIntervalMilli();
+		int nearestTickPosition = nearestTick * (int)dataFilter.getDisplayIntervalMilli();
+		scale.setSelection(nearestTickPosition);
+		
+//		cdtCurrent.setSelection(new Date(cdtAnimationStart.getSelection().getTime() + position));
+		cdtCurrent.setSelection(new Date(cdtAnimationStart.getSelection().getTime() + nearestTickPosition));
+		dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
+
 	}
 	private void resetScale()
 	{
