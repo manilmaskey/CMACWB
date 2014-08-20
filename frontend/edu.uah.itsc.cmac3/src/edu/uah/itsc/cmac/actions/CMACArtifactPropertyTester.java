@@ -53,8 +53,9 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 				else if (!file.getProject().getName().equals(S3.getCommunityBucketName())) {
 					// if (!file.getParent().getName().equals(User.username) && expectedValue.equals("execute")) {
 					if (expectedValue.equals("execute")) {
-						if (User.sciDBUserName != null || User.sciDBPassword != null)
-							return false;
+						// Do not disable execute for scidb users for now
+						// if (User.sciDBUserName != null || User.sciDBPassword != null)
+						// return false;
 						String ext = file.getFileExtension();
 						return (ext.equals("py") || ext.equals("pro"));
 
