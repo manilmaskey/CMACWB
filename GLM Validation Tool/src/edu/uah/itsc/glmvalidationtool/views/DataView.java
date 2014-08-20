@@ -22,6 +22,7 @@ import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.layers.CrosshairLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.layers.Earth.CountryBoundariesLayer;
@@ -29,6 +30,7 @@ import gov.nasa.worldwind.render.BasicShapeAttributes;
 import gov.nasa.worldwind.render.GlobeAnnotation;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.Polygon;
+import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.render.ShapeAttributes;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.OrbitView;
@@ -47,6 +49,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,7 +90,13 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 	private GroundNetworkLayer gld360Layer=null;
 	private GroundNetworkLayer glmLayer=null;
 	
+	private Map<Long, ArrayList<Renderable>> entlnFlashBuffer = new HashMap<>();
+	private Map<Long, ArrayList<Renderable>> nldnFlashBuffer = new HashMap<>();
+	private Map<Long, ArrayList<Renderable>> gld360Buffer = new HashMap<>();
+	private Map<Long, ArrayList<Renderable>> glmBuffer = new HashMap<>();
+
 	private RenderableLayer boundingBoxLayer=null;
+	private CrosshairLayer crosshairLayer=null;
 	
     private AnnotationPointPlacemark placeMark;
  //   private PointPlacemark mouseAn, latestAn;
@@ -106,6 +116,12 @@ public class DataView extends ViewPart implements DataFilterUpdate{
     public DataView() {
 	}
 
+    @Override
+    public void dispose()
+    {
+    	super.dispose();
+    	dataFilter.unregisterObject(this);
+    }
 	public void createPartControl(final Composite parent) {
 		this.swtAwtContainer = new Composite(parent, SWT.EMBEDDED);
 		this.swtAwtContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -177,7 +193,15 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 //			e.printStackTrace();
 //		}
         
-		this.wwd = new WorldWindowGLCanvas();
+        // if a wwd has already been created, get the first object and pass it to the constructor
+        // to share resources
+        
+        // TODO: this seems to give an error when closing in eclipse, investigate further
+//        if (WWEvent.getWWObjects().size()>0)
+//        	this.wwd = new WorldWindowGLCanvas((WorldWindowGLCanvas)WWEvent.getWWObjects().get(0));
+//        else 
+        	this.wwd = new WorldWindowGLCanvas();
+
 //		this.wwd = new ExtendedGliderWorldWindow();
 		
 		// set initial view position
@@ -193,8 +217,18 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 				for (Object obj:changed) {
 //					ExtendedGliderWorldWindow wwObj =(ExtendedGliderWorldWindow) obj;
 					WorldWindowGLCanvas wwObj =(WorldWindowGLCanvas) obj;
-					String state = wwd.getView().getRestorableState();
-					wwObj.getView().restoreState(state);
+
+//					String state = wwd.getView().getRestorableState();
+//					wwObj.getView().restoreState(state);
+					
+		            FlatOrbitView sourceView = (FlatOrbitView)wwd.getView();
+		            FlatOrbitView destView = (FlatOrbitView)wwObj.getView();
+		            destView.setCenterPosition(sourceView.getCenterPosition());
+		            destView.setZoom(sourceView.getZoom( ));
+		            destView.setHeading(sourceView.getHeading());
+		            destView.setPitch(sourceView.getPitch());
+
+					
 //					String state = wwd.getRestorableState();
 //					wwObj.restoreState(state);
 
@@ -325,6 +359,10 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 		parent.setLayoutData(new GridData(GridData.FILL_BOTH));
 		//System.out.println("EarthView.createPartControl 4");
 
+		crosshairLayer = new CrosshairLayer();
+		ApplicationTemplate.insertBeforeLayerName(getWwd(), crosshairLayer, "Political Boundaries");
+
+		
 //		ViewControlsLayer viewControl = new ViewControlsLayer();
 //		viewControl.setShowPanControls(true);
 //		viewControl.setPosition(AVKey.NORTHEAST);
@@ -566,10 +604,37 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 //        	entlnFlashLayer.clearPoints();
 //            entlnFlashLayer.readCsvData(conf.getEntlnFlashTable());
 //            entlnFlashLayer.displayPoints();
-        	entlnFlashLayer.readCsvData();
-        	nldnFlashLayer.readCsvData();
-        	gld360Layer.readCsvData();
-        	glmLayer.readCsvData();
+        	if (entlnFlashBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+        		entlnFlashLayer.readCsvData();
+        		entlnFlashBuffer.put(dataFilter.getCurrentTimeMilli(), entlnFlashLayer.getPoints());
+        	}
+        	else {
+        		entlnFlashLayer.setPoints(entlnFlashBuffer.get(dataFilter.getCurrentTimeMilli()));
+        	}
+        	if (nldnFlashBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+        		nldnFlashLayer.readCsvData();
+        		nldnFlashBuffer.put(dataFilter.getCurrentTimeMilli(), nldnFlashLayer.getPoints());
+        	}
+        	else {
+        		nldnFlashLayer.setPoints(nldnFlashBuffer.get(dataFilter.getCurrentTimeMilli()));
+        	}
+        	if (gld360Buffer.get(dataFilter.getCurrentTimeMilli())==null) {
+        		gld360Layer.readCsvData();
+        		gld360Buffer.put(dataFilter.getCurrentTimeMilli(), gld360Layer.getPoints());
+        	}
+        	else {
+        		gld360Layer.setPoints(gld360Buffer.get(dataFilter.getCurrentTimeMilli()));
+        	}
+        	if (glmBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+        		glmLayer.readCsvData();
+        		glmBuffer.put(dataFilter.getCurrentTimeMilli(), glmLayer.getPoints());
+        	}
+        	else {
+        		glmLayer.setPoints(glmBuffer.get(dataFilter.getCurrentTimeMilli()));
+        	}
+//        	nldnFlashLayer.readCsvData();
+//        	gld360Layer.readCsvData();
+//        	glmLayer.readCsvData();
         	
         	entlnFlashLayer.displayPoints();
         	nldnFlashLayer.displayPoints();
@@ -685,6 +750,16 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 		refreshLighningLayers();
 	}
 	// this original version used GeoJson as input
+
+	@Override
+	public void clearCache() {
+		// TODO Auto-generated method stub
+		entlnFlashBuffer.clear();
+		nldnFlashBuffer.clear();
+		gld360Buffer.clear();
+		glmBuffer.clear();
+
+	}
 	
     // need to pass in lightning data as a common data structure or json object
 //    private void addLightningLayers() 

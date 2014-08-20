@@ -32,6 +32,14 @@ public class DataFilter {
 			((DataFilterUpdate) obj).refresh();
 		}
 	}
+	public void clearCache()
+	{
+		System.out.println("clearCache");
+		for (Object obj:updateObjects) {
+			System.out.println("object " + obj.toString());
+			((DataFilterUpdate) obj).clearCache();
+		}
+	}
 	// need methods to query database layers for bounding box and set as default
 	
 	public void setBoundingBox(double minLon, double maxLon, double minLat, double maxLat)

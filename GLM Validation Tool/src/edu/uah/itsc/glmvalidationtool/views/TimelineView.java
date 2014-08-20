@@ -51,6 +51,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.nebula.widgets.cdatetime.CDT;
 import org.eclipse.nebula.widgets.cdatetime.CDateTime;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
@@ -111,14 +113,22 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
     private Scale scale;
     private Animator animator;
 
-    Action playAction, drawBoxAction, stopAction, refreshAction, clearAction;
-
+    Action playAction, drawBoxAction, refreshAction, clearAction;
+    boolean playFlag=false;
+    
+    //stopAction, 
 	/**
 	 * The constructor.
 	 */
 	public TimelineView() {
 		WWEvent.registerListener(this);
 	}
+    @Override
+    public void dispose()
+    {
+    	super.dispose();
+    	dataFilter.unregisterObject(this);
+    }
 
 	/**
 	 * This is a callback that will allow us
@@ -151,7 +161,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 		long startTime = dataFilter.getDataEndTimeMilli()-1000*60*5;  // last 5 minutes
 		dataFilter.setCurrentTime(startTime);
 		
-		cal.setTimeInMillis(startTime); 
+		cal.setTimeInMillis(startTime);
 		cdtAnimationStart = new CDateTime(dateAnimationGroup, CDT.BORDER | CDT.DROP_DOWN | CDT.CLOCK_24_HOUR | CDT.COMPACT);
 //	    cdtAnimationStart.setPattern("'Starting Time' EEEE, MMMM d '@' hh:mm:ss 'GMT'");
 	    cdtAnimationStart.setFormat(CDT.DATE_LONG | CDT.TIME_MEDIUM);
@@ -209,6 +219,28 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 				scaleSelected();				
 			}
 		});
+		scale.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseDown(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseUp(MouseEvent e) {
+				// TODO Auto-generated method stub
+				dataFilter.refreshObjects();
+				
+			}
+			
+		} );
 		
 		
 		
@@ -223,25 +255,26 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 	    cdtCurrent.setPattern("'Current Time:' MM/dd/yyyy HH:mm:ss ");
 //		cdtCurrent.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, false, false));
 		cdtCurrent.setSelection(cal.getTime());
-	    cdtCurrent.addSelectionListener(new SelectionListener() {
-			@Override
-				public void widgetDefaultSelected(SelectionEvent event) {
-					// set data filter value
-					dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
-				}
-
-			@Override
-				public void widgetSelected(SelectionEvent event) {
-					System.out.println("Start time: " + cdtCurrent.getSelection());
-					dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
-				}
-
-	    });
+		cdtCurrent.setEnabled(false);
+//	    cdtCurrent.addSelectionListener(new SelectionListener() {
+//			@Override
+//				public void widgetDefaultSelected(SelectionEvent event) {
+//					// set data filter value
+//					dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
+//				}
+//
+//			@Override
+//				public void widgetSelected(SelectionEvent event) {
+//					System.out.println("Start time: " + cdtCurrent.getSelection());
+//					dataFilter.setCurrentTime(cdtCurrent.getSelection().getTime());
+//				}
+//
+//	    });
 		cal.setTimeInMillis(dataFilter.getDisplayIntervalMilli());
 	    cdtDisplayInterval = new CDateTime(dateGroup, CDT.BORDER | CDT.DROP_DOWN | CDT.CLOCK_24_HOUR | CDT.COMPACT);
 	    cdtDisplayInterval.setFormat(CDT.DATE_LONG | CDT.TIME_MEDIUM);
 //	    cdtDisplayInterval.setPattern("'Ending Time:' EEEE, MMMM d yyyy '@' HH:mm:SS Z 'GMT'");
-	    cdtDisplayInterval.setPattern("'Displayed range:' HH:mm:ss ");
+	    cdtDisplayInterval.setPattern("'Interval:' HH:mm:ss ");
 //	    cdtDisplayInterval.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 //	    cdtDisplayInterval.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, false, false));
 	    cdtDisplayInterval.setSelection(cal.getTime());
@@ -250,6 +283,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 				public void widgetDefaultSelected(SelectionEvent event) {
 					// set data filter value
 					dataFilter.setDisplayInterval(cdtDisplayInterval.getSelection().getHours(), cdtDisplayInterval.getSelection().getMinutes(), cdtDisplayInterval.getSelection().getSeconds());
+					dataFilter.clearCache(); // clear cache if interval changes, any data in cache will be invalid
 					resetScale();
 				}
 
@@ -262,7 +296,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 
 	    });
 
-		timeRangeText = new Text(parent, SWT.CENTER);
+		timeRangeText = new Text(parent, SWT.CENTER|SWT.MULTI|SWT.WRAP);
 		Date startDate = new Date(dataFilter.getDataStartTimeMilli());
 		Date endDate = new Date(dataFilter.getDataEndTimeMilli());
 		
@@ -273,6 +307,8 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 		
 		createActions();
 	    createToolbar();
+	    
+	    dataFilter.refreshObjects();
 	   	 
 	}
 	private void cdtAnimationStartSelected()
@@ -284,8 +320,8 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 			cdtAnimationStart.setSelection(new Date(dataFilter.getDataEndTimeMilli()));
 		if (cdtAnimationStart.getSelection().getTime()>=cdtAnimationEnd.getSelection().getTime())
 			cdtAnimationStart.setSelection(new Date (cdtAnimationEnd.getSelection().getTime()-dataFilter.getDisplayIntervalMilli()));
-		if (cdtCurrent.getSelection().getTime()<cdtAnimationStart.getSelection().getTime())
-			cdtCurrent.setSelection(cdtAnimationStart.getSelection());
+//		if (cdtCurrent.getSelection().getTime()<cdtAnimationStart.getSelection().getTime())
+//			cdtCurrent.setSelection(cdtAnimationStart.getSelection());
 		resetScale();
 	}
 	private void cdtAnimationEndSelected()
@@ -297,8 +333,8 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 			cdtAnimationEnd.setSelection(new Date(dataFilter.getDataStartTimeMilli()));
 		if (cdtAnimationEnd.getSelection().getTime()<=cdtAnimationStart.getSelection().getTime())
 			cdtAnimationEnd.setSelection(new Date (cdtAnimationStart.getSelection().getTime()+dataFilter.getDisplayIntervalMilli()));
-		if (cdtCurrent.getSelection().getTime()>cdtAnimationEnd.getSelection().getTime())
-			cdtCurrent.setSelection(new Date(cdtAnimationEnd.getSelection().getTime()));
+//		if (cdtCurrent.getSelection().getTime()>cdtAnimationEnd.getSelection().getTime())
+//			cdtCurrent.setSelection(new Date(cdtAnimationEnd.getSelection().getTime()));
 		resetScale();	
 	}
 	private void scaleSelected()
@@ -326,17 +362,27 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
     public void createActions() {
            playAction = new Action("Start Animation") {
                 public void run() { 
-                           StartAnimation();
-                   }
+                		if (playFlag) {
+                			playAction.setToolTipText("Start Animation");
+                			playAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/nav_go.gif"));
+                			StopAnimation();
+                		}
+                		else {
+                			playAction.setToolTipText("Stop Animation");
+                			playAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/suspend_co.gif"));
+                            StartAnimation();               			
+                		}
+                		playFlag=!playFlag;
+                    }
            };
            playAction.setImageDescriptor(getImageDescriptor("nav_go.gif"));
 
-           stopAction = new Action("Stop Animation") {
-                   public void run() {
-                           StopAnimation();
-                   }
-           };
-           stopAction.setImageDescriptor(getImageDescriptor("suspend_co.gif"));
+//           stopAction = new Action("Stop Animation") {
+//                   public void run() {
+//                           StopAnimation();
+//                   }
+//           };
+//           stopAction.setImageDescriptor(getImageDescriptor("suspend_co.gif"));
 
            drawBoxAction = new Action("Draw Bounding Box") {
                    public void run() {
@@ -378,8 +424,9 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
     private void DrawBox()
     {
 		wwEvent.enableSelectors();
+		dataFilter.clearCache();
 		selectedSector = null;    	
-		cdtCurrent.setEnabled(false);
+//		cdtCurrent.setEnabled(false);
 		cdtDisplayInterval.setEnabled(false);
 		cdtAnimationStart.setEnabled(false);
 		cdtAnimationEnd.setEnabled(false);
@@ -389,7 +436,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
     private void ClearBox()
     {
     	wwEvent.disableSelectors();	
-   		cdtCurrent.setEnabled(true);
+//   		cdtCurrent.setEnabled(true);
 		cdtDisplayInterval.setEnabled(true);
 		cdtAnimationStart.setEnabled(true);
 		cdtAnimationEnd.setEnabled(true);
@@ -404,7 +451,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
     	}
         dataFilter.refreshObjects();
         
-   		cdtCurrent.setEnabled(true);
+//   		cdtCurrent.setEnabled(true);
 		cdtDisplayInterval.setEnabled(true);
 		cdtAnimationStart.setEnabled(true);
 		cdtAnimationEnd.setEnabled(true);
@@ -416,7 +463,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
     private void createToolbar() {
             IToolBarManager mgr = getViewSite().getActionBars().getToolBarManager();
             mgr.add(playAction);
-            mgr.add(stopAction);
+ //           mgr.add(stopAction);
             mgr.add(drawBoxAction);
             mgr.add(clearAction);
             mgr.add(refreshAction);
@@ -597,7 +644,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
     	  // re-enable other controls
     	  
 		System.out.println("animator stop");
-		cdtCurrent.setEnabled(true);
+//		cdtCurrent.setEnabled(true);
 		cdtDisplayInterval.setEnabled(true);
 		cdtAnimationStart.setEnabled(true);
 		cdtAnimationEnd.setEnabled(true);
@@ -614,7 +661,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
     	  // disable other controls, only enable stop animation button
     	  
   		System.out.println("animator start");
-		cdtCurrent.setEnabled(false);
+//		cdtCurrent.setEnabled(false);
 		cdtDisplayInterval.setEnabled(false);
 		cdtAnimationStart.setEnabled(false);
 		cdtAnimationEnd.setEnabled(false);
@@ -652,8 +699,8 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 		cdtDisplayInterval.setSelection(cal.getTime());	
 		resetScale();
 		
-		Date startDate = new Date(dataFilter.getDataStartTimeMilli());
-		Date endDate = new Date(dataFilter.getDataEndTimeMilli());
+//		Date startDate = new Date(dataFilter.getDataStartTimeMilli());
+//		Date endDate = new Date(dataFilter.getDataEndTimeMilli());
 	}
 
 	@Override
@@ -666,6 +713,12 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 //  	  	dataFilter.setBoundingBox(sector.getMinLongitude().degrees, sector.getMaxLongitude().degrees, sector.getMinLatitude().degrees, sector.getMaxLatitude().degrees);
 //  	  	dataFilter.refreshObjects();
 
+	}
+
+	@Override
+	public void clearCache() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

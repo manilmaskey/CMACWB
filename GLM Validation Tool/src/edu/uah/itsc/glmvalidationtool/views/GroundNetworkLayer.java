@@ -52,6 +52,15 @@ public class GroundNetworkLayer extends RenderableLayer{
 		addRenderable(tooltip);
 	}
 	
+	public ArrayList<Renderable> getPoints() {
+		return points;
+	}
+
+	public void setPoints(ArrayList<Renderable> points) {
+		this.points = points;
+    	removeAllRenderables();
+    	addRenderable(tooltip);
+	}
     protected Renderable createPoint(Position pos, String dateTime, String value)
     {
         AnnotationPointPlacemark p = new AnnotationPointPlacemark(pos, pointAttrs);
@@ -132,7 +141,8 @@ public class GroundNetworkLayer extends RenderableLayer{
     {
     	removeAllRenderables();
     	addRenderable(tooltip);
-    	points.clear();
+    	points = new ArrayList<>();
+    	//points.clear();
     	
     }
     public void displayPoints()

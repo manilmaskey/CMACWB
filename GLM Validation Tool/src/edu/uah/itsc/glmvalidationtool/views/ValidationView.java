@@ -24,6 +24,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.globes.EarthFlat;
 import gov.nasa.worldwind.globes.Globe;
+import gov.nasa.worldwind.layers.CrosshairLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.layers.Earth.CountryBoundariesLayer;
@@ -31,6 +32,7 @@ import gov.nasa.worldwind.render.BasicShapeAttributes;
 import gov.nasa.worldwind.render.GlobeAnnotation;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.Polygon;
+import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.render.ShapeAttributes;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.FlatOrbitView;
@@ -47,6 +49,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,6 +80,9 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 //    private RenderableLayer glmValidationLayer=null;
     private GlmValidationLayer glmValidationLayer=null;
     private RenderableLayer boundingBoxLayer=null;
+	private CrosshairLayer crosshairLayer=null;
+
+	private Map<Long, ArrayList<Renderable>> glmValidationBuffer = new HashMap<>();
 
 	private GlobeAnnotation tooltipAnnotation;
 //    private String intersection_string = "http://54.83.58.23:8080/geoserver/GLM/wms?service=WMS&version=1.1.0&request=GetMap&layers=GLM:event_proxy_etln_flash_intersection&styles=&bbox=-115.91474,-10.838665,-51.050323,56.14598&width=495&height=512&srs=EPSG:4326&format=application/json&cql_filter=lightningtime=%272011-08-03%2019:00:04%27";
@@ -86,6 +93,12 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
   
 	public ValidationView() {
 	}
+    @Override
+    public void dispose()
+    {
+    	super.dispose();
+    	dataFilter.unregisterObject(this);
+    }
 
 	public void createPartControl(final Composite parent) {
 		this.swtAwtContainer = new Composite(parent, SWT.EMBEDDED);
@@ -141,7 +154,15 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 //		}
         
 //		this.wwd = new ExtendedGliderWorldWindow();
-		this.wwd = new WorldWindowGLCanvas();
+        
+        // if a wwd has already been created, get the first object and pass it to the constructor
+        // to share resources
+        
+        // TODO: this seems to give an error when closing in eclipse, investigate further
+//        if (WWEvent.getWWObjects().size()>0)
+//        	this.wwd = new WorldWindowGLCanvas((WorldWindowGLCanvas)WWEvent.getWWObjects().get(0));
+//        else 
+        	this.wwd = new WorldWindowGLCanvas();
 		
 		WWEvent.register(this.wwd);
 		
@@ -154,8 +175,18 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 				for (Object obj:changed) {
 //					ExtendedGliderWorldWindow wwObj =(ExtendedGliderWorldWindow) obj;
 					WorldWindowGLCanvas wwObj =(WorldWindowGLCanvas) obj;
-					String state = wwd.getView().getRestorableState();
-					wwObj.getView().restoreState(state);
+
+//					String state = wwd.getView().getRestorableState();
+//					wwObj.getView().restoreState(state);
+					
+		            FlatOrbitView sourceView = (FlatOrbitView)wwd.getView();
+		            FlatOrbitView destView = (FlatOrbitView)wwObj.getView();
+		            destView.setCenterPosition(sourceView.getCenterPosition());
+		            destView.setZoom(sourceView.getZoom( ));
+		            destView.setHeading(sourceView.getHeading());
+		            destView.setPitch(sourceView.getPitch());
+
+					
 //					String state = wwd.getRestorableState();
 //					wwObj.restoreState(state);
 
@@ -280,7 +311,10 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 		parent.setLayoutData(new GridData(GridData.FILL_BOTH));
 		//System.out.println("EarthView.createPartControl 4");
 
-        dataFilter.registerObject(this); // register this object with filter update interface
+		crosshairLayer = new CrosshairLayer();
+		ApplicationTemplate.insertBeforeLayerName(getWwd(), crosshairLayer, "Political Boundaries");
+
+		dataFilter.registerObject(this); // register this object with filter update interface
 //        dataFilter.refreshObjects(); // this will cause the interface refresh to be called
 
 //		refreshGlmLayers();
@@ -379,8 +413,14 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
         }
         try {
 	    	// GLM intersection Data 
-	        glmValidationLayer.readCsvData();
-	        glmValidationLayer.displayPoints();
+        	if (glmValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+        		glmValidationLayer.readCsvData();
+        		glmValidationBuffer.put(dataFilter.getCurrentTimeMilli(), glmValidationLayer.getPoints());
+        	}
+        	else {
+           		glmValidationLayer.setPoints(glmValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
+        	}
+        	glmValidationLayer.displayPoints();
         }
         catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
@@ -495,6 +535,12 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 	public void refresh() {
 		// TODO Auto-generated method stub
 		refreshGlmLayers();
+	}
+
+	@Override
+	public void clearCache() {
+		// TODO Auto-generated method stub
+		glmValidationBuffer.clear();
 	}
 	
 	// original geojson version 

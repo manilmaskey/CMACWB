@@ -20,6 +20,8 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
 
@@ -63,6 +65,7 @@ import edu.uah.itsc.glmvalidationtool.data.GlmFlashEntry;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.formats.geojson.GeoJSONDoc;
 import gov.nasa.worldwind.formats.geojson.GeoJSONObject;
+import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.WWIO;
 
@@ -103,12 +106,25 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	private static long timeInterval;
 	private static String flashesPer = "";
 	private static boolean enableFlag=true;
+	
+	private Map<Long, XYDataset> entlnBuffer = new HashMap<>();
+	private Map<Long, XYDataset> nldnBuffer = new HashMap<>();
+	private Map<Long, XYDataset> gld360Buffer = new HashMap<>();
+	private Map<Long, XYDataset> glmBuffer = new HashMap<>();
+
 	Action enableAction;
 
 	/**
 	 * This is a callback that will allow us
 	 * to create the viewer and initialize it.
 	 */
+    @Override
+    public void dispose()
+    {
+    	super.dispose();
+    	dataFilter.unregisterObject(this);
+    }
+
 	public void createPartControl(Composite comp) {
 		
 		parent = comp;
@@ -167,6 +183,8 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 
         
         dataFilter.registerObject(this); // register this object with filter update interface
+        
+        refresh();
 // TODO need to fill in refresh method
         
 //		// add listeners to dispose off the chart composites upon close
@@ -545,10 +563,37 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 		XYDataset gld360Dataset = null;
 		XYDataset glmDataset = null;
 		if (enableFlag) {
-			entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
-			nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
-			gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
-			glmDataset = readHistogram(conf.getGlmFlashRateLayer());
+			if (entlnBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+				entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
+				entlnBuffer.put(dataFilter.getCurrentTimeMilli(), entlnDataset);
+			}
+			else {
+				entlnDataset = entlnBuffer.get(dataFilter.getCurrentTimeMilli());
+			}
+			if (nldnBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+				nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
+				nldnBuffer.put(dataFilter.getCurrentTimeMilli(), nldnDataset);
+			}
+			else {
+				nldnDataset = nldnBuffer.get(dataFilter.getCurrentTimeMilli());
+			}
+			if (gld360Buffer.get(dataFilter.getCurrentTimeMilli())==null) {
+				gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
+				gld360Buffer.put(dataFilter.getCurrentTimeMilli(), gld360Dataset);
+			}
+			else {
+				gld360Dataset = gld360Buffer.get(dataFilter.getCurrentTimeMilli());
+			}
+			if (glmBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+				glmDataset = readHistogram(conf.getGlmFlashRateLayer());
+				glmBuffer.put(dataFilter.getCurrentTimeMilli(), glmDataset);
+			}
+			else {
+				glmDataset = glmBuffer.get(dataFilter.getCurrentTimeMilli());
+			}
+//			nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
+//			gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
+//			glmDataset = readHistogram(conf.getGlmFlashRateLayer());
 	        
 		}
 		
@@ -574,5 +619,14 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
         gld360Hist.setTitle("GLD360 Flash Rate " + flashesPer);
         glmHist.setTitle("GLM Flash Rate " + flashesPer);
 
+	}
+
+	@Override
+	public void clearCache() {
+		// TODO Auto-generated method stub
+		entlnBuffer.clear();
+		nldnBuffer.clear();
+		gld360Buffer.clear();
+		glmBuffer.clear();
 	}
 }
