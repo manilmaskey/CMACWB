@@ -2,7 +2,7 @@
 <?eclipse version="4." ?>
     <plugin>
         <extension point="org.eclipse.ui.perspectives">
-            <perspective class="edu.uah.itsc.cmac.ui.Perspective" icon="icons/branding_files/cmac-16x16.png" id="edu.uah.itsc.cmac.perspective" name="CMACWB">
+            <perspective class="edu.uah.itsc.cmac.ui.Perspective" icon="icons/branding_files/icon-16.png" id="edu.uah.itsc.cmac.perspective" name="CMACWB">
             </perspective>
         </extension>
         <extension point="org.eclipse.ui.views">
@@ -84,7 +84,7 @@
             </command>
             <command description="Share resource" id="edu.uah.itsc.cmac.Share" name="Share">
             </command>
-            <command description="Allow clone" id="edu.uah.itsc.cmac.AllowClone" name="AllowClone">
+            <command description="Send Workflow To" id="edu.uah.itsc.cmac.AllowClone" name="Send Workflow to">
             </command>
             <command description="Import workflow" id="edu.uah.itsc.cmac.ImportWorkflow" name="Import Workflow">
             </command>
@@ -129,7 +129,7 @@
                 </separator>
                 <command commandId="edu.uah.itsc.cmac3.AddExperiment" icon="icons/experiment.png" label="Add Experiment" style="push">
                 </command>
-                <command commandId="edu.uah.itsc.cmac.NewFile" icon="icons/branding_files/cmac-16x16.png" style="push">
+                <command commandId="edu.uah.itsc.cmac.NewFile" icon="icons/branding_files/icon-16.png" style="push">
                     <visibleWhen>
                         <with variable="selection">
                             <iterate ifEmpty="false" operator="and">
