@@ -272,6 +272,7 @@ public class LoginDialog {
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(content);
 			bw.close();
+			fw.close();
 			sciDBFile.deleteOnExit();
 		}
 	}

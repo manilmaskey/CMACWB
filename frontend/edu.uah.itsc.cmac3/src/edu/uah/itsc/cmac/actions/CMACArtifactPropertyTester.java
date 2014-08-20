@@ -6,6 +6,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 
 import edu.uah.itsc.aws.S3;
+import edu.uah.itsc.aws.User;
 
 public class CMACArtifactPropertyTester extends PropertyTester {
 
@@ -52,6 +53,8 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 				else if (!file.getProject().getName().equals(S3.getCommunityBucketName())) {
 					// if (!file.getParent().getName().equals(User.username) && expectedValue.equals("execute")) {
 					if (expectedValue.equals("execute")) {
+						if (User.sciDBUserName != null || User.sciDBPassword != null)
+							return false;
 						String ext = file.getFileExtension();
 						return (ext.equals("py") || ext.equals("pro"));
 
