@@ -19,23 +19,23 @@ http://www.itsc.uah.edu
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="/edu.uah.itsc.cmac3/icons/branding_files/cmac-16x16.png" i32="/edu.uah.itsc.cmac3/icons/branding_files/cmac-32x32.png" i48="/edu.uah.itsc.cmac3/icons/branding_files/cmac-48x48.png" i64="/edu.uah.itsc.cmac3/icons/branding_files/cmac-64x64.png" i128="/edu.uah.itsc.cmac3/icons/branding_files/cmac-128x128.png"/>
+   <windowImages i16="/edu.uah.itsc.cmac3/icons/branding_files/icon-16.png" i32="/edu.uah.itsc.cmac3/icons/branding_files/icon-32.png" i48="/edu.uah.itsc.cmac3/icons/branding_files/icon-48.png" i64="/edu.uah.itsc.cmac3/icons/branding_files/icon-64.png" i128="/edu.uah.itsc.cmac3/icons/branding_files/icon-128.png"/>
 
    <splash
       location="edu.uah.itsc.cmac3" />
    <launcher name="cwb">
-      <linux icon="/edu.uah.itsc.cmac3/icons/launcher_files/cmac-256x256.xpm"/>
+      <linux icon="/edu.uah.itsc.cmac3/icons/launcher_files/icon-256.xpm"/>
       <macosx icon="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-256x256.icns"/>
       <solaris/>
       <win useIco="false">
          <bmp
-            winSmallHigh="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-16x16.bmp"
-            winSmallLow="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-16x16-8bit.bmp"
-            winMediumHigh="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-32x32.bmp"
-            winMediumLow="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-32x32-8bit.bmp"
-            winLargeHigh="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-48x48.bmp"
-            winLargeLow="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-48x48-8bit.bmp"
-            winExtraLargeHigh="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-256x256.bmp"/>
+            winSmallHigh="/edu.uah.itsc.cmac3/icons/launcher_files/icon-16_32bit.bmp"
+            winSmallLow="/edu.uah.itsc.cmac3/icons/launcher_files/icon-16_8bit.bmp"
+            winMediumHigh="/edu.uah.itsc.cmac3/icons/launcher_files/icon-32_32bit.bmp"
+            winMediumLow="/edu.uah.itsc.cmac3/icons/launcher_files/icon-32_8bit.bmp"
+            winLargeHigh="/edu.uah.itsc.cmac3/icons/launcher_files/icon-48_32bit.bmp"
+            winLargeLow="/edu.uah.itsc.cmac3/icons/launcher_files/icon-48_8bit.bmp"
+            winExtraLargeHigh="/edu.uah.itsc.cmac3/icons/launcher_files/icon-256.bmp"/>
       </win>
    </launcher>
 
