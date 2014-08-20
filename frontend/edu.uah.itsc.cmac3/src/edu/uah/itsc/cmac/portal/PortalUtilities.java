@@ -4,6 +4,7 @@
 package edu.uah.itsc.cmac.portal;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,15 +13,28 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+import org.json.JSONException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
+import edu.uah.itsc.aws.S3;
+import edu.uah.itsc.aws.User;
+import edu.uah.itsc.cmac.util.GITUtility;
 
 /**
  * @author sshrestha
@@ -284,6 +298,110 @@ public class PortalUtilities {
 				return null;
 			}
 		}
+	}
+
+	public static void checkNotifications() {
+		String url = PortalUtilities.getNotificationURL() + "?field_recipient_uid=" + User.portalUserID
+			+ "&field_not_seen_by_uid=" + User.portalUserID;
+		String jsonText = PortalUtilities.getDataFromURL(url);
+		Object obj;
+		try {
+			JSONParser parser = new JSONParser();
+			obj = parser.parse(jsonText);
+			JSONObject workflows = (JSONObject) obj;
+
+			if (workflows == null)
+				return;
+			JSONArray workFlowArray = (JSONArray) workflows.get("notifications");
+			if (workFlowArray == null || workFlowArray.size() == 0)
+				return;
+
+			for (int i = 0; i < workFlowArray.size(); i++) {
+				JSONObject workflowObject = (JSONObject) workFlowArray.get(i);
+				workflowObject = (JSONObject) workflowObject.get("notification");
+				String clonePath = workflowObject.get("clone_path").toString();
+				String path = workflowObject.get("path").toString();
+				String workflowName = workflowObject.get("workflow").toString();
+				String owner = workflowObject.get("owner").toString();
+				boolean done = processNotification(workflowName, owner, path, clonePath + ".git");
+				// Remove seen by regardless of whether user clones the workflow or not.
+				// if (done) {
+				String nodeID = workflowObject.get("nid").toString();
+				PortalPost portalPost = new PortalPost();
+				Notification notification = new Notification();
+				notification.setClonePath(clonePath);
+				notification.setPath(path);
+				notification.setWorkflow(workflowName);
+				notification.setRecipients(workflowObject.get("recipient").toString());
+				String notSeenBy = workflowObject.get("not_seen_by").toString();
+				HashSet<String> notSeenBySet = new HashSet<String>(Arrays.asList(notSeenBy.split(",\\s*")));
+				notSeenBySet.remove(User.portalUserID);
+				notSeenBy = joinSet(notSeenBySet, ",");
+				notification.setNotSeenBy(notSeenBy);
+
+				HttpResponse response = portalPost.put(PortalUtilities.getNodeRestPoint() + "/" + nodeID,
+					notification.getJSON());
+				if (response.getStatusLine().getStatusCode() != 200) {
+					MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+						"Could not update portal while trying to update notification.");
+				}
+				// }
+			}
+
+		}
+		catch (ParseException e) {
+			e.printStackTrace();
+			System.out.println("Unable to parse json object");
+			return;
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static boolean processNotification(String workflowName, String owner, String path, String clonePath) {
+		path = "/" + path;
+		path = path.replaceAll("//", "/");
+		String[] paths = path.split("/");
+		String bucket = paths[1];
+		String message = "User '" + owner + "' has granted permission to clone workflow '" + workflowName
+			+ "'. Do you want to clone it locally?";
+		boolean answer = MessageDialog.openQuestion(Display.getDefault().getActiveShell(), "Notification", message);
+		if (answer) {
+			try {
+				IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(bucket);
+				if (!project.exists())
+					project.create(null);
+				if (!project.isOpen())
+					project.open(null);
+				String repoLocalPath = project.getLocation().toString() + "/" + workflowName;
+				S3 s3 = new S3();
+				File jgitFile = new File(System.getProperty("user.home") + "/.jgit");
+				s3.createJgitContents(jgitFile, true);
+
+				GITUtility.cloneRepository(repoLocalPath, clonePath);
+				s3.createJgitContents(jgitFile, false);
+
+				GITUtility.removeRemote(workflowName, project.getLocation().toString());
+				project.refreshLocal(IProject.DEPTH_INFINITE, null);
+				return true;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		return false;
+	}
+
+	private static <T> String joinSet(Set<T> set, String delimiter) {
+		Iterator<T> iter = set.iterator();
+		String joinedString = null;
+		while (iter.hasNext()) {
+			T element = iter.next();
+			joinedString = (joinedString == null) ? element.toString() : joinedString + delimiter + element.toString();
+		}
+		return joinedString;
 	}
 
 }
