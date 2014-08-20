@@ -25,7 +25,7 @@ http://www.itsc.uah.edu
       location="edu.uah.itsc.cmac3" />
    <launcher name="cwb">
       <linux icon="/edu.uah.itsc.cmac3/icons/launcher_files/icon-256.xpm"/>
-      <macosx icon="/edu.uah.itsc.cmac.rcp/icons/launcher_files/cmac-256x256.icns"/>
+      <macosx icon="/edu.uah.itsc.cmac3/icons/launcher_files/icon-256.icns"/>
       <solaris/>
       <win useIco="false">
          <bmp
