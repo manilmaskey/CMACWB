@@ -149,7 +149,7 @@
             name="Collaborative Workbench">
          <property
                name="windowImages"
-               value="platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/cmac-16x16.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/cmac-32x32.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/cmac-48x48.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/cmac-64x64.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/cmac-128x128.png">
+               value="platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/icon-16.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/icon-32.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/icon-48.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/icon-64.png,platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/icon-128.png">
          </property>
          <property
                name="aboutText"

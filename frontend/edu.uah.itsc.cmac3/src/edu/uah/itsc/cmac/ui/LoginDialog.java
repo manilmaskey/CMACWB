@@ -57,7 +57,7 @@ public class LoginDialog {
 		shell.setLayout(layout);
 
 		Label logoLabel = new Label(shell, SWT.NONE);
-		logoLabel.setImage(getImageFromPlugin("login.bmp"));
+		logoLabel.setImage(getImageFromPlugin("login.png"));
 
 		Composite loginForm = new Composite(shell, SWT.BORDER);
 		GridLayout loginFormLayout = new GridLayout(3, false);
