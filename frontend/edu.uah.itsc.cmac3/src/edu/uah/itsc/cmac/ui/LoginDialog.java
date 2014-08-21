@@ -139,19 +139,23 @@ public class LoginDialog {
 			}
 		});
 
-		display.addFilter(SWT.KeyDown, new Listener() {
+		Listener listener = new Listener() {
 
 			@Override
 			public void handleEvent(Event event) {
 				if (event.keyCode == '\r')
 					login();
 			}
-		});
+		};
+
+		display.addFilter(SWT.KeyDown, listener);
 
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch())
 				display.sleep();
 		}
+
+		display.removeFilter(SWT.KeyDown, listener);
 	}
 
 	private Image getImageFromPlugin(String imageName) {
