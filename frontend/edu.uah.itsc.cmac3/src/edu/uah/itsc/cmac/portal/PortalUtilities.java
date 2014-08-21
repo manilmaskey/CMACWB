@@ -364,8 +364,7 @@ public class PortalUtilities {
 		path = path.replaceAll("//", "/");
 		String[] paths = path.split("/");
 		String bucket = paths[1];
-		String message = "User '" + owner + "' has granted permission to clone workflow '" + workflowName
-			+ "'. Do you want to clone it locally?";
+		String message = "User '" + owner + "' has sent workflow '" + workflowName + "'. Do you want to accept it?";
 		boolean answer = MessageDialog.openQuestion(Display.getDefault().getActiveShell(), "Notification", message);
 		if (answer) {
 			try {

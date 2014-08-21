@@ -78,15 +78,15 @@
             </command>
             <command id="edu.uah.itsc.cmac.viewText" name="View Text">
             </command>
-            <command description="Execute the workflow in cloud" id="edu.uah.itsc.cmac.Execute" name="Execute Workflow">
+            <command description="Execute the workflow in cloud" id="edu.uah.itsc.cmac.Execute" name="Execute workflow">
             </command>
             <command description="Upload the resource to cloud" id="edu.uah.itsc.cmac.Upload" name="Upload">
             </command>
             <command description="Share resource" id="edu.uah.itsc.cmac.Share" name="Share">
             </command>
-            <command description="Send Workflow To" id="edu.uah.itsc.cmac.AllowClone" name="Send Workflow to">
+            <command description="Send to" id="edu.uah.itsc.cmac.AllowClone" name="Send to">
             </command>
-            <command description="Import workflow" id="edu.uah.itsc.cmac.ImportWorkflow" name="Import Workflow">
+            <command description="Import workflow" id="edu.uah.itsc.cmac.ImportWorkflow" name="Import workflow">
             </command>
             <command description="Delete from cloud" id="edu.uah.itsc.cmac.Delete" name="Delete from cloud">
             </command>
@@ -96,7 +96,7 @@
             </command>
             <command description="Refresh the resources" id="edu.uah.itsc.cmac.Refresh" name="Refresh">
             </command>
-            <command description="New workflow" id="edu.uah.itsc.cmac.InitTrackingWorkflow" name="New Workflow">
+            <command description="New workflow" id="edu.uah.itsc.cmac.InitTrackingWorkflow" name="New workflow">
             </command>
             <command description="Save a local version" id="edu.uah.itsc.cmac.SaveForTrackingWorkflow" name="Save a local version">
             </command>
@@ -106,7 +106,7 @@
             </command>
             <command description="Update" id="edu.uah.itsc.cmac.UpdateCommand" name="Update">
             </command>
-            <command description="Add Experiment" id="edu.uah.itsc.cmac3.AddExperiment" name="AddExperiment">
+            <command description="Add experiment" id="edu.uah.itsc.cmac3.AddExperiment" name="Add experiment">
             </command>
         </extension>
 
