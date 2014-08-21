@@ -270,8 +270,7 @@ public class LoginDialog {
 		}
 		if (User.sciDBUserName != null && User.sciDBPassword != null) {
 			sciDBFile.createNewFile();
-			String content = "{\n\"username\": \"" + User.sciDBUserName + "\",\n\"password\": \"" + User.sciDBPassword
-				+ "\"\n}";
+			String content = "username=" + User.sciDBUserName + "\npassword=" + User.sciDBPassword;
 			FileWriter fw = new FileWriter(sciDBFile.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(content);
