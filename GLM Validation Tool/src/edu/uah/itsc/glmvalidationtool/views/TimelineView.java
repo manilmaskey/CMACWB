@@ -370,7 +370,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
                 		else {
                 			playAction.setToolTipText("Stop Animation");
                 			playAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/suspend_co.gif"));
-                            StartAnimation();               			
+                			StartAnimation();               			
                 		}
                 		playFlag=!playFlag;
                     }

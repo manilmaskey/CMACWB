@@ -34,6 +34,9 @@ public class Defaults implements Getters{
 
 	// intersection SQL Geoserver layers
 	private static String intersectionTable = "glm_intersection";
+	private static String entlnFlashGlmIntersectionTable = "glm_flash_entln_intersection";
+	private static String nldnFlashGlmIntersectionTable = "glm_flash_nldn_intersection";
+	private static String gld360FlashGlmIntersectionTable = "glm_flash_gld360_intersection";
 	
 	private static String serviceString = "/geoserver/GLM/ows?service=WFS&version=1.0.0&outputFormat=application/json&request=GetFeature&typeName=GLM:";
 	private static String serviceStringCsv = "/geoserver/GLM/ows?service=WFS&version=1.0.0&outputFormat=csv&request=GetFeature&typeName=GLM:";
@@ -119,6 +122,22 @@ public class Defaults implements Getters{
 	public String getIntersectionTable() {
 		// TODO Auto-generated method stub
 		return intersectionTable;
+	}
+	@Override
+	public String getEntlnFlashGlmIntersectionTable() {
+		// TODO Auto-generated method stub
+		return entlnFlashGlmIntersectionTable;
+	}
+	@Override
+	public String getNldnFlashGlmIntersectionTable() {
+		// TODO Auto-generated method stub
+		return nldnFlashGlmIntersectionTable;
+	}
+
+	@Override
+	public String getGld360GlmIntersectionTable() {
+		// TODO Auto-generated method stub
+		return gld360FlashGlmIntersectionTable;
 	}
 
 	@Override

@@ -20,6 +20,9 @@ public interface Setters {
 	public void setGlmEventTable(String glmEventTable);
 	
 	public void setIntersectionTable(String intersectionTable);
+	public void setEntlnFlashGlmIntersectionTable(String intersectionTable);
+	public void setNldnFlashGlmIntersectionTable(String intersectionTable);
+	public void setGld360GlmIntersectionTable(String intersectionTable);
 
 	public void setEntlnFlashRateLayer(String entlnFlashRateLayer);
 	public void setNldnFlashRateLayer(String nldnFlashRateLayer);

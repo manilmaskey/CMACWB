@@ -175,6 +175,45 @@ public class Config implements Getters,Setters{
 		// TODO Auto-generated method stub
 		return keyValuePair.getProperty("IntersectionTable", defaults.getIntersectionTable());
 	}
+
+	@Override
+	public void setEntlnFlashGlmIntersectionTable(
+			String intersectionTable) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("EntlnFlashGlmIntersectionTable", intersectionTable);
+	}
+
+	@Override
+	public String getEntlnFlashGlmIntersectionTable() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("EntlnFlashGlmIntersectionTable", defaults.getEntlnFlashGlmIntersectionTable());
+	}
+	@Override
+	public void setNldnFlashGlmIntersectionTable(
+			String intersectionTable) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("NldnFlashGlmIntersectionTable", intersectionTable);
+	}
+
+	@Override
+	public String getNldnFlashGlmIntersectionTable() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("NldnFlashGlmIntersectionTable", defaults.getNldnFlashGlmIntersectionTable());
+	}
+
+	@Override
+	public void setGld360GlmIntersectionTable(
+			String intersectionTable) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("Gld360GlmIntersectionTable", intersectionTable);
+	}
+
+	@Override
+	public String getGld360GlmIntersectionTable() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("Gld360GlmIntersectionTable", defaults.getGld360GlmIntersectionTable());
+	}
+
 	@Override
 	public void setServiceStringCsv(String serviceString) {
 		// TODO Auto-generated method stub
