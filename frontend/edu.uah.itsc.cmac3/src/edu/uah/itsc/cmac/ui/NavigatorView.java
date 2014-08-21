@@ -62,6 +62,13 @@ public class NavigatorView extends CommonNavigator {
 				}
 			}, 0, 1000 * 60);
 
+			time.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					PortalUtilities.getUserList();
+				}
+			}, 0);
+			
 		}
 
 		setTitleToolTip("Experiments which contain your workflows including imported workflows");
