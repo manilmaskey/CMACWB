@@ -30,11 +30,11 @@ public class Notification {
 		if (workflow != null && !workflow.isEmpty())
 			jsonData.put("field_workflow", getComplexObject("value", workflow));
 		if (recipients != null && !recipients.isEmpty())
-			jsonData.put("field_recipient", getComplexObjectArray(null, recipients.split(",")));
+			jsonData.put("field_recipient", getComplexObjectArray(null, recipients.split(",\\s*")));
 		else
 			jsonData.put("field_recipient", new JSONObject("{'und':'_none'}"));
 		if (notSeenBy != null && !notSeenBy.isEmpty())
-			jsonData.put("field_not_seen_by", getComplexObjectArray(null, notSeenBy.split(",")));
+			jsonData.put("field_not_seen_by", getComplexObjectArray(null, notSeenBy.split(",\\s*")));
 		else
 			jsonData.put("field_not_seen_by", new JSONObject("{'und':'_none'}"));
 		if (path != null && !path.isEmpty())
