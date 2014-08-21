@@ -77,8 +77,7 @@ public class AllowCloneCommandHandler extends AbstractHandler implements IHandle
 				workflowOwner = S3.getWorkflowOwner(selectedFolder.getLocation().toString());
 				if (!workflowOwner.equals(User.username)) {
 					MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
-						"You can allow clone only on workflows which you own. This workflow is owned by '"
-							+ workflowOwner + "'");
+						"You can only send workflows which you own. This workflow is owned by '" + workflowOwner + "'");
 					return null;
 				}
 				createWindow();
@@ -95,7 +94,7 @@ public class AllowCloneCommandHandler extends AbstractHandler implements IHandle
 		grantees = new HashSet<PortalUser>();
 
 		Label userLabel = new Label(shell, SWT.NONE);
-		userLabel.setText("Check users to grant clone access");
+		userLabel.setText("Check users to send");
 
 		Label emptyLabel1 = new Label(shell, SWT.NONE);
 
