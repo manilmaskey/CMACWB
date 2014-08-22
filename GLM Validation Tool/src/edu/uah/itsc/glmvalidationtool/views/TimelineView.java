@@ -93,7 +93,8 @@ import gov.nasa.worldwind.geom.Sector;
  * <p>
  */
 
-public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventListener{
+//public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventListener{
+	public class TimelineView extends ViewPart implements WWEventListener{
 
 	/**
 	 * The ID of the view as specified by the extension.
@@ -146,7 +147,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 
 		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
 		
-		dataFilter.registerObject(this);
+//		dataFilter.registerObject(this);
 
         dataFilter.setDisplayInterval(0, 1, 0);
         dataFilter.setBoundingBox(-92.0, -82.5, 32.0, 38.5);
@@ -632,6 +633,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 //				scale.setSelection((int)(dataFilter.getCurrentTimeMilli()-cdtAnimationStart.getSelection().getTime()));
 //				cdtCurrent.setSelection(new Date(dataFilter.getCurrentTimeMilli()));
 
+		        refreshWidgets();
 		    	dataFilter.refreshObjects();
 		    	display.timerExec(delay, this);
 			}
@@ -684,8 +686,7 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 
 	}
 
-	@Override
-	public void refresh() {
+	public void refreshWidgets() {
 		// TODO Auto-generated method stub
 		System.out.println("TimelineView.refresh");
 		if ((cdtCurrent==null)||(cdtDisplayInterval==null)||cdtCurrent.isDisposed() || cdtDisplayInterval.isDisposed()) {
@@ -695,13 +696,32 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
 		cal.setTimeInMillis(dataFilter.getCurrentTimeMilli());
 		cdtCurrent.setSelection(cal.getTime());		
-		cal.setTimeInMillis(dataFilter.getDisplayIntervalMilli());
-		cdtDisplayInterval.setSelection(cal.getTime());	
+//		cal.setTimeInMillis(dataFilter.getDisplayIntervalMilli());
+//		cdtDisplayInterval.setSelection(cal.getTime());	
 		resetScale();
 		
 //		Date startDate = new Date(dataFilter.getDataStartTimeMilli());
 //		Date endDate = new Date(dataFilter.getDataEndTimeMilli());
 	}
+
+//	@Override
+//	public void refresh() {
+//		// TODO Auto-generated method stub
+//		System.out.println("TimelineView.refresh");
+//		if ((cdtCurrent==null)||(cdtDisplayInterval==null)||cdtCurrent.isDisposed() || cdtDisplayInterval.isDisposed()) {
+//			System.err.println("Warning: widget disposed");
+//			return;
+//		}
+//		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+//		cal.setTimeInMillis(dataFilter.getCurrentTimeMilli());
+//		cdtCurrent.setSelection(cal.getTime());		
+//		cal.setTimeInMillis(dataFilter.getDisplayIntervalMilli());
+//		cdtDisplayInterval.setSelection(cal.getTime());	
+//		resetScale();
+//		
+////		Date startDate = new Date(dataFilter.getDataStartTimeMilli());
+////		Date endDate = new Date(dataFilter.getDataEndTimeMilli());
+//	}
 
 	@Override
 	public void sectorChanged(Sector sector) {
@@ -715,10 +735,10 @@ public class TimelineView extends ViewPart implements DataFilterUpdate, WWEventL
 
 	}
 
-	@Override
-	public void clearCache() {
-		// TODO Auto-generated method stub
-		
-	}
+//	@Override
+//	public void clearCache() {
+//		// TODO Auto-generated method stub
+//		
+//	}
 
 }

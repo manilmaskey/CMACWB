@@ -2,6 +2,16 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+ <extension
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            visible="true">
+         <run
+               class="edu.uah.itsc.glmvalidationtool.Application">
+         </run>
+      </application>
+   </extension>
    <extension
          point="org.eclipse.ui.views">
       <category
@@ -68,9 +78,21 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="edu.uah.itsc.glmvalidationtool.views.Perspective"
-            id="edu.uah.itsc.glmvalidationtool.views.Perspective"
+            id="Perspective"
             name="GLM Validation Tool">
       </perspective>
+   </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="GLM_Validation_Tool.application"
+            name="GLM Validation Tool Product">
+         <property
+               name="appName"
+               value="GLM Validation Tool Product">
+         </property>
+      </product>
    </extension>
 
 </plugin>
