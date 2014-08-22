@@ -7,43 +7,45 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.widgets.Display;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.Experiment;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
 
 public class Utilities {
-	private S3					s3;
 	private static final int	TEMP_DIR_ATTEMPTS	= 10000;
+	private static Cursor		arrowCursor;
+	private static Cursor		busyCursor;
 
 	public Utilities() {
-		s3 = new S3(User.awsAccessKey, User.awsSecretKey);
 	}
 
-	public static File createTempDir(String prefix, boolean random){
+	public static File createTempDir(String prefix, boolean random) {
 		if (random)
 			return createTempDirRandom(prefix);
 		else
 			return createTempDir(prefix);
 	}
-	
-	private static File createTempDir(String prefix){
+
+	private static File createTempDir(String prefix) {
 		File baseDir = new File(System.getProperty("java.io.tmpdir"));
 		File tempDir = new File(baseDir, prefix);
 		if (tempDir.exists())
 			return tempDir;
 		if (tempDir.mkdir())
 			return tempDir;
-		else return null;
+		else
+			return null;
 	}
-	
-	
+
 	private static File createTempDirRandom(String prefix) {
 		File baseDir = new File(System.getProperty("java.io.tmpdir"));
 		String baseName = System.currentTimeMillis() + "-";
@@ -174,16 +176,27 @@ public class Utilities {
 		if (localPath == null)
 			return;
 		File[] files = localPath.listFiles();
-		if (files == null || files.length == 0){
+		if (files == null || files.length == 0) {
 			localPath.delete();
 			return;
 		}
-		for (File file : files){
+		for (File file : files) {
 			if (file.isDirectory())
 				deleteRecursive(file);
 			else
 				file.delete();
 		}
 		localPath.delete();
+	}
+
+	public static void setCursorBusy(boolean busy) {
+		if (arrowCursor == null)
+			arrowCursor = Display.getDefault().getSystemCursor(SWT.CURSOR_ARROW);
+		if (busyCursor == null)
+			busyCursor = Display.getDefault().getSystemCursor(SWT.CURSOR_WAIT);
+		if (busy)
+			Display.getDefault().getActiveShell().setCursor(busyCursor);
+		else
+			Display.getDefault().getActiveShell().setCursor(arrowCursor);
 	}
 }

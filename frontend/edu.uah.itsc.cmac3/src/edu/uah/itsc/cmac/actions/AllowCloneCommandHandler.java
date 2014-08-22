@@ -43,6 +43,7 @@ import edu.uah.itsc.cmac.portal.PortalPost;
 import edu.uah.itsc.cmac.portal.PortalUser;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.portal.Workflow;
+import edu.uah.itsc.cmac.ui.Utilities;
 import edu.uah.itsc.cmac.util.GITUtility;
 
 public class AllowCloneCommandHandler extends AbstractHandler implements IHandler {
@@ -182,8 +183,10 @@ public class AllowCloneCommandHandler extends AbstractHandler implements IHandle
 			okButton.addSelectionListener(new SelectionAdapter() {
 				@Override
 				public void widgetSelected(SelectionEvent e) {
+					Utilities.setCursorBusy(true);
 					addClonePermission();
 					createNotifications();
+					Utilities.setCursorBusy(false);
 					shell.close();
 				}
 			});
