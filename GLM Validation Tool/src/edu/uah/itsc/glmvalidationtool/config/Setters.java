@@ -11,6 +11,7 @@ public interface Setters {
 	public void setServerPort(String url);
 	public void setServerUname(String uname);
 	public void setServerPw(String pw);
+	
 	public void setEntlnFlashTable(String entlnFlashTable);
 	public void setEntlnStrokeTable(String entlnStrokeTable);
 	public void setNldnFlashTable(String nldnFlashTable);
@@ -18,11 +19,17 @@ public interface Setters {
 	public void setGld360Table(String gld360Table);
 	public void setGlmFlashTable(String glmFlashTable);
 	public void setGlmEventTable(String glmEventTable);
-	
-	public void setIntersectionTable(String intersectionTable);
-	public void setEntlnFlashGlmIntersectionTable(String intersectionTable);
-	public void setNldnFlashGlmIntersectionTable(String intersectionTable);
-	public void setGld360GlmIntersectionTable(String intersectionTable);
+
+	public void setEntlnFlashLayer(String entlnFlashLayer);
+	public void setNldnFlashLayer(String nldnFlashLayer);
+	public void setGld360Layer(String gld360Layer);
+	public void setGlmFlashLayer(String glmFlashLayer);
+
+	public void setGlmIntersectionLayer(String glmIntersectionLayer);
+	public void setGroundIntersectionLayer(String groundIntersectionLayer);
+//	public void setEntlnFlashGlmIntersectionLayer(String intersectionLayer);
+//	public void setNldnFlashGlmIntersectionLayer(String intersectionLayer);
+//	public void setGld360GlmIntersectionLayer(String intersectionLayer);
 
 	public void setEntlnFlashRateLayer(String entlnFlashRateLayer);
 	public void setNldnFlashRateLayer(String nldnFlashRateLayer);

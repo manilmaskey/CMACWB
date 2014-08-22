@@ -79,16 +79,18 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 
 //    private RenderableLayer glmValidationLayer=null;
     private GlmValidationLayer glmValidationLayer=null;
-    private GlmValidationLayer entlnValidationLayer=null;
-    private GlmValidationLayer nldnValidationLayer=null;
-    private GlmValidationLayer gld360ValidationLayer=null;
+    private GlmValidationLayer groundValidationLayer=null;
+//    private GlmValidationLayer entlnValidationLayer=null;
+//    private GlmValidationLayer nldnValidationLayer=null;
+//    private GlmValidationLayer gld360ValidationLayer=null;
     private RenderableLayer boundingBoxLayer=null;
 	private CrosshairLayer crosshairLayer=null;
 
 	private Map<Long, ArrayList<Renderable>> glmValidationBuffer = new HashMap<>();
-	private Map<Long, ArrayList<Renderable>> entlnValidationBuffer = new HashMap<>();
-	private Map<Long, ArrayList<Renderable>> nldnValidationBuffer = new HashMap<>();
-	private Map<Long, ArrayList<Renderable>> gld360ValidationBuffer = new HashMap<>();
+	private Map<Long, ArrayList<Renderable>> groundValidationBuffer = new HashMap<>();
+//	private Map<Long, ArrayList<Renderable>> entlnValidationBuffer = new HashMap<>();
+//	private Map<Long, ArrayList<Renderable>> nldnValidationBuffer = new HashMap<>();
+//	private Map<Long, ArrayList<Renderable>> gld360ValidationBuffer = new HashMap<>();
 
 	private GlobeAnnotation tooltipAnnotation;
 //    private String intersection_string = "http://54.83.58.23:8080/geoserver/GLM/wms?service=WMS&version=1.1.0&request=GetMap&layers=GLM:event_proxy_etln_flash_intersection&styles=&bbox=-115.91474,-10.838665,-51.050323,56.14598&width=495&height=512&srs=EPSG:4326&format=application/json&cql_filter=lightningtime=%272011-08-03%2019:00:04%27";
@@ -414,21 +416,25 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
     {
                 
         if (glmValidationLayer==null) {
-        	glmValidationLayer = new GlmValidationLayer(conf.getIntersectionTable(), "GLM Coincidence", this.tooltipAnnotation);
+        	glmValidationLayer = new GlmValidationLayer(conf.getGlmIntersectionLayer(), "GLM Coincidence", this.tooltipAnnotation);
 	        this.addLayer(glmValidationLayer);
         }
-        if (entlnValidationLayer==null) {
-        	entlnValidationLayer = new GlmValidationLayer(conf.getEntlnFlashGlmIntersectionTable(), "ENTLN Coincidence", this.tooltipAnnotation);
-	        this.addLayer(entlnValidationLayer);
+        if (groundValidationLayer==null) {
+        	groundValidationLayer = new GlmValidationLayer(conf.getGroundIntersectionLayer(), "Ground detect no GLM", this.tooltipAnnotation);
+	        this.addLayer(groundValidationLayer);
         }
-        if (nldnValidationLayer==null) {
-        	nldnValidationLayer = new GlmValidationLayer(conf.getNldnFlashGlmIntersectionTable(), "NLDN Coincidence", this.tooltipAnnotation);
-	        this.addLayer(nldnValidationLayer);
-        }
-        if (gld360ValidationLayer==null) {
-        	gld360ValidationLayer = new GlmValidationLayer(conf.getGld360GlmIntersectionTable(), "GLD360 Coincidence", this.tooltipAnnotation);
-	        this.addLayer(gld360ValidationLayer);
-        }
+//        if (entlnValidationLayer==null) {
+//        	entlnValidationLayer = new GlmValidationLayer(conf.getEntlnFlashGlmIntersectionLayer(), "ENTLN Coincidence", this.tooltipAnnotation);
+//	        this.addLayer(entlnValidationLayer);
+//        }
+//        if (nldnValidationLayer==null) {
+//        	nldnValidationLayer = new GlmValidationLayer(conf.getNldnFlashGlmIntersectionLayer(), "NLDN Coincidence", this.tooltipAnnotation);
+//	        this.addLayer(nldnValidationLayer);
+//        }
+//        if (gld360ValidationLayer==null) {
+//        	gld360ValidationLayer = new GlmValidationLayer(conf.getGld360GlmIntersectionLayer(), "GLD360 Coincidence", this.tooltipAnnotation);
+//	        this.addLayer(gld360ValidationLayer);
+//        }
         try {
 	    	// GLM intersection Data 
         	if (glmValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
@@ -438,31 +444,40 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
         	else {
            		glmValidationLayer.setPoints(glmValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
         	}
-        	if (entlnValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
-        		entlnValidationLayer.readCsvDataGround();
-        		entlnValidationBuffer.put(dataFilter.getCurrentTimeMilli(), entlnValidationLayer.getPoints());
+	    	// Ground network missing GLM  
+        	if (groundValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+        		groundValidationLayer.readCsvDataGround();
+        		groundValidationBuffer.put(dataFilter.getCurrentTimeMilli(), groundValidationLayer.getPoints());
         	}
         	else {
-           		entlnValidationLayer.setPoints(entlnValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
+           		groundValidationLayer.setPoints(groundValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
         	}
-        	if (nldnValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
-        		nldnValidationLayer.readCsvDataGround();
-        		nldnValidationBuffer.put(dataFilter.getCurrentTimeMilli(), nldnValidationLayer.getPoints());
-        	}
-        	else {
-           		nldnValidationLayer.setPoints(nldnValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
-        	}
-        	if (gld360ValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
-        		gld360ValidationLayer.readCsvDataGround();
-        		gld360ValidationBuffer.put(dataFilter.getCurrentTimeMilli(), gld360ValidationLayer.getPoints());
-        	}
-        	else {
-           		gld360ValidationLayer.setPoints(gld360ValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
-        	}
+//        	if (entlnValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+//        		entlnValidationLayer.readCsvDataGround();
+//        		entlnValidationBuffer.put(dataFilter.getCurrentTimeMilli(), entlnValidationLayer.getPoints());
+//        	}
+//        	else {
+//           		entlnValidationLayer.setPoints(entlnValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
+//        	}
+//        	if (nldnValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+//        		nldnValidationLayer.readCsvDataGround();
+//        		nldnValidationBuffer.put(dataFilter.getCurrentTimeMilli(), nldnValidationLayer.getPoints());
+//        	}
+//        	else {
+//           		nldnValidationLayer.setPoints(nldnValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
+//        	}
+//        	if (gld360ValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
+//        		gld360ValidationLayer.readCsvDataGround();
+//        		gld360ValidationBuffer.put(dataFilter.getCurrentTimeMilli(), gld360ValidationLayer.getPoints());
+//        	}
+//        	else {
+//           		gld360ValidationLayer.setPoints(gld360ValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
+//        	}
         	glmValidationLayer.displayPoints();
-        	entlnValidationLayer.displayPoints();
-        	nldnValidationLayer.displayPoints();
-        	gld360ValidationLayer.displayPoints();
+        	groundValidationLayer.displayPoints();
+//        	entlnValidationLayer.displayPoints();
+//        	nldnValidationLayer.displayPoints();
+//        	gld360ValidationLayer.displayPoints();
         }
         catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
@@ -575,9 +590,8 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 	       sb.append(annotation.getValue("gldcount")+ "<br></br>");
 	       sb.append("</html>");
        }
-       if (annotation.getValue("glmcount")!=null) {
-	       sb.append("GLM count: </b>");
-	       sb.append(annotation.getValue("glmcount")+ "<br></br>");
+       if (annotation.getValue("glm_missing")!=null) {
+	       sb.append("GLM Missing: </b>");
 	       sb.append("</html>");
        }
 
@@ -594,6 +608,10 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 	public void clearCache() {
 		// TODO Auto-generated method stub
 		glmValidationBuffer.clear();
+		groundValidationBuffer.clear();
+//		entlnValidationBuffer.clear();
+//		nldnValidationBuffer.clear();
+//		gld360ValidationBuffer.clear();
 	}
 	
 	// original geojson version 
@@ -611,8 +629,8 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 //	        glmValidationLayer = new RenderableLayer();
 //	        glmValidationLayer.setName("GLM Coincidence");
 //	        glmValidationLayer.addRenderable(this.tooltipAnnotation);
-//	        System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashGlmIntersectionTable() + "&" + dataFilter.getValidationParamString());
-//			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashGlmIntersectionTable() + "&" + dataFilter.getValidationParamString()), glmValidationLayer);
+//	        System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashGlmIntersectionLayer() + "&" + dataFilter.getValidationParamString());
+//			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashGlmIntersectionLayer() + "&" + dataFilter.getValidationParamString()), glmValidationLayer);
 //	        this.addLayer(glmValidationLayer);
 //        }
 //        catch (URISyntaxException e) {

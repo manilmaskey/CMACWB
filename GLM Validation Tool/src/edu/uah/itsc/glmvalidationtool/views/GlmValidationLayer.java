@@ -60,7 +60,27 @@ public class GlmValidationLayer extends RenderableLayer{
     	removeAllRenderables();
     	addRenderable(tooltip);
 	}
-    protected Renderable createPoint(Position pos, String dateTime, long entlncount, long nldncount, long gldcount, long glmcount)
+    protected Renderable createMissingPoint(Position pos, String dateTime)
+    {
+        AnnotationPointPlacemark p = new AnnotationPointPlacemark(pos, pointAttrs);
+        p.setAttributes(pointAttrs);
+        
+        if (pos.getAltitude() != 0)
+        {
+            p.setAltitudeMode(WorldWind.ABSOLUTE);
+         }
+        else
+        {
+            p.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+        }
+        p.setValue("LayerName", layerName);
+        p.setValue("Date", dateTime);
+     	p.setValue("glm_missing", "true"); 
+    	p.setValue("DisplayColor", Color.RED);
+    	return p;
+
+    }
+    protected Renderable createPoint(Position pos, String dateTime, long entlncount, long nldncount, long gldcount)
     {
         AnnotationPointPlacemark p = new AnnotationPointPlacemark(pos, pointAttrs);
         p.setAttributes(pointAttrs);
@@ -82,11 +102,9 @@ public class GlmValidationLayer extends RenderableLayer{
         	p.setValue("nldncount", nldncount);
         if (gldcount>=0)
         	p.setValue("gldcount", gldcount);       
-        if (glmcount>=0)
-        	p.setValue("glmcount", glmcount);       
         p.getAttributes().setOpacity(1.0);
         p.getAttributes().setScale(1);    
-        int instrumentCnt = (entlncount>0?1:0) + (nldncount>0?1:0) + (gldcount>0?1:0) + (glmcount>0?1:0);
+        int instrumentCnt = (entlncount>0?1:0) + (nldncount>0?1:0) + (gldcount>0?1:0);
 
 //      System.out.println("instrumentCnt " + instrumentCnt);
         if (instrumentCnt==0) {
@@ -110,7 +128,9 @@ public class GlmValidationLayer extends RenderableLayer{
     	
        	clearPoints();
        	
-    	String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString();
+		String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getValidationParamString(); 
+
+//    	String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString();
         System.out.println(httpString);
         
         URL url = new URL(httpString);
@@ -151,7 +171,7 @@ public class GlmValidationLayer extends RenderableLayer{
             Position pos = new Position(LatLon.fromDegrees(lat, lon),  0);
              
             
-            points.add(this.createPoint(pos,time, entln, nldn, gld360, -1));
+            points.add(this.createPoint(pos,time, entln, nldn, gld360));
   //          addRenderable(this.createPoint(pos,ts.toString(), Double.toString(value)));
             
 //            nldn_flash_view.fid-286a9be5_147ea205445_166f	1008335	2011-08-04 23:56:00:005 	5.69999981	POINT (-88.99 33.689)
@@ -165,7 +185,8 @@ public class GlmValidationLayer extends RenderableLayer{
     	
        	clearPoints();
        	
-    	String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString();
+		String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getValidationParamString(); 
+ //   	String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString();
         System.out.println(httpString);
         
         URL url = new URL(httpString);
@@ -200,11 +221,10 @@ public class GlmValidationLayer extends RenderableLayer{
             lon = Double.parseDouble(latlon[0]);
             lat = Double.parseDouble(latlon[1]);
 //            System.out.println("lat " + lat +  " lon " + lon );
-            glm = Long.parseLong(fields[4]);
+//            glm = Long.parseLong(fields[4]);
             Position pos = new Position(LatLon.fromDegrees(lat, lon),  0);
              
-            
-            points.add(this.createPoint(pos,time, -1, -1, -1, glm));
+            points.add(this.createMissingPoint(pos,time));
   //          addRenderable(this.createPoint(pos,ts.toString(), Double.toString(value)));
             
 //            nldn_flash_view.fid-286a9be5_147ea205445_166f	1008335	2011-08-04 23:56:00:005 	5.69999981	POINT (-88.99 33.689)
@@ -223,6 +243,10 @@ public class GlmValidationLayer extends RenderableLayer{
     }
     public void displayPoints()
     {
+    	if (points==null) {
+    		System.out.println("displayPoints:  null points list");
+    		return;
+    	}
     	for(Renderable point:points) {
             addRenderable(point);
     	}

@@ -3,10 +3,6 @@ package edu.uah.itsc.glmvalidationtool.views;
 import edu.uah.itsc.glmvalidationtool.config.Config;
 import edu.uah.itsc.glmvalidationtool.data.DataFilter;
 import edu.uah.itsc.glmvalidationtool.data.DataFilterUpdate;
-import edu.uah.itsc.glmvalidationtool.data.LightningData;
-//import edu.uah.itsc.glmvalidationtool.views.GeoJSONLoaderAnnotation.AnnotationPointPlacemark;
-//import edu.uah.itsc.worldwind.eclipse.ExtendedGliderWorldWindow;
-//import edu.uah.itsc.worldwind.eclipse.glider.GliderImage;
 import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
@@ -73,11 +69,6 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 	private WorldWindowGLCanvas wwd;
 //	private ExtendedGliderWorldWindow wwd;
 	private LayerManagerLayer layerManager;
-	private LightningData entlnFlashes;
-	private LightningData entlnStrokes;
-	private LightningData nldnFlashes;
-	private LightningData nldnStrokes;
-	private LightningData gld360;
 	
 	// original Geojson layers, changed to use csv
 //	private RenderableLayer entlnFlashLayer=null;
@@ -585,19 +576,19 @@ public class DataView extends ViewPart implements DataFilterUpdate{
         // create or redraw lightning layers
     	// ENTLN Flash Data 
         if (entlnFlashLayer==null) {
-        	entlnFlashLayer = new GroundNetworkLayer(conf.getEntlnFlashTable(), "ENTLN Flash", Color.CYAN, this.tooltipAnnotation);
+        	entlnFlashLayer = new GroundNetworkLayer(conf.getEntlnFlashLayer(), "ENTLN Flash", Color.CYAN, this.tooltipAnnotation);
 	        this.addLayer(entlnFlashLayer);
         }
         if (nldnFlashLayer==null) {
-        	nldnFlashLayer = new GroundNetworkLayer(conf.getNldnFlashTable(), "NLDN Flash", Color.BLUE, this.tooltipAnnotation);
+        	nldnFlashLayer = new GroundNetworkLayer(conf.getNldnFlashLayer(), "NLDN Flash", Color.BLUE, this.tooltipAnnotation);
 	        this.addLayer(nldnFlashLayer);
         }
         if (gld360Layer==null) {
-        	gld360Layer = new GroundNetworkLayer(conf.getGld360Table(), "GLD360", Color.PINK, this.tooltipAnnotation);
+        	gld360Layer = new GroundNetworkLayer(conf.getGld360Layer(), "GLD360", Color.PINK, this.tooltipAnnotation);
 	        this.addLayer(gld360Layer);
         }
         if (glmLayer==null) {
-        	glmLayer = new GroundNetworkLayer(conf.getGlmFlashTable(), "GLM Flash", Color.MAGENTA, this.tooltipAnnotation);
+        	glmLayer = new GroundNetworkLayer(conf.getGlmFlashLayer(), "GLM Flash", Color.MAGENTA, this.tooltipAnnotation);
 	        this.addLayer(glmLayer);
         }
         try {

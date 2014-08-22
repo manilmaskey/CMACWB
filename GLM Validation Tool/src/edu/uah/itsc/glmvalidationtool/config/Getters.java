@@ -11,6 +11,7 @@ public interface Getters {
 	public String getServerPort();
 	public String getServerUname();
 	public String getServerPw();
+	
 	public String getEntlnFlashTable();
 	public String getEntlnStrokeTable();
 	public String getNldnFlashTable();
@@ -19,10 +20,16 @@ public interface Getters {
 	public String getGlmFlashTable();
 	public String getGlmEventTable();
 	
-	public String getIntersectionTable();
-	public String getEntlnFlashGlmIntersectionTable();
-	public String getNldnFlashGlmIntersectionTable();
-	public String getGld360GlmIntersectionTable();
+	public String getEntlnFlashLayer();
+	public String getNldnFlashLayer();
+	public String getGld360Layer();
+	public String getGlmFlashLayer();
+	
+	public String getGlmIntersectionLayer();
+	public String getGroundIntersectionLayer();
+//	public String getEntlnFlashGlmIntersectionLayer();
+//	public String getNldnFlashGlmIntersectionLayer();
+//	public String getGld360GlmIntersectionLayer();
 	
 	public String getEntlnFlashRateLayer();
 	public String getNldnFlashRateLayer();

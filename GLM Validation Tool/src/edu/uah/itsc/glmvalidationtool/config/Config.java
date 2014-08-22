@@ -79,6 +79,29 @@ public class Config implements Getters,Setters{
 		
 	}
 
+	@Override
+	public void setEntlnFlashLayer(String entlnFlashLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("EntlnFlashLayer", entlnFlashLayer);
+	}
+	@Override
+	public void setNldnFlashLayer(String nldnFlashLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("NldnFlashLayer", nldnFlashLayer);
+		
+	}
+	@Override
+	public void setGld360Layer(String gld360Layer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("Gld360FlashLayer", gld360Layer);
+		
+	}
+	@Override
+	public void setGlmFlashLayer(String glmFlashLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("GlmFlashLayer", glmFlashLayer);
+		
+	}
 
 	@Override
 	public double getInitialLongitude() {
@@ -140,6 +163,28 @@ public class Config implements Getters,Setters{
 	}
 
 	@Override
+	public String getEntlnFlashLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("EntlnFlashLayer", defaults.getEntlnFlashLayer());
+	}
+	@Override
+	public String getNldnFlashLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("NldnFlashLayer", defaults.getNldnFlashLayer());
+	}
+	@Override
+	public String getGld360Layer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("Gld360FlashLayer", defaults.getGld360Layer());
+	}
+	@Override
+	public String getGlmFlashLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("GlmFlashLayer", defaults.getGlmFlashLayer());
+	}
+
+	
+	@Override
 	public void setServerPort(String port) {
 		// TODO Auto-generated method stub
 		keyValuePair.setProperty("ServerPort", port);
@@ -164,55 +209,67 @@ public class Config implements Getters,Setters{
 	}
 
 	@Override
-	public void setIntersectionTable(
-			String intersectionTable) {
+	public void setGlmIntersectionLayer(
+			String glmIntersectionLayer) {
 		// TODO Auto-generated method stub
-		keyValuePair.setProperty("IntersectionTable", intersectionTable);
+		keyValuePair.setProperty("GlmIntersectionLayer", glmIntersectionLayer);
 	}
 
 	@Override
-	public String getIntersectionTable() {
+	public String getGlmIntersectionLayer() {
 		// TODO Auto-generated method stub
-		return keyValuePair.getProperty("IntersectionTable", defaults.getIntersectionTable());
+		return keyValuePair.getProperty("GlmIntersectionLayer", defaults.getGlmIntersectionLayer());
+	}
+	@Override
+	public void setGroundIntersectionLayer(
+			String groundIntersectionLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("GroundIntersectionLayer", groundIntersectionLayer);
 	}
 
 	@Override
-	public void setEntlnFlashGlmIntersectionTable(
-			String intersectionTable) {
+	public String getGroundIntersectionLayer() {
 		// TODO Auto-generated method stub
-		keyValuePair.setProperty("EntlnFlashGlmIntersectionTable", intersectionTable);
+		return keyValuePair.getProperty("GroundIntersectionLayer", defaults.getGroundIntersectionLayer());
 	}
 
-	@Override
-	public String getEntlnFlashGlmIntersectionTable() {
-		// TODO Auto-generated method stub
-		return keyValuePair.getProperty("EntlnFlashGlmIntersectionTable", defaults.getEntlnFlashGlmIntersectionTable());
-	}
-	@Override
-	public void setNldnFlashGlmIntersectionTable(
-			String intersectionTable) {
-		// TODO Auto-generated method stub
-		keyValuePair.setProperty("NldnFlashGlmIntersectionTable", intersectionTable);
-	}
+//	@Override
+//	public void setEntlnFlashGlmIntersectionLayer(
+//			String intersectionLayer) {
+//		// TODO Auto-generated method stub
+//		keyValuePair.setProperty("EntlnFlashGlmIntersectionLayer", intersectionLayer);
+//	}
+//
+//	@Override
+//	public String getEntlnFlashGlmIntersectionLayer() {
+//		// TODO Auto-generated method stub
+//		return keyValuePair.getProperty("EntlnFlashGlmIntersectionLayer", defaults.getEntlnFlashGlmIntersectionLayer());
+//	}
+//	@Override
+//	public void setNldnFlashGlmIntersectionLayer(
+//			String intersectionLayer) {
+//		// TODO Auto-generated method stub
+//		keyValuePair.setProperty("NldnFlashGlmIntersectionLayer", intersectionLayer);
+//	}
 
-	@Override
-	public String getNldnFlashGlmIntersectionTable() {
-		// TODO Auto-generated method stub
-		return keyValuePair.getProperty("NldnFlashGlmIntersectionTable", defaults.getNldnFlashGlmIntersectionTable());
-	}
-
-	@Override
-	public void setGld360GlmIntersectionTable(
-			String intersectionTable) {
-		// TODO Auto-generated method stub
-		keyValuePair.setProperty("Gld360GlmIntersectionTable", intersectionTable);
-	}
-
-	@Override
-	public String getGld360GlmIntersectionTable() {
-		// TODO Auto-generated method stub
-		return keyValuePair.getProperty("Gld360GlmIntersectionTable", defaults.getGld360GlmIntersectionTable());
-	}
+//	@Override
+//	public String getNldnFlashGlmIntersectionLayer() {
+//		// TODO Auto-generated method stub
+//		return keyValuePair.getProperty("NldnFlashGlmIntersectionLayer", defaults.getNldnFlashGlmIntersectionLayer());
+//	}
+//
+//	@Override
+//	public void setGld360GlmIntersectionLayer(
+//			String intersectionLayer) {
+//		// TODO Auto-generated method stub
+//		keyValuePair.setProperty("Gld360GlmIntersectionLayer", intersectionLayer);
+//	}
+//
+//	@Override
+//	public String getGld360GlmIntersectionLayer() {
+//		// TODO Auto-generated method stub
+//		return keyValuePair.getProperty("Gld360GlmIntersectionLayer", defaults.getGld360GlmIntersectionLayer());
+//	}
 
 	@Override
 	public void setServiceStringCsv(String serviceString) {
