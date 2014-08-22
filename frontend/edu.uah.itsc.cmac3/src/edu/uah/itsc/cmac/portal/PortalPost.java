@@ -192,7 +192,7 @@ public class PortalPost {
 		return response;
 	}
 
-	private String getCSRF(String tokenURL, BasicHttpContext mHttpContext) throws ClientProtocolException, IOException {
+	public String getCSRF(String tokenURL, BasicHttpContext mHttpContext) throws ClientProtocolException, IOException {
 		HttpClient httpClient = new DefaultHttpClient();
 		HttpGet httpGet = new HttpGet(tokenURL);
 		HttpResponse response = httpClient.execute(httpGet, mHttpContext);
