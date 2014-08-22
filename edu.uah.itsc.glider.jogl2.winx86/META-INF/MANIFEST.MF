@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GLIDER JOGL Winx86 Fragment
+Bundle-SymbolicName: edu.uah.itsc.glider.jogl2.winx86
+Bundle-Version: 1.1.1
+Bundle-Vendor: GLIDER
+Fragment-Host: edu.uah.itsc.glider.jogl2
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Eclipse-PlatformFilter: (&(osgi.os=win32)(osgi.arch=x86))

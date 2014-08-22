@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GLIDER JOGL Macosx Fragment
+Bundle-SymbolicName: edu.uah.itsc.glider.jogl2.macosx
+Bundle-Version: 1.1.1
+Bundle-Vendor: GLIDER
+Fragment-Host: edu.uah.itsc.glider.jogl2
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Eclipse-PlatformFilter: (&(osgi.os=macosx)(|(osgi.arch=x86_64)(osgi.arch=x86)))
