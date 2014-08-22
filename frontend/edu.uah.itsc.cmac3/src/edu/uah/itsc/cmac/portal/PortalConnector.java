@@ -149,11 +149,15 @@ public class PortalConnector {
 
 			BasicClientCookie cookie = new BasicClientCookie(session_name, session_id);
 			cookie.setVersion(0);
-			cookie.setDomain(".itsc.uah.edu");
+			cookie.setDomain(PortalUtilities.getPortalDomain());
 			cookie.setPath("/");
 			mCookieStore.addCookie(cookie);
 
 			mHttpContext.setAttribute(ClientContext.COOKIE_STORE, mCookieStore);
+
+			PortalPost post = new PortalPost();
+			String csrfToken = post.getCSRF(PortalUtilities.getTokenURL(), mHttpContext);
+			httppost.addHeader("X-CSRF-TOKEN", csrfToken);
 
 			HttpResponse response = httpclient.execute(httppost, mHttpContext);
 

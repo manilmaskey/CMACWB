@@ -152,6 +152,10 @@ public class PortalUtilities {
 	public static String getNotificationURL() {
 		return getKeyValueFromProperties("notification_url");
 	}
+	
+	public static String getPortalDomain() {
+		return getKeyValueFromProperties("portal_domain");
+	}
 
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
 		path = "/" + path;
