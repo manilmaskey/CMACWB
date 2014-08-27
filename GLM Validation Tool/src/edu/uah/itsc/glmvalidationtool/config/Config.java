@@ -1,5 +1,6 @@
 package edu.uah.itsc.glmvalidationtool.config;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -432,4 +433,77 @@ public class Config implements Getters,Setters{
 		// TODO Auto-generated method stub
 		return keyValuePair.getProperty("GlmDateRangeLayer", defaults.getGlmDateRangeLayer());
 	}
+	
+	@Override
+	public String getEntlnColorString() {
+		return keyValuePair.getProperty("EntlnColorIntRGBA", defaults.getEntlnColorString());
+	}
+	@Override
+	public Color getEntlnColor() {
+		String [] colors = getEntlnColorString().split(",");
+		return new Color(Integer.parseInt(colors[0]),Integer.parseInt(colors[1]),Integer.parseInt(colors[2]),Integer.parseInt(colors[3]));
+	}
+	@Override
+	public void setEntlnColor(Color color) {
+		keyValuePair.setProperty("EntlnColorIntRGBA", color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + color.getAlpha());	
+	}
+	@Override
+	public void setEntlnColor(int R, int G, int B, int Alpha) {
+		keyValuePair.setProperty("EntlnColorIntRGBA", R + "," + G + "," + B + "," + Alpha);	
+	}
+
+	@Override
+	public String getNldnColorString() {
+		return keyValuePair.getProperty("NldnColorIntRGBA", defaults.getNldnColorString());
+	}
+	@Override
+	public Color getNldnColor() {
+		String [] colors = getNldnColorString().split(",");
+		return new Color(Integer.parseInt(colors[0]),Integer.parseInt(colors[1]),Integer.parseInt(colors[2]),Integer.parseInt(colors[3]));
+	}
+	@Override
+	public void setNldnColor(Color color) {
+		keyValuePair.setProperty("NldnColorIntRGBA", color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + color.getAlpha());	
+	}
+	@Override
+	public void setNldnColor(int R, int G, int B, int Alpha) {
+		keyValuePair.setProperty("NldnColorIntRGBA", R + "," + G + "," + B + "," + Alpha);	
+	}
+	
+	@Override
+	public String getGld360ColorString() {
+		return keyValuePair.getProperty("Gld360ColorIntRGBA", defaults.getGld360ColorString());
+	}
+	@Override
+	public Color getGld360Color() {
+		String [] colors = getGld360ColorString().split(",");
+		return new Color(Integer.parseInt(colors[0]),Integer.parseInt(colors[1]),Integer.parseInt(colors[2]),Integer.parseInt(colors[3]));
+	}
+	@Override
+	public void setGld360Color(Color color) {
+		keyValuePair.setProperty("Gld360ColorIntRGBA", color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + color.getAlpha());	
+	}
+	@Override
+	public void setGld360Color(int R, int G, int B, int Alpha) {
+		keyValuePair.setProperty("Gld360ColorIntRGBA", R + "," + G + "," + B + "," + Alpha);	
+	}
+
+	@Override
+	public String getGlmColorString() {
+		return keyValuePair.getProperty("GlmColorIntRGBA", defaults.getGlmColorString());
+	}
+	@Override
+	public  Color getGlmColor() {
+		String [] colors = getGlmColorString().split(",");
+		return new Color(Integer.parseInt(colors[0]),Integer.parseInt(colors[1]),Integer.parseInt(colors[2]),Integer.parseInt(colors[3]));
+	}
+	@Override
+	public void setGlmColor(Color color) {
+		keyValuePair.setProperty("GlmColorIntRGBA", color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "," + color.getAlpha());	
+	}
+	@Override
+	public void setGlmColor(int R, int G, int B, int Alpha) {
+		keyValuePair.setProperty("GlmColorIntRGBA", R + "," + G + "," + B + "," + Alpha);	
+	}
+
 }

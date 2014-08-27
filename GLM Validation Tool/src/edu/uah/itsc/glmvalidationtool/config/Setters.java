@@ -1,5 +1,7 @@
 package edu.uah.itsc.glmvalidationtool.config;
 
+import java.awt.Color;
+
 public interface Setters {
 	public void setInitialLongitude(double lon);
 	public void setServiceString(String serviceString);
@@ -40,5 +42,14 @@ public interface Setters {
 	public void setNldnDateRangeLayer(String nldnDateRangeLayer);
 	public void setGld360DateRangeLayer(String gld360DateRangeLayer);
 	public void setGlmDateRangeLayer(String glmDateRangeLayer);
+
+	public void setEntlnColor(Color color);
+	public void setEntlnColor(int R, int G, int B, int Alpha);
+	public void setNldnColor(Color color);
+	public void setNldnColor(int R, int G, int B, int Alpha);
+	public void setGld360Color(Color color);
+	public void setGld360Color(int R, int G, int B, int Alpha);
+	public void setGlmColor(Color color);
+	public void setGlmColor(int R, int G, int B, int Alpha);
 
 }

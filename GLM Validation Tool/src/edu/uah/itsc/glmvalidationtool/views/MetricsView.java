@@ -111,6 +111,11 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	private Map<Long, XYDataset> nldnBuffer = new HashMap<>();
 	private Map<Long, XYDataset> gld360Buffer = new HashMap<>();
 	private Map<Long, XYDataset> glmBuffer = new HashMap<>();
+	
+	private static Color entlnColor;
+	private static Color nldnColor;
+	private static Color gld360Color;
+	private static Color glmColor;
 
 	Action enableAction;
 
@@ -140,16 +145,21 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 		XYDataset nldnDataset = null;
 		XYDataset gld360Dataset = null;
 		XYDataset glmDataset = null;
+		
+		entlnColor = conf.getEntlnColor();
+		nldnColor = conf.getNldnColor();
+		gld360Color = conf.getGld360Color();
+		glmColor = conf.getGlmColor();
         
 //        entlnHist = createChart(entlnDataset, Color.CYAN, "ENTLN Flash Rate" + flashesPer);
 //        nldnHist = createChart(nldnDataset, Color.BLUE, "NLDN Flash Rate" + flashesPer);
 //        gld360Hist = createChart(gld360Dataset, Color.PINK, "GLD360 Flash Rate" + flashesPer);
 //        glmHist = createChart(glmDataset, Color.MAGENTA, "GLM Flash Rate" + flashesPer);
 
-        entlnHist = createChart(entlnDataset, Color.CYAN, "");
-        nldnHist = createChart(nldnDataset, Color.BLUE, "");
-        gld360Hist = createChart(gld360Dataset, Color.PINK, "");
-        glmHist = createChart(glmDataset, Color.MAGENTA, "");
+        entlnHist = createChart(entlnDataset, entlnColor, "");
+        nldnHist = createChart(nldnDataset, nldnColor, "");
+        gld360Hist = createChart(gld360Dataset, gld360Color, "");
+        glmHist = createChart(glmDataset, glmColor, "");
         entlnHist.setTitle("ENTLN Flash Rate " + flashesPer);
         nldnHist.setTitle("NLDN Flash Rate " + flashesPer);
         gld360Hist.setTitle("GLD360 Flash Rate " + flashesPer);

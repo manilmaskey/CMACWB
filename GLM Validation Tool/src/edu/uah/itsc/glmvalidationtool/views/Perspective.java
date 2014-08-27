@@ -3,7 +3,6 @@ package edu.uah.itsc.glmvalidationtool.views;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
-import org.eclipse.ui.PlatformUI;
 
 public class Perspective implements IPerspectiveFactory {
 
@@ -17,7 +16,8 @@ public class Perspective implements IPerspectiveFactory {
 //		 IFolderLayout left = layout.createFolder("left", IPageLayout.LEFT, (float) 0.26, editorArea);
 //		 IFolderLayout top = layout.createFolder("top", IPageLayout.TOP, (float) 0.75, editorArea);
 		 IFolderLayout top = layout.createFolder("top", IPageLayout.LEFT, (float) 0.75, editorArea);
-		 IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, (float) 0.75, "top");
+//		 IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, (float) 0.75, "top");
+		 IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, (float) 0.70, "top");
 		 IFolderLayout topleft = layout.createFolder("topleft", IPageLayout.LEFT, (float) 0.75, "top");
 		 IFolderLayout topright = layout.createFolder("topright", IPageLayout.RIGHT, (float) 0.25, editorArea);
 //		 topleft.addView("LayerView");
@@ -31,8 +31,12 @@ public class Perspective implements IPerspectiveFactory {
 //		 IFolderLayout bottomright = layout.createFolder("bottomright", IPageLayout.RIGHT, (float) 0.55, "bottom");
 		 IFolderLayout bottomright = layout.createFolder("bottomright", IPageLayout.RIGHT, (float) 0.50, "bottom");
 //		 bottomleft.addView("glm_validation_tool.views.TimelineView");
-		 bottom.addView("NavigationView");
+//		 bottom.addView(IPageLayout.ID_PROJECT_EXPLORER);
+
+		 bottom.addView(IPageLayout.ID_RES_NAV);
+//		 bottom.addView("NavigationView");
 		 bottomright.addView("TimelineView");
+		 
 //		 DataView dataView;
 //		 ValidationView validationView;
 //		 while((dataView = (DataView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("DataView"))==null);

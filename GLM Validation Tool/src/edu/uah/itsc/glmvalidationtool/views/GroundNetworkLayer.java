@@ -52,6 +52,13 @@ public class GroundNetworkLayer extends RenderableLayer{
 		addRenderable(tooltip);
 	}
 	
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
+	}
 	public ArrayList<Renderable> getPoints() {
 		return points;
 	}

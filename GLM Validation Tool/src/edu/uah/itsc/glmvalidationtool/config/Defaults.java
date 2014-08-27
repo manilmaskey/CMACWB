@@ -1,5 +1,7 @@
 package edu.uah.itsc.glmvalidationtool.config;
 
+import java.awt.Color;
+
 public class Defaults implements Getters{
 	
 //	private static String url = "jdbc:postgresql://54.83.58.23/glm_vv"; 
@@ -51,11 +53,56 @@ public class Defaults implements Getters{
 	private static String serviceString = "/geoserver/GLM/ows?service=WFS&version=1.0.0&outputFormat=application/json&request=GetFeature&typeName=GLM:";
 	private static String serviceStringCsv = "/geoserver/GLM/ows?service=WFS&version=1.0.0&outputFormat=csv&request=GetFeature&typeName=GLM:";
 	
+	// r,g,b,a string represents RGBA colors
+	private static String entlnColorString = Color.CYAN.getRed() + "," + Color.CYAN.getGreen() + "," + Color.CYAN.getBlue() + "," + Color.CYAN.getAlpha();
+//	private static String nldnColorString = "40,150,255,255";
+	private static String nldnColorString = Color.BLUE.getRed() + "," + Color.BLUE.getGreen() + "," + Color.BLUE.getBlue() + "," + Color.BLUE.getAlpha();
+	private static String gld360ColorString = Color.PINK.getRed() + "," + Color.PINK.getGreen() + "," + Color.PINK.getBlue() + "," + Color.PINK.getAlpha();
+	private static String glmColorString = Color.MAGENTA.getRed() + "," + Color.MAGENTA.getGreen() + "," + Color.MAGENTA.getBlue() + "," + Color.MAGENTA.getAlpha();
+	
 	public Defaults()
 	{
 		
 	}
+
+	@Override
+	public Color getEntlnColor() {
+		String [] colors = entlnColorString.split(",");
+		return new Color(Integer.parseInt(colors[0]),Integer.parseInt(colors[1]),Integer.parseInt(colors[2]),Integer.parseInt(colors[3]));
+	}
+	@Override
+	public Color getNldnColor() {
+		String [] colors = nldnColorString.split(",");
+		return new Color(Integer.parseInt(colors[0]),Integer.parseInt(colors[1]),Integer.parseInt(colors[2]),Integer.parseInt(colors[3]));
+	}
+	@Override
+	public Color getGld360Color() {
+		String [] colors = gld360ColorString.split(",");
+		return new Color(Integer.parseInt(colors[0]),Integer.parseInt(colors[1]),Integer.parseInt(colors[2]),Integer.parseInt(colors[3]));
+	}
+	@Override
+	public Color getGlmColor() {
+		String [] colors = glmColorString.split(",");
+		return new Color(Integer.parseInt(colors[0]),Integer.parseInt(colors[1]),Integer.parseInt(colors[2]),Integer.parseInt(colors[3]));
+	}
 	
+	@Override
+	public String getEntlnColorString() {
+		return entlnColorString;
+	}
+	@Override
+	public String getNldnColorString() {
+		return nldnColorString;
+	}
+	@Override
+	public String getGld360ColorString() {
+		return gld360ColorString;
+	}
+	@Override
+	public String getGlmColorString() {
+		return glmColorString;
+	}
+
 	@Override
 	public double getInitialLongitude() {
 		// TODO Auto-generated method stub

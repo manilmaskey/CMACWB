@@ -10,8 +10,11 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwindx.examples.ApplicationTemplate;
 import gov.nasa.worldwindx.examples.util.LayerManagerLayer;
+import gov.nasa.worldwindx.examples.util.PowerOfTwoPaddedImage;
 import gov.nasa.worldwindx.examples.util.RandomShapeAttributes;
 import gov.nasa.worldwindx.examples.util.StatusLayer;
+import gov.nasa.worldwind.event.RenderingEvent;
+import gov.nasa.worldwind.event.RenderingListener;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.geom.Angle;
@@ -27,7 +30,9 @@ import gov.nasa.worldwind.render.GlobeAnnotation;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.Polygon;
 import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.render.ScreenAnnotation;
 import gov.nasa.worldwind.render.ShapeAttributes;
+import gov.nasa.worldwind.render.markers.MarkerAttributes;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.OrbitView;
 import gov.nasa.worldwind.Configuration;
@@ -39,6 +44,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -68,7 +76,9 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 	private Frame awtFrame;
 	private WorldWindowGLCanvas wwd;
 //	private ExtendedGliderWorldWindow wwd;
-	private LayerManagerLayer layerManager;
+
+//	private LayerManagerLayer layerManager;
+	private GroundNetworkLayerManager layerManager;
 	
 	// original Geojson layers, changed to use csv
 //	private RenderableLayer entlnFlashLayer=null;
@@ -80,6 +90,15 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 	private GroundNetworkLayer nldnFlashLayer=null;
 	private GroundNetworkLayer gld360Layer=null;
 	private GroundNetworkLayer glmLayer=null;
+	
+	private RenderableLayer flashLegendLayer = null;
+    private ScreenAnnotation legendAnnotation;
+
+	
+	private static Color entlnColor;
+	private static Color nldnColor;
+	private static Color gld360Color;
+	private static Color glmColor;
 	
 	private Map<Long, ArrayList<Renderable>> entlnFlashBuffer = new HashMap<>();
 	private Map<Long, ArrayList<Renderable>> nldnFlashBuffer = new HashMap<>();
@@ -93,6 +112,8 @@ public class DataView extends ViewPart implements DataFilterUpdate{
  //   private PointPlacemark mouseAn, latestAn;
     private GlobeAnnotation tooltipAnnotation;
     private Config conf = new Config();
+    
+    private ArrayList<GroundNetworkLayer> flashLayers = new ArrayList();
 
 //    private String etln_flash_string = "http://54.83.58.23:8080/geoserver/GLM/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=GLM:etln_flash&maxFeatures=50&outputFormat=application/json";
 
@@ -125,7 +146,12 @@ public class DataView extends ViewPart implements DataFilterUpdate{
         Configuration.setValue(AVKey.VIEW_CLASS_NAME, FlatOrbitView.class.getName());
 		Configuration.setValue(AVKey.INITIAL_LONGITUDE,Double.toString(conf.getInitialLongitude()));
 
-	      // Init tooltip annotation
+		entlnColor = conf.getEntlnColor();
+		nldnColor = conf.getNldnColor();
+		gld360Color = conf.getGld360Color();
+		glmColor = conf.getGlmColor();
+		
+		// Init tooltip annotation
         tooltipAnnotation = new GlobeAnnotation("", Position.fromDegrees(0, 0, 0));
         Font font = Font.decode("Arial-Plain-16");
         tooltipAnnotation.getAttributes().setFont(font);
@@ -247,7 +273,23 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 	                  highlight(event.getTopObject());
 	          }
 	      });
+	      wwd.addRenderingListener(new RenderingListener(){
 
+			@Override
+			public void stageChanged(RenderingEvent event) {
+				// TODO Auto-generated method stub
+				if (legendAnnotation!=null) {
+//					int height=wwd.getHeight();
+					int width = wwd.getWidth();
+					BufferedImage image = (BufferedImage) legendAnnotation.getAttributes().getImageSource();
+//					int imgHeight = image.getHeight();
+					int imgWidth = image.getWidth();
+				
+					legendAnnotation.setScreenPoint(new Point(width-imgWidth-10, 60));
+				}
+			}
+	    	  
+	      });
 		
 //		wwd.addPositionListener(new PositionListener() {
 //			
@@ -292,7 +334,8 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 		statusLayer.setEventSource(this.wwd);
 		model.getLayers().add(statusLayer);
 		
-		this.layerManager = new LayerManagerLayer(this.wwd);
+//		this.layerManager = new LayerManagerLayer(this.wwd);
+		this.layerManager = new GroundNetworkLayerManager(this.wwd);
 		this.layerManager.setLayerDragEnabled(true);
 		model.getLayers().add(this.layerManager);
 
@@ -576,21 +619,30 @@ public class DataView extends ViewPart implements DataFilterUpdate{
         // create or redraw lightning layers
     	// ENTLN Flash Data 
         if (entlnFlashLayer==null) {
-        	entlnFlashLayer = new GroundNetworkLayer(conf.getEntlnFlashLayer(), "ENTLN Flash", Color.CYAN, this.tooltipAnnotation);
+        	entlnFlashLayer = new GroundNetworkLayer(conf.getEntlnFlashLayer(), "ENTLN Flash", entlnColor, this.tooltipAnnotation);
 	        this.addLayer(entlnFlashLayer);
+	        flashLayers.add(entlnFlashLayer);
         }
         if (nldnFlashLayer==null) {
-        	nldnFlashLayer = new GroundNetworkLayer(conf.getNldnFlashLayer(), "NLDN Flash", Color.BLUE, this.tooltipAnnotation);
+        	nldnFlashLayer = new GroundNetworkLayer(conf.getNldnFlashLayer(), "NLDN Flash", nldnColor, this.tooltipAnnotation);
+//        	nldnFlashLayer = new GroundNetworkLayer(conf.getNldnFlashLayer(), "NLDN Flash", new Color(75, 75, 255, 0), this.tooltipAnnotation);
 	        this.addLayer(nldnFlashLayer);
+	        flashLayers.add(nldnFlashLayer);
         }
         if (gld360Layer==null) {
-        	gld360Layer = new GroundNetworkLayer(conf.getGld360Layer(), "GLD360", Color.PINK, this.tooltipAnnotation);
+        	gld360Layer = new GroundNetworkLayer(conf.getGld360Layer(), "GLD360", gld360Color, this.tooltipAnnotation);
 	        this.addLayer(gld360Layer);
+	        flashLayers.add(gld360Layer);
         }
         if (glmLayer==null) {
-        	glmLayer = new GroundNetworkLayer(conf.getGlmFlashLayer(), "GLM Flash", Color.MAGENTA, this.tooltipAnnotation);
+        	glmLayer = new GroundNetworkLayer(conf.getGlmFlashLayer(), "GLM Flash", glmColor, this.tooltipAnnotation);
 	        this.addLayer(glmLayer);
-        }
+	        flashLayers.add(glmLayer);
+       }
+       if (flashLegendLayer==null) {
+   			flashLegendLayer = createFlashLayerLegend();
+   			this.addLayer(flashLegendLayer);
+       }
         try {
 //        	entlnFlashLayer.clearPoints();
 //            entlnFlashLayer.readCsvData(conf.getEntlnFlashTable());
@@ -751,7 +803,51 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 		glmBuffer.clear();
 
 	}
-	
+    protected RenderableLayer createFlashLayerLegend()
+    {
+    	RenderableLayer layer = new RenderableLayer();
+    	layer.setName("Ground Network Legend");
+    	
+        BufferedImage image = new BufferedImage(100, 80, BufferedImage.TYPE_4BYTE_ABGR);
+        Graphics g2 = image.getGraphics();
+        int divisions = flashLayers.size();
+        int margin = 2; // space between items in pixels
+//        int w = image.getWidth() / 2 - margin;
+        int h = (image.getHeight() - margin * (divisions - 1)) / divisions;
+        int w = h;
+        int cnt=0;
+        for (GroundNetworkLayer grnd:flashLayers)
+        {
+            int x = 0;
+            int y = cnt * (image.getHeight() / divisions);
+            // Draw color rectangle
+            g2.setColor(grnd.getColor());
+            g2.fillRect(x, y, w, h);
+            // Draw hour label
+            x = w + margin + margin;
+            y = y + h;
+            String label =  grnd.getName();
+            g2.setColor(Color.BLACK);
+            g2.drawString(label, x + 1, y + 1);
+            g2.setColor(Color.WHITE);
+            g2.drawString(label, x, y);
+            cnt++;
+        }
+        
+        legendAnnotation = new ScreenAnnotation("", new Point((wwd.getWidth()-image.getWidth()-10), 60));
+        legendAnnotation.getAttributes().setImageSource(image);
+        legendAnnotation.getAttributes().setSize(
+            new Dimension(image.getWidth(), image.getHeight()));
+        legendAnnotation.getAttributes().setDrawOffset(new Point(image.getWidth() / 2, 0));
+        legendAnnotation.getAttributes().setAdjustWidthToText(AVKey.SIZE_FIXED);
+        legendAnnotation.getAttributes().setBorderWidth(0);
+        legendAnnotation.getAttributes().setCornerRadius(0);
+        legendAnnotation.getAttributes().setBackgroundColor(new Color(0f, 0f, 0f, 0f));
+        layer.addRenderable(legendAnnotation);
+        
+        return layer;
+    }
+ 	
     // need to pass in lightning data as a common data structure or json object
 //    private void addLightningLayers() 
 //    {

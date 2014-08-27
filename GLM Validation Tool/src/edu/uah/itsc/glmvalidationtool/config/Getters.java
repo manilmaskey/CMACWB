@@ -1,5 +1,7 @@
 package edu.uah.itsc.glmvalidationtool.config;
 
+import java.awt.Color;
+
 public interface Getters {
 	public double getInitialLongitude();
 	public String getServiceString();
@@ -40,5 +42,15 @@ public interface Getters {
 	public String getNldnDateRangeLayer();
 	public String getGld360DateRangeLayer();
 	public String getGlmDateRangeLayer();
+
+	public String getEntlnColorString();
+	public String getNldnColorString();
+	public String getGld360ColorString();
+	public String getGlmColorString();
+	
+	public Color getEntlnColor();
+	public Color getNldnColor();
+	public Color getGld360Color();
+	public Color getGlmColor();
 
 }
