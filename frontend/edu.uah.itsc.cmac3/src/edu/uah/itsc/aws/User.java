@@ -21,6 +21,8 @@ public class User {
 	public static String					awsSecretKey;
 	public static String					sciDBUserName;
 	public static String					sciDBPassword;
+	public static String					sciDBServerName;
+	public static String					sciDBServerURL;
 	public static String					rootFolder;
 	public static String					sessionID;
 	public static String					sessionName;

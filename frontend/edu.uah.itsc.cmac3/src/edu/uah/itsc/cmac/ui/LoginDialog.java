@@ -4,8 +4,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Collections;
+import java.util.HashMap;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -20,6 +23,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -28,6 +32,8 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.osgi.framework.Bundle;
 import org.osgi.service.prefs.BackingStoreException;
@@ -37,13 +43,16 @@ import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.Activator;
 import edu.uah.itsc.cmac.portal.PortalConnector;
+import edu.uah.itsc.cmac.portal.PortalUtilities;
 
 public class LoginDialog {
 
-	private Display	display;
-	private Shell	shell;
-	private Text	userText;
-	private Text	passText;
+	private Display		display;
+	private Shell		shell;
+	private Text		userText;
+	private Text		passText;
+	private Combo		serverCombo;
+	private String[]	servers;
 
 	public LoginDialog(Display display) {
 		this.display = display;
@@ -86,6 +95,13 @@ public class LoginDialog {
 		passText = new Text(loginForm, SWT.BORDER | SWT.PASSWORD);
 		passText.setMessage("Enter your Password");
 		passText.setLayoutData(textGridData);
+
+		Label serverLabel = new Label(loginForm, SWT.NONE);
+		serverLabel.setText("Server");
+		serverCombo = new Combo(loginForm, SWT.READ_ONLY);
+		servers = getSciDBServerList();
+		serverCombo.setItems(servers);
+		serverCombo.setLayoutData(textGridData);
 
 		Label emptylabel2 = new Label(loginForm, SWT.NONE);
 		emptylabel2.setLayoutData(loginLabelGridData);
@@ -160,6 +176,27 @@ public class LoginDialog {
 		display.removeFilter(SWT.KeyDown, listener);
 	}
 
+	private String[] getSciDBServerList() {
+		String response = PortalUtilities.getDataFromURL(PortalUtilities.getSciDBServerListURL());
+		HashMap<String, String> servers = new HashMap<String, String>();
+		try {
+			JSONObject jsonResponse = new JSONObject(response);
+			JSONArray serverArray = jsonResponse.getJSONArray("servers");
+			for (int i = 0; i < serverArray.length(); i++) {
+				JSONObject serverObj = serverArray.getJSONObject(i).getJSONObject("server");
+				String serverName = serverObj.getString("scidb_server_name");
+				String serverURL = serverObj.getString("scidb_server_url");
+				if (!servers.containsKey(serverName))
+					servers.put(serverName, serverURL);
+			}
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return servers.keySet().toArray(new String[servers.size()]);
+	}
+
 	private Image getImageFromPlugin(String imageName) {
 		Bundle bundle = Activator.getDefault().getBundle();
 		Path path = new Path(imageName);
@@ -191,7 +228,16 @@ public class LoginDialog {
 		shell.setCursor(new Cursor(display, SWT.CURSOR_WAIT));
 		String username = userText.getText();
 		String password = passText.getText();
-
+		String selectedServer = null;
+		int comboSelection = serverCombo.getSelectionIndex();
+		if (comboSelection >= 0)
+			selectedServer = servers[comboSelection];
+		else {
+			MessageDialog.openError(Display.getDefault().getActiveShell(), "Error",
+				"Please select the server to log in.");
+			finish();
+			return;
+		}
 		PortalConnector pc = new PortalConnector();
 
 		JSONObject jsonObject = pc.connect(username, password);
@@ -199,6 +245,16 @@ public class LoginDialog {
 		if (jsonObject != null) {
 			User.username = username;
 			User.password = password;
+
+			if (selectedServer != null)
+				try {
+					setSciDBUserDetails(selectedServer);
+				}
+				catch (Exception e) {
+					MessageDialog.openError(Display.getDefault().getActiveShell(), "Error", e.getMessage());
+					finish();
+					return;
+				}
 
 			// Get preferences
 			Preferences preferences = InstanceScope.INSTANCE.getNode("edu.uah.itsc.cmac.preferences");
@@ -227,14 +283,13 @@ public class LoginDialog {
 					System.out.println("Cannot flush preferences");
 				}
 			}
-			finish();
-			shell.close();
 
 			String homeDir = System.getProperty("user.home");
 			File jgitFile = new File(homeDir + "/" + ".jgit");
 			if (jgitFile.exists()) {
 				jgitFile.delete();
 			}
+
 			try {
 				jgitFile.createNewFile();
 				S3 s3 = new S3();
@@ -249,12 +304,38 @@ public class LoginDialog {
 				MessageDialog.openError(Display.getDefault().getActiveShell(), "Error", "Cannot load your credentials");
 			}
 
-			System.out.println("Connecting to XMPP-----------------------");
+			finish();
+			shell.close();
 
 		}
 		else {
 			MessageDialog.openError(shell, "Error", "Could not login!");
 			finish();
+		}
+	}
+
+	private void setSciDBUserDetails(String server) throws Exception {
+		try {
+			String url = PortalUtilities.getSciDBUserDetailURL() + "?field_portal_user_uid=" + User.portalUserID
+				+ "&field_scidb_server_name_value=" + URLEncoder.encode(server, "UTF-8");
+			String response = PortalUtilities.getDataFromURL(url);
+			JSONObject jsonResponse = new JSONObject(response);
+			JSONArray serverArray = jsonResponse.getJSONArray("users");
+			if (serverArray.length() == 0)
+				throw new Exception("You don't have credentials for this server");
+			if (serverArray.length() > 1)
+				System.out.println("More than one user detial");
+			JSONObject userObj = serverArray.getJSONObject(0).getJSONObject("user");
+			User.sciDBServerName = userObj.getString("scidb_server_name");
+			User.sciDBServerURL = userObj.getString("scidb_server_url");
+			User.sciDBUserName = userObj.getString("scidb_username");
+			User.sciDBPassword = userObj.getString("scidb_password");
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+		catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -270,7 +351,8 @@ public class LoginDialog {
 		}
 		if (User.sciDBUserName != null && User.sciDBPassword != null) {
 			sciDBFile.createNewFile();
-			String content = "username=" + User.sciDBUserName + "\npassword=" + User.sciDBPassword;
+			String content = "name=" + User.sciDBServerName + "\nurl=" + User.sciDBServerURL + "\nusername="
+				+ User.sciDBUserName + "\npassword=" + User.sciDBPassword + "\n";
 			FileWriter fw = new FileWriter(sciDBFile.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(content);

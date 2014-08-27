@@ -157,6 +157,14 @@ public class PortalUtilities {
 		return getKeyValueFromProperties("portal_domain");
 	}
 
+	public static String getSciDBServerListURL() {
+		return getKeyValueFromProperties("scidb_server_list_url");
+	}
+	
+	public static String getSciDBUserDetailURL() {
+		return getKeyValueFromProperties("scidb_user_detail_url");
+	}
+	
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {
 		path = "/" + path;
 		path = path.replaceFirst("//", "/");
