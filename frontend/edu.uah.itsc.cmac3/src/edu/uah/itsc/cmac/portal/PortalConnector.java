@@ -86,28 +86,6 @@ public class PortalConnector {
 				// System.out.println("jsonAWSSecretKey "+jsonAWSSecretKey.getString("value"));
 			}
 
-			// Object sciDBUserNameField = jsonUser.get("field_scidb_username");
-			// if (sciDBUserNameField instanceof JSONObject) {
-			// JSONObject jsonSciDBUserNameField = jsonUser.getJSONObject("field_scidb_username");
-			// if (jsonSciDBUserNameField.length() > 0) {
-			// JSONObject jsonSciDBUserName = (JSONObject) jsonSciDBUserNameField.getJSONArray("und").get(0);
-			// User.sciDBUserName = jsonSciDBUserName.getString("value");
-			// }
-			// }
-			// else
-			// User.sciDBUserName = null;
-			//
-			// Object sciDBPasswordField = jsonUser.get("field_scidb_username");
-			// if (sciDBPasswordField instanceof JSONObject) {
-			// JSONObject jsonSciDBPasswordField = jsonUser.getJSONObject("field_scidb_username");
-			// if (jsonSciDBPasswordField.length() > 0) {
-			// JSONObject jsonSciDBUserName = (JSONObject) jsonSciDBPasswordField.getJSONArray("und").get(0);
-			// User.sciDBPassword = jsonSciDBUserName.getString("value");
-			// }
-			// }
-			// else
-			// User.sciDBPassword = null;
-
 		}
 		catch (Exception e) {
 			System.out.println("Unable to login");
