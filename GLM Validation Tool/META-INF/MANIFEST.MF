@@ -26,6 +26,7 @@ Bundle-ClassPath: lib/gdal.jar,
  lib/swtgraphics2d.jar,
  lib/jfreechart-1.0.19-experimental.jar,
  lib/jfreechart-1.0.19-swt.jar,
+ lib/jmf.jar,
  .
 Import-Package: org.eclipse.nebula.cwt.base,
  org.eclipse.nebula.widgets.cdatetime,

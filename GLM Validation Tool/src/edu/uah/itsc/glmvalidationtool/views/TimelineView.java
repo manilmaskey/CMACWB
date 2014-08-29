@@ -29,9 +29,15 @@ package edu.uah.itsc.glmvalidationtool.views;
 //import org.eclipse.nebula.widgets.ganttchart.GanttEvent;
 //import org.eclipse.nebula.widgets.datechooser.DateChooser;
 
+import java.awt.AWTException;
+import java.awt.Dimension;
+import java.awt.Robot;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -44,6 +50,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+
+import javax.imageio.ImageIO;
+import javax.media.Format;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -114,8 +123,15 @@ import gov.nasa.worldwind.geom.Sector;
     private Scale scale;
     private Animator animator;
 
-    Action playAction, drawBoxAction, refreshAction, clearAction;
+    Action recordAction, playAction, drawBoxAction, refreshAction, clearAction;
     boolean playFlag=false;
+    boolean recordFlag=false;
+    
+    Dimension screenSize;
+    Robot robot;
+    MovieEncoder movie;
+    Format movieFormat;
+    File saveFile;
     
     //stopAction, 
 	/**
@@ -310,7 +326,15 @@ import gov.nasa.worldwind.geom.Sector;
 	    createToolbar();
 	    
 	    dataFilter.refreshObjects();
-	   	 
+	    
+	    try {
+			robot = new Robot();
+		} catch (AWTException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	    screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	    	   	 
 	}
 	private void cdtAnimationStartSelected()
 	{
@@ -361,10 +385,10 @@ import gov.nasa.worldwind.geom.Sector;
 	}
 
     public void createActions() {
-           playAction = new Action("Start Animation") {
+           playAction = new Action("Play Animation") {
                 public void run() { 
                 		if (playFlag) {
-                			playAction.setToolTipText("Start Animation");
+                			playAction.setToolTipText("Play Animation");
                 			playAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/nav_go.gif"));
                 			StopAnimation();
                 		}
@@ -376,7 +400,26 @@ import gov.nasa.worldwind.geom.Sector;
                 		playFlag=!playFlag;
                     }
            };
-           playAction.setImageDescriptor(getImageDescriptor("nav_go.gif"));
+           playAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/nav_go.gif"));
+//           playAction.setImageDescriptor(getImageDescriptor("nav_go.gif"));
+
+           recordAction = new Action("Record Animation") {
+               public void run() { 
+               		if (recordFlag) {
+               			recordAction.setToolTipText("Record Animation");
+               			recordAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/button_play_red_16x16.png"));
+               			StopRecordAnimation();
+               		}
+               		else {
+               			recordAction.setToolTipText("Stop Recording Animation");
+               			recordAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/button_stop_red_16x16.png"));
+               			RecordAnimation();               			
+               		}
+               		recordFlag=!recordFlag;
+                   }
+          };
+          recordAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/button_play_red_16x16.png"));
+ //         recordAction.setImageDescriptor(getImageDescriptor("button_play_red.png"));
 
 //           stopAction = new Action("Stop Animation") {
 //                   public void run() {
@@ -391,7 +434,9 @@ import gov.nasa.worldwind.geom.Sector;
                    }
            };
  //          drawBoxAction.setImageDescriptor(getImageDescriptor("rectangle.jpg"));
-           drawBoxAction.setImageDescriptor(getImageDescriptor("draw-rectangle.png"));
+           
+           drawBoxAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/draw-rectangle.png"));
+ //          drawBoxAction.setImageDescriptor(getImageDescriptor("draw-rectangle.png"));
 
            clearAction = new Action("Clear Drawn Bounding Box") {
                public void run() {
@@ -399,7 +444,9 @@ import gov.nasa.worldwind.geom.Sector;
               }
            };
 //          drawBoxAction.setImageDescriptor(getImageDescriptor("rectangle.jpg"));
-           clearAction.setImageDescriptor(getImageDescriptor("delete_edit.gif"));
+ 
+          clearAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/delete_edit.gif"));
+//          clearAction.setImageDescriptor(getImageDescriptor("delete_edit.gif"));
 
            
            refreshAction = new Action("Apply bounding box and refresh display using current time") {
@@ -407,7 +454,8 @@ import gov.nasa.worldwind.geom.Sector;
                         DrawCurrent();
               }
            };
-           refreshAction.setImageDescriptor(getImageDescriptor("nav_refresh.gif"));
+           refreshAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/nav_refresh.gif"));
+//           refreshAction.setImageDescriptor(getImageDescriptor("nav_refresh.gif"));
            
    }
     private void StartAnimation()
@@ -422,6 +470,52 @@ import gov.nasa.worldwind.geom.Sector;
     {
     	animator.stop();
     }
+    
+    private void RecordAnimation()
+    {
+    	// check current time, if between start and end, start animation
+    	
+    	
+    	// create new MovieEncoder
+//		BufferedImage img = robot.createScreenCapture(new java.awt.Rectangle(screenSize));
+		BufferedImage img = robot.createScreenCapture(new java.awt.Rectangle(new Dimension(640,480)));
+		
+		try {
+			ImageIO.write(img, "JPG", new File("screen.jpg"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		saveFile=new File("movie.mov");
+		
+//    	MovieEncoder(float frameRate, File file, BufferedImage typicalImage, Format encodeFormat)
+    	movie = new MovieEncoder();
+    	Format [] formats = movie.getEncodingFormats(1.0f, img);
+    	System.out.println("formats:");
+    	for (int ind1=0;ind1<formats.length;ind1++) {
+    		System.out.println(formats[ind1].toString());
+    	}
+    	
+    	// find 24 bit format
+    	movieFormat = formats[1];
+		movie = new MovieEncoder(1.0f, saveFile, img, movieFormat);
+
+    	// reset to start time
+        dataFilter.setCurrentTime(cdtAnimationStart.getSelection().getTime());
+        refreshWidgets();
+    	dataFilter.refreshObjects();
+
+		animator.start();
+    	
+    }
+    private void StopRecordAnimation()
+    {
+    	animator.stop();
+    	// write out buffered movie
+    	
+    }
+    
     private void DrawBox()
     {
 		wwEvent.enableSelectors();
@@ -463,6 +557,7 @@ import gov.nasa.worldwind.geom.Sector;
      */
     private void createToolbar() {
             IToolBarManager mgr = getViewSite().getActionBars().getToolBarManager();
+            mgr.add(recordAction);
             mgr.add(playAction);
  //           mgr.add(stopAction);
             mgr.add(drawBoxAction);
@@ -476,22 +571,22 @@ import gov.nasa.worldwind.geom.Sector;
   /**
      * Returns the image descriptor with the given relative path.
      */
-    private ImageDescriptor getImageDescriptor(String relativePath) {
-            String iconPath = "icons/";
-//            try {
-            	return ImageDescriptor.createFromFile(this.getClass(), "/icons/"+relativePath);
-//            	InputStream input = getClass().getResourceAsStream("/icons/histogram-16x16.gif");  
-//            	input.
-//            	ViewsPlugin plugin = ViewsPlugin.getDefault();
-//                URL installURL = plugin..getDescriptor().getInstallURL();
-//                URL url = new URL(installURL, iconPath + relativePath);
-//                return ImageDescriptor..createFromURL(url);             
-//            }
-//            catch (MalformedURLException e) {
-//                    // should not happen
-//                    return ImageDescriptor.getMissingImageDescriptor();
-//            }
-    }
+//    private ImageDescriptor getImageDescriptor(String relativePath) {
+//            String iconPath = "icons/";
+////            try {
+//            	return ImageDescriptor.createFromFile(this.getClass(), "/icons/"+relativePath);
+////            	InputStream input = getClass().getResourceAsStream("/icons/histogram-16x16.gif");  
+////            	input.
+////            	ViewsPlugin plugin = ViewsPlugin.getDefault();
+////                URL installURL = plugin..getDescriptor().getInstallURL();
+////                URL url = new URL(installURL, iconPath + relativePath);
+////                return ImageDescriptor..createFromURL(url);             
+////            }
+////            catch (MalformedURLException e) {
+////                    // should not happen
+////                    return ImageDescriptor.getMissingImageDescriptor();
+////            }
+//    }
     void refreshTimeRange()
     {
 		MaxMin maxmin = new MaxMin();
@@ -635,6 +730,11 @@ import gov.nasa.worldwind.geom.Sector;
 
 		        refreshWidgets();
 		    	dataFilter.refreshObjects();
+		    	
+		    	if (recordFlag) {
+		    		BufferedImage img = robot.createScreenCapture(new java.awt.Rectangle(screenSize));
+		    		movie.add(img);
+		    	}
 		    	display.timerExec(delay, this);
 			}
 
@@ -655,6 +755,10 @@ import gov.nasa.worldwind.geom.Sector;
 		clearAction.setEnabled(true);
 		refreshAction.setEnabled(true);
 		display.timerExec(-1, this.timer);
+		if (recordFlag) {
+			movie.stop();
+		}
+		
 //		timer.stop();
       }
 
