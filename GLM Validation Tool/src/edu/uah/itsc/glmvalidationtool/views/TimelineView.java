@@ -31,10 +31,13 @@ package edu.uah.itsc.glmvalidationtool.views;
 
 import java.awt.AWTException;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,9 +53,11 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.Vector;
 
 import javax.imageio.ImageIO;
 import javax.media.Format;
+import javax.media.MediaLocator;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
@@ -71,9 +76,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.views.ViewsPlugin;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.data.time.SimpleTimePeriod;
@@ -128,10 +137,12 @@ import gov.nasa.worldwind.geom.Sector;
     boolean recordFlag=false;
     
     Dimension screenSize;
+    Dimension movieSize;
     Robot robot;
-    MovieEncoder movie;
-    Format movieFormat;
-    File saveFile;
+    JpegImagesToMovie movie;
+    Vector <BufferedImage> imgBuffer = new Vector<>();
+    
+    URL saveFile;
     
     //stopAction, 
 	/**
@@ -334,6 +345,7 @@ import gov.nasa.worldwind.geom.Sector;
 			e1.printStackTrace();
 		}
 	    screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//	    screenSize = new Dimension(640,480);
 	    	   	 
 	}
 	private void cdtAnimationStartSelected()
@@ -478,30 +490,55 @@ import gov.nasa.worldwind.geom.Sector;
     	
     	// create new MovieEncoder
 //		BufferedImage img = robot.createScreenCapture(new java.awt.Rectangle(screenSize));
-		BufferedImage img = robot.createScreenCapture(new java.awt.Rectangle(new Dimension(640,480)));
+//		BufferedImage img = robot.createScreenCapture(new java.awt.Rectangle(new Dimension(640,480)));
 		
-		try {
-			ImageIO.write(img, "JPG", new File("screen.jpg"));
-		} catch (IOException e) {
+//		try {
+//			ImageIO.write(img, "JPG", new File("screen.jpg"));
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
+//		try {
+////			saveFile=new URL("movie.mov");
+//			saveFile=new URL("file://Users/Todd/movie.mov");
+//		} catch (MalformedURLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
+    	// look for navigator window
+    	
+    	
+		IWorkbench wb = PlatformUI.getWorkbench();
+		IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
+		FileDialog fd = new  FileDialog(win.getShell(), SWT.SAVE);
+		fd.setFilterExtensions(new String[]{"*.mov"});
+		fd.setFilterNames(new String[]{"Quicktime movie files"});
+		String movieFilename = fd.open();
+		if (movieFilename == null) {
+			recordFlag=!recordFlag;
+   			recordAction.setToolTipText("Record Animation");
+   			recordAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/button_play_red_16x16.png"));
+			return;
+		}
+		System.out.println("movie filename " + movieFilename);
+		
+		if (!movieFilename.endsWith(".mov")) {
+			movieFilename.concat(".mov");
+		}
+    	try {
+			saveFile = new URL( "file://" + movieFilename);
+		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		saveFile=new File("movie.mov");
-		
-//    	MovieEncoder(float frameRate, File file, BufferedImage typicalImage, Format encodeFormat)
-    	movie = new MovieEncoder();
-    	Format [] formats = movie.getEncodingFormats(1.0f, img);
-    	System.out.println("formats:");
-    	for (int ind1=0;ind1<formats.length;ind1++) {
-    		System.out.println(formats[ind1].toString());
-    	}
     	
-    	// find 24 bit format
-    	movieFormat = formats[1];
-		movie = new MovieEncoder(1.0f, saveFile, img, movieFormat);
+		System.out.println("Url " + saveFile);
+    	
+    	movie = new JpegImagesToMovie();
 
-    	// reset to start time
+		// reset to start time
         dataFilter.setCurrentTime(cdtAnimationStart.getSelection().getTime());
         refreshWidgets();
     	dataFilter.refreshObjects();
@@ -695,6 +732,36 @@ import gov.nasa.worldwind.geom.Sector;
 		
     }
     //
+    private void takeScreenShot()
+    {
+		IWorkbench wb = PlatformUI.getWorkbench();
+		IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
+		Rectangle rect = win.getShell().getBounds();
+		System.out.println("rectangle " + rect);
+		BufferedImage img = robot.createScreenCapture(new java.awt.Rectangle(screenSize));
+//		imgBuffer.add(img);
+		BufferedImage subImg = img.getSubimage(rect.x, rect.y, rect.width, rect.height);
+		imgBuffer.add(subImg);
+
+		
+//		movieSize = new Dimension(640,480);
+////		movieSize = new Dimension(1280,720);
+//
+//		float xscale = (float)movieSize.width/(float)subImg.getWidth();
+//		float yscale = (float)movieSize.height/(float)subImg.getHeight();
+//		float scale = Math.min(xscale, yscale);
+//		BufferedImage after = new BufferedImage(movieSize.width, movieSize.height, subImg.getType());
+//		AffineTransform at = new AffineTransform();
+//		
+//		at.scale(scale, scale);
+//		AffineTransformOp scaleOp = 
+//		   new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+//		after = scaleOp.filter(subImg, after);
+////		
+//////		Image scaledImg=subImg.getScaledInstance(640, -1, Image.SCALE_SMOOTH);
+//		imgBuffer.add(after);
+    	
+    }
   private class Animator
   {
       int delay = 1000;
@@ -715,6 +782,9 @@ import gov.nasa.worldwind.geom.Sector;
 			    if (displayCurrent) {
 			    	dataFilter.refreshObjects();
 			    	displayCurrent=false;
+			    	if (recordFlag) {
+			    		takeScreenShot();
+			    	}
 			    	display.timerExec(delay, this);
 			    }
 
@@ -732,8 +802,7 @@ import gov.nasa.worldwind.geom.Sector;
 		    	dataFilter.refreshObjects();
 		    	
 		    	if (recordFlag) {
-		    		BufferedImage img = robot.createScreenCapture(new java.awt.Rectangle(screenSize));
-		    		movie.add(img);
+		    		takeScreenShot();
 		    	}
 		    	display.timerExec(delay, this);
 			}
@@ -756,7 +825,9 @@ import gov.nasa.worldwind.geom.Sector;
 		refreshAction.setEnabled(true);
 		display.timerExec(-1, this.timer);
 		if (recordFlag) {
-			movie.stop();
+			
+			movie.doIt(imgBuffer.get(0).getWidth(), imgBuffer.get(0).getHeight(), 1, imgBuffer, new MediaLocator(saveFile));
+//			movie.doIt(640,480, 1, imgBuffer, new MediaLocator(saveFile));
 		}
 		
 //		timer.stop();
@@ -767,7 +838,8 @@ import gov.nasa.worldwind.geom.Sector;
     	  // disable other controls, only enable stop animation button
     	  
   		System.out.println("animator start");
-//		cdtCurrent.setEnabled(false);
+
+    	//		cdtCurrent.setEnabled(false);
 		cdtDisplayInterval.setEnabled(false);
 		cdtAnimationStart.setEnabled(false);
 		cdtAnimationEnd.setEnabled(false);
@@ -776,6 +848,8 @@ import gov.nasa.worldwind.geom.Sector;
 		clearAction.setEnabled(false);
 		refreshAction.setEnabled(false);
 		displayCurrent = true;
+    	imgBuffer.clear();
+    	
     	display.timerExec(delay, this.timer);
 		
 //        timer.start();
