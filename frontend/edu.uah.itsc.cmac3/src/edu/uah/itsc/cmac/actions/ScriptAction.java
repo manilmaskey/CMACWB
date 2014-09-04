@@ -33,8 +33,8 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 
-import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
+import edu.uah.itsc.cmac.Utilities;
 import edu.uah.itsc.cmac.model.ExecuteCommand;
 import edu.uah.itsc.cmac.util.GITUtility;
 
@@ -170,8 +170,8 @@ class LongRunningOperation implements IRunnableWithProgress {
 			GITUtility.push(repoName, repoLocalPath, repoRemotePath);
 			ExecuteCommand execCommand = new ExecuteCommand.Builder(bucket, repoName, file).shared(isSharedRepo)
 				.name(User.username).mail(User.userEmail).repoOwner(repoOwner)
-				.accessKey(S3.getKeyValueFromProperties("aws_admin_access_key"))
-				.secretKey(S3.getKeyValueFromProperties("aws_admin_secret_key")).build();
+				.accessKey(Utilities.getKeyValueFromPreferences("s3", "aws_admin_access_key"))
+				.secretKey(Utilities.getKeyValueFromPreferences("s3", "aws_admin_secret_key")).build();
 			StringEntity seData = new StringEntity(execCommand.toJSONString());
 			seData.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 			HttpResponse response = postData("http://54.208.76.40:8080/cmacBackend/services/action/execute", seData);

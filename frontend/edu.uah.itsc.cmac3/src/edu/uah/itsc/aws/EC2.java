@@ -3,10 +3,8 @@
  */
 package edu.uah.itsc.aws;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -34,6 +32,8 @@ import com.amazonaws.services.ec2.model.StopInstancesRequest;
 import com.amazonaws.services.ec2.model.StopInstancesResult;
 import com.amazonaws.services.ec2.model.Tag;
 
+import edu.uah.itsc.cmac.Utilities;
+
 /**
  * @author sshrestha
  * 
@@ -43,12 +43,11 @@ public class EC2 {
 	private String		awsAdminAccessKey;
 	private String		awsAdminSecretKey;
 	private String		awsUserID;
-	private Properties	properties	= null;
 
 	public EC2() {
-		awsAdminAccessKey = getKeyValueFromProperties("aws_admin_access_key");
-		awsAdminSecretKey = getKeyValueFromProperties("aws_admin_secret_key");
-		awsUserID = getKeyValueFromProperties("aws_user_id");
+		awsAdminAccessKey = Utilities.getKeyValueFromPreferences("s3", "aws_admin_access_key");
+		awsAdminSecretKey = Utilities.getKeyValueFromPreferences("s3", "aws_admin_secret_key");
+		awsUserID = Utilities.getKeyValueFromPreferences("s3", "aws_user_id");
 		AWSCredentials credentials = new BasicAWSCredentials(awsAdminAccessKey, awsAdminSecretKey);
 		System.out.println("User................" + User.awsAccessKey + "\t" + User.awsSecretKey);
 		amazonEC2 = new AmazonEC2Client(credentials);
@@ -153,21 +152,5 @@ public class EC2 {
 		CreateTagsRequest tagRequest = new CreateTagsRequest(resources, tags);
 		amazonEC2.createTags(tagRequest);
 
-	}
-
-	private String getKeyValueFromProperties(String key) {
-		if (properties != null && properties.containsKey(key)) {
-			return properties.getProperty(key);
-		}
-		if (properties == null) {
-			properties = new Properties();
-			try {
-				properties.load(S3.class.getClassLoader().getResourceAsStream("cmac.properties"));
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return properties.getProperty(key);
 	}
 }
