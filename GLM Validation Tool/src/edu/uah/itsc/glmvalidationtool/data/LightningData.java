@@ -26,7 +26,7 @@ public class LightningData {
     private Connection con;
     private Config conf = new Config();
 	
-	ArrayList <LightningEntry> data = new ArrayList<>();
+	ArrayList <LightningEntry> data = new ArrayList<LightningEntry>();
 	private Config.DataType dataType;
 	
 //	public LightningData(int type, String filename) 

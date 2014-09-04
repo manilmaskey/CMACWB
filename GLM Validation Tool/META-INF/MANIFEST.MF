@@ -14,7 +14,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.views;bundle-version="3.6.100",
  org.eclipse.core.resources;bundle-version="3.8.101",
  org.eclipse.platform;bundle-version="4.3.2"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/gdal.jar,
  lib/worldwind.jar,

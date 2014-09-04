@@ -8,14 +8,17 @@
    </configIni>
 
    <launcherArgs>
-      <vmArgs>-Xms40m -Xmx512m -Duser.timezone=GMT</vmArgs>
+      <vmArgs>-Xms40m -Xmx1024m -Duser.timezone=GMT</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
    <windowImages/>
 
-
-   <launcher>
+   <splash
+      startupProgressRect="5,275,445,15"
+      startupMessageRect="7,252,445,20"
+      startupForegroundColor="000000" />
+   <launcher name="GLM Validation Tool">
       <solaris/>
       <win useIco="false">
          <bmp/>
@@ -25,7 +28,6 @@
 
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="GLM_Validation_Tool"/>

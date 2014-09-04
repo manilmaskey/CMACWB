@@ -14,9 +14,9 @@ import gov.nasa.worldwindx.examples.util.SectorSelector;
 public class WWEvent {
 
 //	private static boolean drawMode = false;
-	private static ArrayList <Object> WW_objects = new ArrayList<>();
-	private static ArrayList <Object> Listeners = new ArrayList<>();
-	private static ArrayList<SectorSelector> Selector = new ArrayList<>();
+	private static ArrayList <Object> WW_objects = new ArrayList<Object>();
+	private static ArrayList <Object> Listeners = new ArrayList<Object>();
+	private static ArrayList<SectorSelector> Selector = new ArrayList<SectorSelector>();
 	private static Sector selectedSector = null;
 	
 	public static ArrayList<Object> getWWObjects() {
@@ -79,7 +79,7 @@ public class WWEvent {
 	}
 	static public ArrayList<Object> changedObjects(Object changed)
 	{
-		ArrayList<Object> objects = new ArrayList<>();
+		ArrayList<Object> objects = new ArrayList<Object>();
 		if (changed==null) return null;
 		// return all objects except for one changed
 		for (Object obj:WW_objects) {

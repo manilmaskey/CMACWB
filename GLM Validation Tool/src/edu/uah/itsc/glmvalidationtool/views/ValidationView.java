@@ -86,8 +86,8 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
     private RenderableLayer boundingBoxLayer=null;
 	private CrosshairLayer crosshairLayer=null;
 
-	private Map<Long, ArrayList<Renderable>> glmValidationBuffer = new HashMap<>();
-	private Map<Long, ArrayList<Renderable>> groundValidationBuffer = new HashMap<>();
+	private Map<Long, ArrayList<Renderable>> glmValidationBuffer = new HashMap<Long, ArrayList<Renderable>>();
+	private Map<Long, ArrayList<Renderable>> groundValidationBuffer = new HashMap<Long, ArrayList<Renderable>>();
 //	private Map<Long, ArrayList<Renderable>> entlnValidationBuffer = new HashMap<>();
 //	private Map<Long, ArrayList<Renderable>> nldnValidationBuffer = new HashMap<>();
 //	private Map<Long, ArrayList<Renderable>> gld360ValidationBuffer = new HashMap<>();

@@ -100,10 +100,10 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 	private static Color gld360Color;
 	private static Color glmColor;
 	
-	private Map<Long, ArrayList<Renderable>> entlnFlashBuffer = new HashMap<>();
-	private Map<Long, ArrayList<Renderable>> nldnFlashBuffer = new HashMap<>();
-	private Map<Long, ArrayList<Renderable>> gld360Buffer = new HashMap<>();
-	private Map<Long, ArrayList<Renderable>> glmBuffer = new HashMap<>();
+	private Map<Long, ArrayList<Renderable>> entlnFlashBuffer = new HashMap<Long, ArrayList<Renderable>>();
+	private Map<Long, ArrayList<Renderable>> nldnFlashBuffer = new HashMap<Long, ArrayList<Renderable>>();
+	private Map<Long, ArrayList<Renderable>> gld360Buffer = new HashMap<Long, ArrayList<Renderable>>();
+	private Map<Long, ArrayList<Renderable>> glmBuffer = new HashMap<Long, ArrayList<Renderable>>();
 
 	private RenderableLayer boundingBoxLayer=null;
 	private CrosshairLayer crosshairLayer=null;

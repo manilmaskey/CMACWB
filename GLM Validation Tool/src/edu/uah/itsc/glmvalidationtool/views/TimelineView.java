@@ -140,7 +140,7 @@ import gov.nasa.worldwind.geom.Sector;
     Dimension movieSize;
     Robot robot;
     JpegImagesToMovie movie;
-    Vector <BufferedImage> imgBuffer = new Vector<>();
+    Vector <BufferedImage> imgBuffer = new Vector<BufferedImage>();
     
     URL saveFile;
     

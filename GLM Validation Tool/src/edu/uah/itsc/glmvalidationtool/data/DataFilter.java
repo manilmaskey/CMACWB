@@ -9,7 +9,7 @@ public class DataFilter {
 	private static double MinLon =-180.0, MaxLon=180.0, MinLat=-90.0, MaxLat=90.0;
 	// Time ranges are set up to return CurrentTime - DisplayInterval for currently displayed data
 	private static long CurrentTime, DisplayInterval = 1000;
-	private static ArrayList<Object> updateObjects = new ArrayList<>();
+	private static ArrayList<Object> updateObjects = new ArrayList<Object>();
 	private static long DataStartTime, DataEndTime;
 	
 	public DataFilter()

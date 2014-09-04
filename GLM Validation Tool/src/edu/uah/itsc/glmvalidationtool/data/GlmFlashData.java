@@ -16,7 +16,7 @@ import edu.uah.itsc.glmvalidationtool.config.Config;
 
 public class GlmFlashData {
 
-	ArrayList <GlmFlashEntry> data = new ArrayList<>();
+	ArrayList <GlmFlashEntry> data = new ArrayList<GlmFlashEntry>();
 	Connection con;
 	Config conf = new Config();
 	

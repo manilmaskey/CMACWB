@@ -32,7 +32,7 @@ public class GroundNetworkLayer extends RenderableLayer{
 	Color color = Color.YELLOW;
 	// this allows us to set up a shared attribute between all points of layer
 	AnnotationAttributes pointAttrs = new AnnotationAttributes();
-	ArrayList <Renderable> points = new ArrayList<>();
+	ArrayList <Renderable> points = new ArrayList<Renderable>();
 	Config conf = new Config();
 	DataFilter dataFilter = new DataFilter();
 	String tableName;
@@ -148,7 +148,7 @@ public class GroundNetworkLayer extends RenderableLayer{
     {
     	removeAllRenderables();
     	addRenderable(tooltip);
-    	points = new ArrayList<>();
+    	points = new ArrayList<Renderable>();
     	//points.clear();
     	
     }

@@ -107,10 +107,10 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	private static String flashesPer = "";
 	private static boolean enableFlag=true;
 	
-	private Map<Long, XYDataset> entlnBuffer = new HashMap<>();
-	private Map<Long, XYDataset> nldnBuffer = new HashMap<>();
-	private Map<Long, XYDataset> gld360Buffer = new HashMap<>();
-	private Map<Long, XYDataset> glmBuffer = new HashMap<>();
+	private Map<Long, XYDataset> entlnBuffer = new HashMap<Long, XYDataset>();
+	private Map<Long, XYDataset> nldnBuffer = new HashMap<Long, XYDataset>();
+	private Map<Long, XYDataset> gld360Buffer = new HashMap<Long, XYDataset>();
+	private Map<Long, XYDataset> glmBuffer = new HashMap<Long, XYDataset>();
 	
 	private static Color entlnColor;
 	private static Color nldnColor;
@@ -238,7 +238,7 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 
         final TimePeriodValues s1 = new TimePeriodValues("Series 1");
  //       long timeInterval = 0; // in milliseconds
-		ArrayList <Double> arr = new ArrayList<>();
+		ArrayList <Double> arr = new ArrayList<Double>();
 		// check start time to determine whether to group by secs, mins, hours
 		// try to limit to 300 bins for minutes, and seconds, hours is unlimited
 		String timeFormat=null;

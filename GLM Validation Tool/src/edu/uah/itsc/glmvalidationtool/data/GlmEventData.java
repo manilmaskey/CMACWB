@@ -15,7 +15,7 @@ import edu.uah.itsc.glmvalidationtool.config.Config;
 
 public class GlmEventData {
 
-	ArrayList <GlmEventEntry> data = new ArrayList<>();
+	ArrayList <GlmEventEntry> data = new ArrayList<GlmEventEntry>();
 	Connection con;
 	Config conf = new Config();
 	
