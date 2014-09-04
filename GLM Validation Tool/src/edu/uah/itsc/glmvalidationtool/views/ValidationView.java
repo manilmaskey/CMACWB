@@ -17,6 +17,8 @@ import gov.nasa.worldwindx.examples.util.SectorSelector;
 import gov.nasa.worldwindx.examples.util.StatusLayer;
 import gov.nasa.worldwind.event.PositionEvent;
 import gov.nasa.worldwind.event.PositionListener;
+import gov.nasa.worldwind.event.RenderingEvent;
+import gov.nasa.worldwind.event.RenderingListener;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.event.SelectListener;
 import gov.nasa.worldwind.geom.Angle;
@@ -33,6 +35,7 @@ import gov.nasa.worldwind.render.GlobeAnnotation;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.Polygon;
 import gov.nasa.worldwind.render.Renderable;
+import gov.nasa.worldwind.render.ScreenAnnotation;
 import gov.nasa.worldwind.render.ShapeAttributes;
 import gov.nasa.worldwind.view.orbit.BasicOrbitView;
 import gov.nasa.worldwind.view.orbit.FlatOrbitView;
@@ -43,6 +46,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -97,6 +103,9 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 //  private String etln_flash_string = "http://54.83.58.23:8080/geoserver/GLM/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=GLM:etln_flash&outputFormat=application/json&cql_filter=datetime between '2011-08-03 19:00:04.043.00102' and '2011-08-04 19:00:04'";
 //  private String etln_flash_string = "http://54.83.58.23:8080/geoserver/GLM/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=GLM:etln_flash&outputFormat=application/json";
     DataFilter dataFilter = new DataFilter();
+
+	private RenderableLayer glmLegendLayer = null;
+    private ScreenAnnotation legendAnnotation;
 
   
 	public ValidationView() {
@@ -221,6 +230,23 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 		                  highlight(event.getTopObject());
 		          }
 		      });
+		      wwd.addRenderingListener(new RenderingListener(){
+
+					@Override
+					public void stageChanged(RenderingEvent event) {
+						// TODO Auto-generated method stub
+						if (legendAnnotation!=null) {
+//							int height=wwd.getHeight();
+							int width = wwd.getWidth();
+							BufferedImage image = (BufferedImage) legendAnnotation.getAttributes().getImageSource();
+//							int imgHeight = image.getHeight();
+							int imgWidth = image.getWidth();
+						
+							legendAnnotation.setScreenPoint(new Point(width-imgWidth-10, 60));
+						}
+					}
+			    	  
+			      });
 		
 //		wwd.addPositionListener(new PositionListener() {
 //			
@@ -423,6 +449,10 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
         	groundValidationLayer = new GlmValidationLayer(conf.getGroundIntersectionLayer(), "Ground detect no GLM", this.tooltipAnnotation);
 	        this.addLayer(groundValidationLayer);
         }
+        if (glmLegendLayer==null) {
+        	glmLegendLayer = createGlmLayerLegend();
+    			this.addLayer(glmLegendLayer);
+        }
 //        if (entlnValidationLayer==null) {
 //        	entlnValidationLayer = new GlmValidationLayer(conf.getEntlnFlashGlmIntersectionLayer(), "ENTLN Coincidence", this.tooltipAnnotation);
 //	        this.addLayer(entlnValidationLayer);
@@ -596,6 +626,52 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
        }
 
        return sb.toString();
+   }
+   protected RenderableLayer createGlmLayerLegend()
+   {
+   	RenderableLayer layer = new RenderableLayer();
+   	layer.setName("Ground Network Legend");
+   	
+   	   Color [] colors = {Color.RED, Color.YELLOW, Color.GREEN};
+   	   String [] labels = {"No match", "1 match", "2+ matches"};
+       BufferedImage image = new BufferedImage(100, 80, BufferedImage.TYPE_4BYTE_ABGR);
+       Graphics g2 = image.getGraphics();
+       int divisions = 3;
+       int margin = 2; // space between items in pixels
+//       int w = image.getWidth() / 2 - margin;
+       int h = (image.getHeight() - margin * (divisions - 1)) / divisions;
+       int w = h;
+       int cnt=0;
+       for (int ind1=0;ind1<divisions;ind1++)
+       {
+           int x = 0;
+           int y = cnt * (image.getHeight() / divisions);
+           // Draw color rectangle
+           g2.setColor(colors[ind1]);
+           g2.fillRect(x, y, w, h);
+           // Draw hour label
+           x = w + margin + margin;
+           y = y + h;
+           String label =  labels[ind1];
+           g2.setColor(Color.BLACK);
+           g2.drawString(label, x + 1, y + 1);
+           g2.setColor(Color.WHITE);
+           g2.drawString(label, x, y);
+           cnt++;
+       }
+       
+       legendAnnotation = new ScreenAnnotation("", new Point((wwd.getWidth()-image.getWidth()-10), 60));
+       legendAnnotation.getAttributes().setImageSource(image);
+       legendAnnotation.getAttributes().setSize(
+           new Dimension(image.getWidth(), image.getHeight()));
+       legendAnnotation.getAttributes().setDrawOffset(new Point(image.getWidth() / 2, 0));
+       legendAnnotation.getAttributes().setAdjustWidthToText(AVKey.SIZE_FIXED);
+       legendAnnotation.getAttributes().setBorderWidth(0);
+       legendAnnotation.getAttributes().setCornerRadius(0);
+       legendAnnotation.getAttributes().setBackgroundColor(new Color(0f, 0f, 0f, 0f));
+       layer.addRenderable(legendAnnotation);
+       
+       return layer;
    }
 
 	@Override
