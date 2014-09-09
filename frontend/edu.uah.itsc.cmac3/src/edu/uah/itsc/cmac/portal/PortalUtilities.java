@@ -136,11 +136,11 @@ public class PortalUtilities {
 	}
 
 	public static String getSciDBServerListURL() {
-		return getKeyValueFromProperties("scidb_server_list_url");
+		return Utilities.getKeyValueFromPreferences("portal", "scidb_server_list_url");
 	}
 	
 	public static String getSciDBUserDetailURL() {
-		return getKeyValueFromProperties("scidb_user_detail_url");
+		return Utilities.getKeyValueFromPreferences("portal", "scidb_user_detail_url");
 	}
 	
 	public static HashMap<String, String> getPortalWorkflowDetails(String path) {

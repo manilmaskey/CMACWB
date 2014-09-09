@@ -123,6 +123,8 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		String tokenURL = siteURL + "/services/session/token";
 		String userListURL = siteURL + "/user_view";
 		String notificationURL = siteURL + "/notification";
+		String sciDBServerListURL = siteURL + "/scidb-servers";
+		String sciDBUserDetailURL = siteURL + "/scidb-users";
 
 		String nodeRestURL = restURL + "/node";
 		String termRestURL = restURL + "/term";
@@ -147,6 +149,9 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		map.put("portal_login_url", loginURL);
 		map.put("portal_user_url", userURL);
 		map.put("search_url", searchURL);
+
+		map.put("scidb_server_list_url", sciDBServerListURL);
+		map.put("scidb_user_detail_url", sciDBUserDetailURL);
 
 		return map;
 	}
