@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.http.HttpResponse;
@@ -34,6 +33,7 @@ import org.json.simple.parser.ParseException;
 
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
+import edu.uah.itsc.cmac.Utilities;
 import edu.uah.itsc.cmac.util.GITUtility;
 
 /**
@@ -41,7 +41,6 @@ import edu.uah.itsc.cmac.util.GITUtility;
  * 
  */
 public class PortalUtilities {
-	private static Properties				properties		= null;
 	private static ArrayList<PortalUser>	portalUserList	= null;
 	private static JSONParser				parser			= new JSONParser();
 
@@ -96,65 +95,44 @@ public class PortalUtilities {
 		return xmlText;
 	}
 
-	private static String getKeyValueFromProperties(String key) {
-		if (properties != null && properties.containsKey(key)) {
-			return properties.getProperty(key);
-		}
-		if (properties == null)
-			properties = new Properties();
-		try {
-			properties.load(PortalUtilities.class.getClassLoader().getResourceAsStream("portal.properties"));
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		return properties.getProperty(key);
-	}
-
-	/*
-	 * This method builds the REST URL to fetch data from server. The URL is defined in search.properties file. Also,
-	 * the extraquery is appended to the URL, so that the content type to search on can be changed dynamically
-	 */
 	public static String getWorkflowFeedURL() {
-		return getKeyValueFromProperties("workflow_url");
+		return Utilities.getKeyValueFromPreferences("portal", "workflow_url");
 	}
 
 	public static String getNodeRestPoint() {
-		return getKeyValueFromProperties("node_rest_url");
-
+		return Utilities.getKeyValueFromPreferences("portal", "node_rest_url");
 	}
 
 	public static String getCronURL() {
-		return getKeyValueFromProperties("portal_cron_url");
-
+		return Utilities.getKeyValueFromPreferences("portal", "portal_cron_url");
 	}
 
 	public static String getExperimentFeedURL() {
-		return getKeyValueFromProperties("experiment_url");
+		return Utilities.getKeyValueFromPreferences("portal", "experiment_url");
 	}
 
 	public static String getTokenURL() {
-		return getKeyValueFromProperties("token_url");
+		return Utilities.getKeyValueFromPreferences("portal", "token_url");
 	}
 
 	public static String getPortalUserURL() {
-		return getKeyValueFromProperties("portal_user_url");
+		return Utilities.getKeyValueFromPreferences("portal", "portal_user_url");
 	}
 
 	public static String getPortalLoginURL() {
-		return getKeyValueFromProperties("portal_login_url");
+		return Utilities.getKeyValueFromPreferences("portal", "portal_login_url");
 	}
 
 	public static String getUserListURL() {
-		return getKeyValueFromProperties("user_list_url");
+		return Utilities.getKeyValueFromPreferences("portal", "user_list_url");
 	}
 
 	public static String getNotificationURL() {
-		return getKeyValueFromProperties("notification_url");
+		return Utilities.getKeyValueFromPreferences("portal", "notification_url");
 	}
-	
+
 	public static String getPortalDomain() {
-		return getKeyValueFromProperties("portal_domain");
+		return Utilities.getKeyValueFromPreferences("portal", "portal_domain");
 	}
 
 	public static String getSciDBServerListURL() {

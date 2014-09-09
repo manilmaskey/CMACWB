@@ -5,13 +5,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Properties;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -30,6 +30,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import edu.uah.itsc.cmac.Utilities;
 import edu.uah.itsc.cmac.searchview.models.SearchResult;
 import edu.uah.itsc.cmac.searchview.models.SearchResultInterface;
 
@@ -256,18 +257,16 @@ public class SearchView extends ViewPart {
 	}
 
 	/*
-	 * This method builds the REST URL to fetch data from server. The URL is defined in search.properties file. Also,
+	 * This method builds the REST URL to fetch data from server. The URL is fetched from preferences. Also,
 	 * the extraquery is appended to the URL, so that the content type to search on can be changed dynamically
 	 */
 	protected String buildURL(String searchText) {
-		Properties property = new Properties();
 		String url = null;
 		try {
-			property.load(SearchView.class.getClassLoader().getResourceAsStream("search.properties"));
-			url = property.getProperty("url") + "?keys=" + URLEncoder.encode(searchText, "UTF-8") + "%20"
-				+ property.getProperty("extraquery");
+			url = Utilities.getKeyValueFromPreferences("portal", "search_url");
+			url = url + "?keys=" + URLEncoder.encode(searchText, "UTF-8") + "%20" + "type:workflow";
 		}
-		catch (IOException e) {
+		catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 		return url;

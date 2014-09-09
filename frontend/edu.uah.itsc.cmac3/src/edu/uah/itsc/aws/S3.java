@@ -50,6 +50,7 @@ import com.amazonaws.services.s3.model.MultiObjectDeleteException.DeleteError;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
+import edu.uah.itsc.cmac.Utilities;
 import edu.uah.itsc.cmac.util.FileUtility;
 import edu.uah.itsc.cmac.util.GITUtility;
 import edu.uah.itsc.cmac.util.PropertyUtility;
@@ -58,7 +59,8 @@ public class S3 {
 	private static Properties	properties			= null;
 	private AmazonS3			amazonS3Service;
 	public static String		delimiter			= "/";
-	private static String		communityBucketName	= getKeyValueFromProperties("community_bucket_name");
+	private static String		communityBucketName	= Utilities.getKeyValueFromPreferences("s3",
+														"community_bucket_name");
 	private String				awsAdminAccessKey;
 	private String				awsAdminSecretKey;
 	private String				awsAccessKey;
@@ -72,8 +74,8 @@ public class S3 {
 	}
 
 	public S3() {
-		awsAdminAccessKey = getKeyValueFromProperties("aws_admin_access_key");
-		awsAdminSecretKey = getKeyValueFromProperties("aws_admin_secret_key");
+		awsAdminAccessKey = Utilities.getKeyValueFromPreferences("s3", "aws_admin_access_key");
+		awsAdminSecretKey = Utilities.getKeyValueFromPreferences("s3", "aws_admin_secret_key");
 		com.amazonaws.auth.AWSCredentials credentials = new BasicAWSCredentials(awsAdminAccessKey, awsAdminSecretKey);
 		amazonS3Service = new AmazonS3Client(credentials);
 	}
@@ -379,22 +381,6 @@ public class S3 {
 	public void deleteBucket(String bucketName) {
 		DeleteBucketRequest deleteRequest = new DeleteBucketRequest(bucketName);
 		amazonS3Service.deleteBucket(deleteRequest);
-	}
-
-	public static String getKeyValueFromProperties(String key) {
-		if (properties != null && properties.containsKey(key)) {
-			return properties.getProperty(key);
-		}
-		if (properties == null) {
-			properties = new Properties();
-			try {
-				properties.load(S3.class.getClassLoader().getResourceAsStream("cmac.properties"));
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return properties.getProperty(key);
 	}
 
 	public ArrayList<String> getAllFiles(String bucket, String prefix) {

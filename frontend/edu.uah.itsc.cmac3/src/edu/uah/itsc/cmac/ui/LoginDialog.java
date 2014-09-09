@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -42,8 +43,10 @@ import org.osgi.service.prefs.Preferences;
 import edu.uah.itsc.aws.S3;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.Activator;
+import edu.uah.itsc.cmac.Utilities;
 import edu.uah.itsc.cmac.portal.PortalConnector;
 import edu.uah.itsc.cmac.portal.PortalUtilities;
+import edu.uah.itsc.cmac.ui.preferencewizard.PreferenceWizard;
 
 public class LoginDialog {
 
@@ -59,6 +62,10 @@ public class LoginDialog {
 	}
 
 	public void createContents() {
+		// Check if the preferences have been set already. If not open wizard page
+		if (!Utilities.isPreferenceSet())
+			openPreferenceWizard();
+
 		// Shell must be created with style SWT.NO_TRIM
 		shell = new Shell(display, SWT.SHELL_TRIM & (~SWT.RESIZE) & (~SWT.MAX) & (~SWT.MIN) & (~SWT.CLOSE));
 		shell.setText("Login to CWB");
@@ -195,6 +202,14 @@ public class LoginDialog {
 			return null;
 		}
 		return servers.keySet().toArray(new String[servers.size()]);
+	}
+
+	private void openPreferenceWizard() {
+		WizardDialog dialog = new WizardDialog(shell, new PreferenceWizard());
+		int returnvalue = dialog.open();
+		if (returnvalue == 1) {
+			System.exit(0);
+		}
 	}
 
 	private Image getImageFromPlugin(String imageName) {
