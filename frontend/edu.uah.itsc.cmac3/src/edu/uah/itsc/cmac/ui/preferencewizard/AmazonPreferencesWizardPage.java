@@ -22,21 +22,25 @@ import org.json.JSONObject;
 import edu.uah.itsc.cmac.util.FileUtility;
 
 public class AmazonPreferencesWizardPage extends WizardPage {
-	private Composite	container;
-	private Label		communityBucketLabel;
-	private Text		communityBucketText;
-	private Label		awsAdminAccessKeyLabel;
-	private Text		awsAdminAccessKeyText;
-	private Label		awsAdminSecretKeyLabel;
-	private Text		awsAdminSecretKeyText;
-	private Label		awsAdminUserIDLabel;
-	private Text		awsAdminUserIDText;
-	private Label		backendExecuteURLLabel;
-	private Text		backendExecuteURLText;
-	private String		backendPrefix	= "http://[url]:[port]/";
+	private Composite				container;
+	private Label					communityBucketLabel;
+	private Text					communityBucketText;
+	private Label					awsAdminAccessKeyLabel;
+	private Text					awsAdminAccessKeyText;
+	private Label					awsAdminSecretKeyLabel;
+	private Text					awsAdminSecretKeyText;
+	private Label					awsAdminUserIDLabel;
+	private Text					awsAdminUserIDText;
+	private Label					backendExecuteURLLabel;
+	private Text					backendExecuteURLText;
+	private String					backendPrefix	= "http://[url]:[port]/";
+	private HashMap<String, String>	map;
+	private PreferenceWizard		preferenceWizard;
 
-	protected AmazonPreferencesWizardPage() {
+	protected AmazonPreferencesWizardPage(PreferenceWizard preferenceWizard) {
 		super("Set Amazon Credentials");
+
+		this.preferenceWizard = preferenceWizard;
 		setTitle("AWS Credentials");
 		setDescription("Provide your Amazon Web Services Credentials");
 
@@ -98,10 +102,13 @@ public class AmazonPreferencesWizardPage extends WizardPage {
 							String key = (String) iter.next();
 							portalMap.put(key, portalJsonObj.getString(key));
 						}
+						map = s3Map;
+						preferenceWizard.setS3Map(s3Map);
+						preferenceWizard.setPortalMap(portalMap);
 
 						System.out.println(s3Map);
 						System.out.println(portalMap);
-
+						fillData();
 					}
 					catch (JSONException e) {
 						e.printStackTrace();
@@ -110,6 +117,8 @@ public class AmazonPreferencesWizardPage extends WizardPage {
 
 			}
 		});
+
+		fillData();
 
 		setControl(container);
 		setPageComplete(false);
@@ -160,7 +169,8 @@ public class AmazonPreferencesWizardPage extends WizardPage {
 	}
 
 	public HashMap<String, String> getData() {
-		HashMap<String, String> map = new HashMap<String, String>();
+		if (map == null)
+			map = new HashMap<String, String>();
 		map.put("community_bucket_name", communityBucketText.getText());
 		map.put("aws_admin_access_key", awsAdminAccessKeyText.getText());
 		map.put("aws_admin_secret_key", awsAdminSecretKeyText.getText());
@@ -168,6 +178,22 @@ public class AmazonPreferencesWizardPage extends WizardPage {
 		map.put("backend_execute_url_suffix", backendExecuteURLText.getText());
 		map.put("backend_execute_url", backendPrefix + backendExecuteURLText.getText());
 		return map;
+	}
+
+	public void setData(HashMap<String, String> map) {
+		this.map = map;
+	}
+
+	public void fillData() {
+		if (map == null)
+			return;
+
+		communityBucketText.setText(map.get("community_bucket_name"));
+		awsAdminAccessKeyText.setText(map.get("aws_admin_access_key"));
+		awsAdminSecretKeyText.setText(map.get("aws_admin_secret_key"));
+		awsAdminUserIDText.setText(map.get("aws_user_id"));
+		backendExecuteURLText.setText(map.get("backend_execute_url_suffix"));
+
 	}
 
 }

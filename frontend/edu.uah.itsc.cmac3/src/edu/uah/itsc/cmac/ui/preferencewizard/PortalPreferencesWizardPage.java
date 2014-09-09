@@ -14,18 +14,22 @@ import org.eclipse.swt.widgets.Text;
 
 public class PortalPreferencesWizardPage extends WizardPage {
 
-	private Composite	container;
-	private Label		domainLabel;
-	private Text		domainText;
-	private Label		siteLabel;
-	private Text		siteText;
-	private Label		restURLLabel;
-	private Text		restURLText;
-	private Label		cronURLLabel;
-	private Text		cronURLText;
+	private Composite				container;
+	private Label					domainLabel;
+	private Text					domainText;
+	private Label					siteLabel;
+	private Text					siteText;
+	private Label					restURLLabel;
+	private Text					restURLText;
+	private Label					cronURLLabel;
+	private Text					cronURLText;
+	private HashMap<String, String>	map;
+	private PreferenceWizard		preferenceWizard;
 
-	protected PortalPreferencesWizardPage() {
+	protected PortalPreferencesWizardPage(PreferenceWizard preferenceWizard) {
 		super("Set Portal Details");
+
+		this.preferenceWizard = preferenceWizard;
 		setTitle("Portal Details");
 		setDescription("Provide your Portal Details");
 	}
@@ -51,6 +55,8 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		cronURLLabel = createLabel(container, "Portal CRON URL");
 		cronURLText = createText(container, gridData,
 			"Portal CRON URL. E.g. http://54.208.76.40/d7/cmac/cron.php?cron_key=xxxxxxxxxxxxxxxxxxxxxxx", null);
+
+		fillData();
 
 		setControl(container);
 		setPageComplete(false);
@@ -100,7 +106,8 @@ public class PortalPreferencesWizardPage extends WizardPage {
 	}
 
 	public HashMap<String, String> getData() {
-		HashMap<String, String> map = new HashMap<String, String>();
+		if (map == null)
+			map = new HashMap<String, String>();
 		String domain = domainText.getText();
 		String siteURL = siteText.getText();
 		String restURL = restURLText.getText();
@@ -142,5 +149,21 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		map.put("search_url", searchURL);
 
 		return map;
+	}
+
+	public void setData(HashMap<String, String> map) {
+		this.map = map;
+		fillData();
+	}
+
+	public void fillData() {
+		if (map == null)
+			return;
+
+		domainText.setText(map.get("portal_domain"));
+		siteText.setText(map.get("portal_url"));
+		restURLText.setText(map.get("portal_rest_url"));
+		cronURLText.setText(map.get("portal_cron_url"));
+
 	}
 }

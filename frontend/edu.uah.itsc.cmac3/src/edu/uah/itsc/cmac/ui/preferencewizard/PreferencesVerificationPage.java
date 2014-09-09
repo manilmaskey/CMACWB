@@ -18,13 +18,16 @@ import org.json.JSONObject;
 import edu.uah.itsc.cmac.util.FileUtility;
 
 public class PreferencesVerificationPage extends WizardPage {
-	private Composite		container;
-	HashMap<String, String>	s3Map;
-	HashMap<String, String>	portalMap;
-	Text					preferencesText;
+	private Composite			container;
+	HashMap<String, String>		s3Map;
+	HashMap<String, String>		portalMap;
+	Text						preferencesText;
+	private PreferenceWizard	preferenceWizard;
 
-	protected PreferencesVerificationPage() {
+	protected PreferencesVerificationPage(PreferenceWizard preferenceWizard) {
 		super("Verify details");
+
+		this.preferenceWizard = preferenceWizard;
 		setTitle("Verify Details");
 		setDescription("Verify your credentials and details");
 	}

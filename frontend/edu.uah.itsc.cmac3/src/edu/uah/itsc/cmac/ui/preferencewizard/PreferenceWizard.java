@@ -16,6 +16,22 @@ public class PreferenceWizard extends Wizard {
 	private HashMap<String, String>		s3Map;
 	private HashMap<String, String>		portalMap;
 
+	public HashMap<String, String> getS3Map() {
+		return s3Map;
+	}
+
+	public void setS3Map(HashMap<String, String> s3Map) {
+		this.s3Map = s3Map;
+	}
+
+	public HashMap<String, String> getPortalMap() {
+		return portalMap;
+	}
+
+	public void setPortalMap(HashMap<String, String> portalMap) {
+		this.portalMap = portalMap;
+	}
+
 	public PreferenceWizard() {
 		super();
 		setNeedsProgressMonitor(true);
@@ -29,9 +45,9 @@ public class PreferenceWizard extends Wizard {
 
 	@Override
 	public void addPages() {
-		amazonPreferencesWizardPage = new AmazonPreferencesWizardPage();
-		portalPreferencesWizardPage = new PortalPreferencesWizardPage();
-		preferencesValidationPage = new PreferencesVerificationPage();
+		amazonPreferencesWizardPage = new AmazonPreferencesWizardPage(this);
+		portalPreferencesWizardPage = new PortalPreferencesWizardPage(this);
+		preferencesValidationPage = new PreferencesVerificationPage(this);
 
 		addPage(amazonPreferencesWizardPage);
 		addPage(portalPreferencesWizardPage);
@@ -41,8 +57,10 @@ public class PreferenceWizard extends Wizard {
 
 	@Override
 	public IWizardPage getNextPage(IWizardPage currentPage) {
-		if (currentPage == amazonPreferencesWizardPage)
+		if (currentPage == amazonPreferencesWizardPage) {
+			portalPreferencesWizardPage.setData(portalMap);
 			return portalPreferencesWizardPage;
+		}
 		else if (currentPage == portalPreferencesWizardPage) {
 			s3Map = amazonPreferencesWizardPage.getData();
 			portalMap = portalPreferencesWizardPage.getData();
