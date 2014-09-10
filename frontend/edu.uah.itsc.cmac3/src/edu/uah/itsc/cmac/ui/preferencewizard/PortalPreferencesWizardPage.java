@@ -130,7 +130,7 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		String termRestURL = restURL + "/term";
 		String experimentURL = siteURL + "/experiment";
 		String loginURL = restURL + "/user/login";
-		String userURL = restURL + "/rest/user";
+		String userURL = restURL + "/user";
 		String searchURL = restURL + "/search_node/retrieve.json";
 
 		map.put("portal_domain", domain);
