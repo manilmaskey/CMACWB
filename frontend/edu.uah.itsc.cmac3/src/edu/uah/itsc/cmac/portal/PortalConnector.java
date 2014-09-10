@@ -65,7 +65,8 @@ public class PortalConnector {
 			Iterator<String> roleKeys = jsonRoles.keys();
 			String roleKey = null;
 			String roleValue = null;
-			if (User.userRoles == null) User.userRoles = new HashMap<String, String>();
+			User.userRoles = new HashMap<String, String>();
+			User.isAdmin = false;
 			while (roleKeys.hasNext()) {
 				roleKey = roleKeys.next();
 				roleValue = jsonRoles.getString(roleKey);
