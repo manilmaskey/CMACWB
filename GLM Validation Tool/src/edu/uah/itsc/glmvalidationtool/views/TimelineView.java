@@ -319,6 +319,7 @@ import gov.nasa.worldwind.geom.Sector;
 				public void widgetSelected(SelectionEvent event) {
 					System.out.println("DisplayInterval: " + cdtDisplayInterval.getSelection().getHours() + ":" + cdtDisplayInterval.getSelection().getMinutes() + ":" + cdtDisplayInterval.getSelection().getSeconds());
 					dataFilter.setDisplayInterval(cdtDisplayInterval.getSelection().getHours(), cdtDisplayInterval.getSelection().getMinutes(), cdtDisplayInterval.getSelection().getSeconds());
+					dataFilter.clearCache(); // clear cache if interval changes, any data in cache will be invalid
 					resetScale();
 				}
 
@@ -336,6 +337,8 @@ import gov.nasa.worldwind.geom.Sector;
 		createActions();
 	    createToolbar();
 	    
+	    resetAnimationDateRange();
+
 	    dataFilter.refreshObjects();
 	    
 	    try {
@@ -360,6 +363,7 @@ import gov.nasa.worldwind.geom.Sector;
 //		if (cdtCurrent.getSelection().getTime()<cdtAnimationStart.getSelection().getTime())
 //			cdtCurrent.setSelection(cdtAnimationStart.getSelection());
 		resetScale();
+		resetAnimationDateRange();
 	}
 	private void cdtAnimationEndSelected()
 	{
@@ -373,6 +377,7 @@ import gov.nasa.worldwind.geom.Sector;
 //		if (cdtCurrent.getSelection().getTime()>cdtAnimationEnd.getSelection().getTime())
 //			cdtCurrent.setSelection(new Date(cdtAnimationEnd.getSelection().getTime()));
 		resetScale();	
+		resetAnimationDateRange();
 	}
 	private void scaleSelected()
 	{
@@ -392,9 +397,17 @@ import gov.nasa.worldwind.geom.Sector;
 	{
 		scale.setMaximum ((int)(cdtAnimationEnd.getSelection().getTime() - cdtAnimationStart.getSelection().getTime()));
 		scale.setPageIncrement ((int)dataFilter.getDisplayIntervalMilli());
-		scale.setSelection((int)(cdtCurrent.getSelection().getTime()-cdtAnimationStart.getSelection().getTime()));
+		scale.setSelection((int)(cdtCurrent.getSelection().getTime()-cdtAnimationStart.getSelection().getTime()));    
 
 	}
+	private void resetAnimationDateRange()
+	{
+		dataFilter.setAnimationStartTime(cdtAnimationStart.getSelection().getTime());
+		dataFilter.setAnimationEndTime(cdtAnimationEnd.getSelection().getTime());
+		dataFilter.reset();
+		
+	}
+	
 
     public void createActions() {
            playAction = new Action("Play Animation") {
@@ -628,16 +641,16 @@ import gov.nasa.worldwind.geom.Sector;
     {
 		MaxMin maxmin = new MaxMin();
 		long dateMax, dateMin;
-		getDateRange(maxmin, conf.getEntlnDateRangeLayer()); 
+		getDataDateRange(maxmin, conf.getEntlnDateRangeLayer()); 
 		dateMax = maxmin.getMax();
 		dateMin = maxmin.getMin();
-		getDateRange(maxmin, conf.getNldnDateRangeLayer()); 
+		getDataDateRange(maxmin, conf.getNldnDateRangeLayer()); 
 		dateMax = Math.max(dateMax, maxmin.getMax());
 		dateMin = Math.min(dateMin, maxmin.getMin());
-		getDateRange(maxmin, conf.getGld360DateRangeLayer()); 
+		getDataDateRange(maxmin, conf.getGld360DateRangeLayer()); 
 		dateMax = Math.max(dateMax, maxmin.getMax());
 		dateMin = Math.min(dateMin, maxmin.getMin());
-		getDateRange(maxmin, conf.getGlmDateRangeLayer()); 
+		getDataDateRange(maxmin, conf.getGlmDateRangeLayer()); 
 		dateMax = Math.max(dateMax, maxmin.getMax());
 		dateMin = Math.min(dateMin, maxmin.getMin());
 
@@ -671,7 +684,7 @@ import gov.nasa.worldwind.geom.Sector;
 
     }
     
-    void getDateRange(MaxMin maxmin, String layer)
+    void getDataDateRange(MaxMin maxmin, String layer)
     {
 		String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + layer; 
         System.out.println(httpString);

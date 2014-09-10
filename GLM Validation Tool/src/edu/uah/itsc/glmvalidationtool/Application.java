@@ -18,19 +18,19 @@ public class Application implements IApplication {
 	/* (non-Javadoc)
 	 * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
 	 */
-//	private static final String GLMVAL_EXTENSION_ID = "edu.uah.itsc.glmvalidationtool";
+	private static final String GLMVAL_EXTENSION_ID = "edu.uah.itsc.glmvalidationtool";
 	
 	public Object start(IApplicationContext context) {
 		Display display = PlatformUI.createDisplay();
-//		IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(GLMVAL_EXTENSION_ID);
-//		for (IConfigurationElement e : config) {
-//			try {
-//				Object o = e.createExecutableExtension("class");
-//			} catch (CoreException e1) {
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//			}
-//		}
+		IConfigurationElement[] config = Platform.getExtensionRegistry().getConfigurationElementsFor(GLMVAL_EXTENSION_ID);
+		for (IConfigurationElement e : config) {
+			try {
+				Object o = e.createExecutableExtension("class");
+			} catch (CoreException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
 		try {
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			if (returnCode == PlatformUI.RETURN_RESTART) {
@@ -47,7 +47,8 @@ public class Application implements IApplication {
 			return;
 		final IWorkbench workbench = PlatformUI.getWorkbench();
 		final Display display = workbench.getDisplay();
-		display.syncExec(new Runnable() {
+//		display.syncExec(new Runnable() {
+		display.asyncExec(new Runnable() {
 			public void run() {
 				if (!display.isDisposed())
 					workbench.close();

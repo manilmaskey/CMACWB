@@ -135,6 +135,10 @@ public class DataView extends ViewPart implements DataFilterUpdate{
     	dataFilter.unregisterObject(this);
     }
 	public void createPartControl(final Composite parent) {
+		
+//		if (true) return;
+		
+		
 		this.swtAwtContainer = new Composite(parent, SWT.EMBEDDED);
 		this.swtAwtContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 		this.awtFrame = SWT_AWT.new_Frame(this.swtAwtContainer);
@@ -806,7 +810,7 @@ public class DataView extends ViewPart implements DataFilterUpdate{
     protected RenderableLayer createFlashLayerLegend()
     {
     	RenderableLayer layer = new RenderableLayer();
-    	layer.setName("Ground Network Legend");
+    	layer.setName("Legend");
     	
         BufferedImage image = new BufferedImage(100, 80, BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g2 = image.getGraphics();
@@ -847,6 +851,12 @@ public class DataView extends ViewPart implements DataFilterUpdate{
         
         return layer;
     }
+
+	@Override
+	public void reset() {
+		// TODO Auto-generated method stub
+		
+	}
  	
     // need to pass in lightning data as a common data structure or json object
 //    private void addLightningLayers() 

@@ -12,6 +12,9 @@ public class DataFilter {
 	private static ArrayList<Object> updateObjects = new ArrayList<Object>();
 	private static long DataStartTime, DataEndTime;
 	
+	// need to add start and end time to this (controlled by widgets in timelineview)
+	private static long AnimationStartTime, AnimationEndTime;
+	
 	public DataFilter()
 	{
 		
@@ -40,6 +43,14 @@ public class DataFilter {
 			((DataFilterUpdate) obj).clearCache();
 		}
 	}
+	public void reset()
+	{
+		System.out.println("reset");
+		for (Object obj:updateObjects) {
+			System.out.println("object " + obj.toString());
+			((DataFilterUpdate) obj).reset();
+		}
+	}
 	// need methods to query database layers for bounding box and set as default
 	
 	public void setBoundingBox(double minLon, double maxLon, double minLat, double maxLat)
@@ -61,6 +72,35 @@ public class DataFilter {
 	}
 	public static double getMaxLat() {
 		return MaxLat;
+	}
+	// methods for animation time range
+	public void setAnimationStartTime(long millisecs)
+	{
+		AnimationStartTime = millisecs;
+	
+	}
+	public void setAnimationEndTime(long millisecs)
+	{
+		AnimationEndTime = millisecs;
+		
+	}
+	public void setAnimationStartTime(int year, int month, int day, int hour, int minute, int second, int milli) 
+	{
+		AnimationStartTime = DataUtil.dateToMilliseconds(year, month, day, hour, minute, second, milli);
+		
+	}
+	public void setAnimationEndTime(int year, int month, int day, int hour, int minute, int second, int milli) 
+	{
+		AnimationEndTime = DataUtil.dateToMilliseconds(year, month, day, hour, minute, second, milli);
+		
+	}
+	public long getAnimationStartTimeMilli()
+	{
+		return AnimationStartTime;
+	}
+	public long getAnimationEndTimeMilli()
+	{
+		return AnimationEndTime;
 	}
 	
 	// methods for database time range
@@ -194,11 +234,19 @@ public class DataFilter {
 	}
 	public String getValidationParamString()
 	{
+		return getValidationParamString(CurrentTime - DisplayInterval, CurrentTime);
+	}
+	public String getValidationParamString(long startTime, long endTime)
+	{
 //		String startDate = DataUtil.millisecondsToSQLTimeStampString(StartMilli);
 //		String endDate = DataUtil.millisecondsToSQLTimeStampString(EndMilli);
-		String startDate = DataUtil.millisecondsToSQLTimeStampString(CurrentTime - DisplayInterval);
-		String endDate = DataUtil.millisecondsToSQLTimeStampString(CurrentTime);
+
 		
+//		String startDate = DataUtil.millisecondsToSQLTimeStampString(CurrentTime - DisplayInterval);
+//		String endDate = DataUtil.millisecondsToSQLTimeStampString(CurrentTime);
+
+		String startDate = DataUtil.millisecondsToSQLTimeStampString(startTime);
+		String endDate = DataUtil.millisecondsToSQLTimeStampString(endTime);	
 		
 		String queryString;
 		try {

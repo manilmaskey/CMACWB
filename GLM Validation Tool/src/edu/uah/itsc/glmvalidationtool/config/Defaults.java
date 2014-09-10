@@ -37,6 +37,12 @@ public class Defaults implements Getters{
 	private static String entlnFlashRateLayer = "etln_flash_count";
 	private static String gld360FlashRateLayer = "gld360_count";
 
+	// geoserver max flash rate layers
+	private static String nldnMaxFlashRateLayer = "nldn_flash_max_count";
+	private static String glmMaxFlashRateLayer = "glm_max_count";
+	private static String entlnMaxFlashRateLayer = "etln_flash_max_count";
+	private static String gld360MaxFlashRateLayer = "gld360_max_count";
+
 	// date range geoserver layers
 	private static String nldnDateRangeLayer = "nldn_flash_date_range";
 	private static String glmDateRangeLayer = "glm_date_range";
@@ -278,6 +284,31 @@ public class Defaults implements Getters{
 		return glmFlashRateLayer;
 	}
 
+	@Override
+	public String getEntlnMaxFlashRateLayer() {
+		// TODO Auto-generated method stub
+		return entlnMaxFlashRateLayer;
+	}
+
+	@Override
+	public String getNldnMaxFlashRateLayer() {
+		// TODO Auto-generated method stub
+		return nldnMaxFlashRateLayer;
+	}
+
+	@Override
+	public String getGld360MaxFlashRateLayer() {
+		// TODO Auto-generated method stub
+		return gld360MaxFlashRateLayer;
+	}
+
+	@Override
+	public String getGlmMaxFlashRateLayer() {
+		// TODO Auto-generated method stub
+		return glmMaxFlashRateLayer;
+	}
+
+	
 	@Override
 	public String getEntlnDateRangeLayer() {
 		// TODO Auto-generated method stub

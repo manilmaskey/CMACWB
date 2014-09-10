@@ -118,6 +118,9 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
     }
 
 	public void createPartControl(final Composite parent) {
+		
+//		if (true) return;
+
 		this.swtAwtContainer = new Composite(parent, SWT.EMBEDDED);
 		this.swtAwtContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 		this.awtFrame = SWT_AWT.new_Frame(this.swtAwtContainer);
@@ -442,11 +445,11 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
     {
                 
         if (glmValidationLayer==null) {
-        	glmValidationLayer = new GlmValidationLayer(conf.getGlmIntersectionLayer(), "GLM Coincidence", this.tooltipAnnotation);
+        	glmValidationLayer = new GlmValidationLayer(conf.getGlmIntersectionLayer(), "GLM Detected", this.tooltipAnnotation);
 	        this.addLayer(glmValidationLayer);
         }
         if (groundValidationLayer==null) {
-        	groundValidationLayer = new GlmValidationLayer(conf.getGroundIntersectionLayer(), "Ground detect no GLM", this.tooltipAnnotation);
+        	groundValidationLayer = new GlmValidationLayer(conf.getGroundIntersectionLayer(), "GLM Missing", this.tooltipAnnotation);
 	        this.addLayer(groundValidationLayer);
         }
         if (glmLegendLayer==null) {
@@ -620,23 +623,27 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 	       sb.append(annotation.getValue("gldcount")+ "<br></br>");
 	       sb.append("</html>");
        }
-       if (annotation.getValue("glm_missing")!=null) {
-	       sb.append("GLM Missing: </b>");
+       if (annotation.getValue("Sensor")!=null) {
+	       sb.append("Detected by: </b>");
+	       sb.append(annotation.getValue("Sensor")+ "<br></br>");
 	       sb.append("</html>");
        }
+//       if (annotation.getValue("glm_missing")!=null) {
+//	       sb.append("GLM Missing: </b>");
+//	       sb.append("</html>");
+//       }
 
        return sb.toString();
    }
    protected RenderableLayer createGlmLayerLegend()
    {
    	RenderableLayer layer = new RenderableLayer();
-   	layer.setName("Ground Network Legend");
+   	layer.setName("Legend");
    	
-   	   Color [] colors = {Color.RED, Color.YELLOW, Color.GREEN};
-   	   String [] labels = {"No match", "1 match", "2+ matches"};
-       BufferedImage image = new BufferedImage(100, 80, BufferedImage.TYPE_4BYTE_ABGR);
+   	   
+       BufferedImage image = new BufferedImage(150, 80, BufferedImage.TYPE_4BYTE_ABGR);
        Graphics g2 = image.getGraphics();
-       int divisions = 3;
+       int divisions = GlmValidationLayer.labels.length;
        int margin = 2; // space between items in pixels
 //       int w = image.getWidth() / 2 - margin;
        int h = (image.getHeight() - margin * (divisions - 1)) / divisions;
@@ -647,12 +654,12 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
            int x = 0;
            int y = cnt * (image.getHeight() / divisions);
            // Draw color rectangle
-           g2.setColor(colors[ind1]);
+           g2.setColor(GlmValidationLayer.colors[ind1]);
            g2.fillRect(x, y, w, h);
            // Draw hour label
            x = w + margin + margin;
            y = y + h;
-           String label =  labels[ind1];
+           String label =  GlmValidationLayer.labels[ind1];
            g2.setColor(Color.BLACK);
            g2.drawString(label, x + 1, y + 1);
            g2.setColor(Color.WHITE);
@@ -688,6 +695,11 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 //		entlnValidationBuffer.clear();
 //		nldnValidationBuffer.clear();
 //		gld360ValidationBuffer.clear();
+	}
+	@Override
+	public void reset() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	// original geojson version 

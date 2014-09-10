@@ -506,4 +506,55 @@ public class Config implements Getters,Setters{
 		keyValuePair.setProperty("GlmColorIntRGBA", R + "," + G + "," + B + "," + Alpha);	
 	}
 
+	@Override
+	public void setEntlnMaxFlashRateLayer(String entlnMaxFlashRateLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("EntlnMaxFlashRateLayer", entlnMaxFlashRateLayer);		
+	}
+
+	@Override
+	public void setNldnMaxFlashRateLayer(String nldnMaxFlashRateLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("NldnMaxFlashRateLayer", nldnMaxFlashRateLayer);		
+		
+	}
+
+	@Override
+	public void setGld360MaxFlashRateLayer(String gld360MaxFlashRateLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("Gld360MaxFlashRateLayer", gld360MaxFlashRateLayer);		
+		
+	}
+
+	@Override
+	public void setGlmMaxFlashRateLayer(String glmMaxFlashRateLayer) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("GlmMaxFlashRateLayer", glmMaxFlashRateLayer);		
+		
+	}
+
+	@Override
+	public String getEntlnMaxFlashRateLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("EntlnMaxFlashRateLayer", defaults.getEntlnMaxFlashRateLayer());
+	}
+
+	@Override
+	public String getNldnMaxFlashRateLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("NldnMaxFlashRateLayer", defaults.getNldnMaxFlashRateLayer());
+	}
+
+	@Override
+	public String getGld360MaxFlashRateLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("Gld360MaxFlashRateLayer", defaults.getGld360MaxFlashRateLayer());
+	}
+
+	@Override
+	public String getGlmMaxFlashRateLayer() {
+		// TODO Auto-generated method stub
+		return keyValuePair.getProperty("GlmMaxFlashRateLayer", defaults.getGlmMaxFlashRateLayer());
+	}
+
 }

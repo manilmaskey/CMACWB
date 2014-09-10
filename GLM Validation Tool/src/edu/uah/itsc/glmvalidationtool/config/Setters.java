@@ -37,7 +37,12 @@ public interface Setters {
 	public void setNldnFlashRateLayer(String nldnFlashRateLayer);
 	public void setGld360FlashRateLayer(String gld360FlashRateLayer);
 	public void setGlmFlashRateLayer(String glmFlashRateLayer);
-	
+
+	public void setEntlnMaxFlashRateLayer(String entlnMaxFlashRateLayer);
+	public void setNldnMaxFlashRateLayer(String nldnMaxFlashRateLayer);
+	public void setGld360MaxFlashRateLayer(String gld360MaxFlashRateLayer);
+	public void setGlmMaxFlashRateLayer(String glmMaxFlashRateLayer);
+
 	public void setEntlnDateRangeLayer(String entlnDateRangeayer);
 	public void setNldnDateRangeLayer(String nldnDateRangeLayer);
 	public void setGld360DateRangeLayer(String gld360DateRangeLayer);

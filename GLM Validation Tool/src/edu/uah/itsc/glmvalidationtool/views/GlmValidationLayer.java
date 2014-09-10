@@ -28,6 +28,9 @@ import gov.nasa.worldwind.render.Renderable;
 
 public class GlmValidationLayer extends RenderableLayer{
 
+	public static Color [] colors = {Color.RED, Color.YELLOW, new Color(0,180,0,255), new Color(130,255,130,255)};
+	public static String [] labels = {"GLM miss, Gnd hit", "GLM hit, Gnd miss", "GLM hit, Gnd hit 1", "GLM hit, Gnd hit 2+"};
+//	private String [] labels = {"No match", "1 match", "2+ matches"};
 	
 	Color color = Color.YELLOW;
 	// this allows us to set up a shared attribute between all points of layer
@@ -51,6 +54,13 @@ public class GlmValidationLayer extends RenderableLayer{
 		addRenderable(tooltip);
 	}
 	
+//	public Color[] getColors() {
+//		return colors;
+//	}
+//
+//	public String[] getLabels() {
+//		return labels;
+//	}
 	public ArrayList<Renderable> getPoints() {
 		return points;
 	}
@@ -60,7 +70,7 @@ public class GlmValidationLayer extends RenderableLayer{
     	removeAllRenderables();
     	addRenderable(tooltip);
 	}
-    protected Renderable createMissingPoint(Position pos, String dateTime)
+    protected Renderable createMissingPoint(Position pos, String dateTime, String lightningNetwork)
     {
         AnnotationPointPlacemark p = new AnnotationPointPlacemark(pos, pointAttrs);
         p.setAttributes(pointAttrs);
@@ -76,7 +86,8 @@ public class GlmValidationLayer extends RenderableLayer{
         p.setValue("LayerName", layerName);
         p.setValue("Date", dateTime);
      	p.setValue("glm_missing", "true"); 
-    	p.setValue("DisplayColor", Color.RED);
+     	p.setValue("Sensor", lightningNetwork); 
+    	p.setValue("DisplayColor", colors[0]);
     	return p;
 
     }
@@ -108,15 +119,15 @@ public class GlmValidationLayer extends RenderableLayer{
 
 //      System.out.println("instrumentCnt " + instrumentCnt);
         if (instrumentCnt==0) {
-        	p.setValue("DisplayColor", Color.RED);
+        	p.setValue("DisplayColor", colors[1]);
 //          p.getAttributes().setTextColor(Color.RED);
         }
         else if(instrumentCnt==1) {
-        	p.setValue("DisplayColor", Color.YELLOW);
+        	p.setValue("DisplayColor", colors[2]);
 //          p.getAttributes().setTextColor(Color.YELLOW);  	
         }
         else {
-        	p.setValue("DisplayColor", Color.GREEN);
+        	p.setValue("DisplayColor", colors[3]);
 //          p.getAttributes().setTextColor(Color.GREEN);  	
         }
 
@@ -207,7 +218,8 @@ public class GlmValidationLayer extends RenderableLayer{
             String [] fields = inputLine.split(",");
             String latlonStr=fields[2].trim();
             String time = fields[3].trim();
-            
+            String tableName = fields[4].trim();
+           
             // parse point string
             //POINT (-88.99 33.689)
             
@@ -224,7 +236,7 @@ public class GlmValidationLayer extends RenderableLayer{
 //            glm = Long.parseLong(fields[4]);
             Position pos = new Position(LatLon.fromDegrees(lat, lon),  0);
              
-            points.add(this.createMissingPoint(pos,time));
+            points.add(this.createMissingPoint(pos,time, tableName));
   //          addRenderable(this.createPoint(pos,ts.toString(), Double.toString(value)));
             
 //            nldn_flash_view.fid-286a9be5_147ea205445_166f	1008335	2011-08-04 23:56:00:005 	5.69999981	POINT (-88.99 33.689)

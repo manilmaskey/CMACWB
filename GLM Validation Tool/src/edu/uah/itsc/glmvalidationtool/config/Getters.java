@@ -38,6 +38,11 @@ public interface Getters {
 	public String getGld360FlashRateLayer();
 	public String getGlmFlashRateLayer();
 
+	public String getEntlnMaxFlashRateLayer();
+	public String getNldnMaxFlashRateLayer();
+	public String getGld360MaxFlashRateLayer();
+	public String getGlmMaxFlashRateLayer();
+
 	public String getEntlnDateRangeLayer();
 	public String getNldnDateRangeLayer();
 	public String getGld360DateRangeLayer();

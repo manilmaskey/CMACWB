@@ -2,10 +2,12 @@ package edu.uah.itsc.glmvalidationtool.views;
 
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -30,6 +32,8 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.SWT;
 import org.jfree.chart.ChartFactory;
@@ -41,6 +45,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.data.Range;
 import org.jfree.data.statistics.HistogramDataset;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.Minute;
@@ -117,6 +122,18 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	private static Color gld360Color;
 	private static Color glmColor;
 
+	private ChartComposite chartFrame1;
+	private ChartComposite chartFrame2;
+	private ChartComposite chartFrame3;
+	private ChartComposite chartFrame4;
+	
+	private int entlnMaxFrequency=0;
+	private int nldnMaxFrequency=0;
+	private int gld360MaxFrequency=0;
+	private int glmMaxFrequency=0;
+	
+	private boolean updateRangeFlag = true;
+
 	Action enableAction;
 
 	/**
@@ -132,6 +149,8 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 
 	public void createPartControl(Composite comp) {
 		
+//		if (true) return;
+
 		parent = comp;
 		parent.setLayout(new FillLayout(SWT.VERTICAL));
 
@@ -165,10 +184,10 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
         gld360Hist.setTitle("GLD360 Flash Rate " + flashesPer);
         glmHist.setTitle("GLM Flash Rate " + flashesPer);
        
-        ChartComposite chartFrame1 = new ChartComposite(parent, SWT.NONE, entlnHist, true);
-        ChartComposite chartFrame2 = new ChartComposite(parent, SWT.NONE, nldnHist, true);
-        ChartComposite chartFrame3 = new ChartComposite(parent, SWT.NONE, gld360Hist, true);
-        ChartComposite chartFrame4 = new ChartComposite(parent, SWT.NONE, glmHist, true);
+        chartFrame1 = new ChartComposite(parent, SWT.NONE, entlnHist, true);
+        chartFrame2 = new ChartComposite(parent, SWT.NONE, nldnHist, true);
+        chartFrame3 = new ChartComposite(parent, SWT.NONE, gld360Hist, true);
+        chartFrame4 = new ChartComposite(parent, SWT.NONE, glmHist, true);
         
        //chartFrame.setLayout(new RowLayout(SWT.VERTICAL));
         //chartFrame.setLayoutData(new RowData(512, 512));
@@ -194,7 +213,58 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
         
         dataFilter.registerObject(this); // register this object with filter update interface
         
+        updateRange();
         refresh();
+        
+//		chartFrame1.addDisposeListener(new DisposeListener()
+//		{
+//			@Override
+//			public void widgetDisposed(DisposeEvent e) {
+//				// TODO Auto-generated method stub
+//				EventQueue.invokeLater(new Runnable () {
+//					public void run () {
+//						chartFrame1.dispose();
+//					}
+//				});
+//			};
+//		});
+//		chartFrame2.addDisposeListener(new DisposeListener()
+//		{
+//			@Override
+//			public void widgetDisposed(DisposeEvent e) {
+//				// TODO Auto-generated method stub
+//				EventQueue.invokeLater(new Runnable () {
+//					public void run () {
+//						chartFrame2.dispose();
+//					}
+//				});
+//			};
+//		});
+//		chartFrame3.addDisposeListener(new DisposeListener()
+//		{
+//			@Override
+//			public void widgetDisposed(DisposeEvent e) {
+//				// TODO Auto-generated method stub
+//				EventQueue.invokeLater(new Runnable () {
+//					public void run () {
+//						chartFrame3.dispose();
+//					}
+//				});
+//			};
+//		});
+//		chartFrame4.addDisposeListener(new DisposeListener()
+//		{
+//			@Override
+//			public void widgetDisposed(DisposeEvent e) {
+//				// TODO Auto-generated method stub
+//				EventQueue.invokeLater(new Runnable () {
+//					public void run () {
+//						chartFrame4.dispose();
+//					}
+//				});
+//			};
+//		});
+
 // TODO need to fill in refresh method
         
 //		// add listeners to dispose off the chart composites upon close
@@ -455,109 +525,6 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	
 	
 
-///**
-// * This demo shows a bar chart with time based data where the time periods are slightly
-// * irregular.
-// *
-// */
-//public class TimePeriodValuesDemo3 extends ApplicationFrame {
-//
-//    /**
-//     * Creates a new demo instance.
-//     *
-//     * @param title  the frame title.
-//     */
-//    public TimePeriodValuesDemo3(final String title) {
-//
-//        super(title);
-//
-//        final XYDataset data1 = createDataset();
-//        final XYItemRenderer renderer1 = new XYBarRenderer();
-//        
-//        final DateAxis domainAxis = new DateAxis("Date");
-//        final ValueAxis rangeAxis = new NumberAxis("Value");
-//        
-//        final XYPlot plot = new XYPlot(data1, domainAxis, rangeAxis, renderer1);
-//
-//        final JFreeChart chart = new JFreeChart("Time Period Values Demo 3", plot);
-//        final ChartPanel chartPanel = new ChartPanel(chart);
-//        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
-//        chartPanel.setMouseZoomable(true, false);
-//        setContentPane(chartPanel);
-//
-//    }
-
-    // ****************************************************************************
-    // * JFREECHART DEVELOPER GUIDE                                               *
-    // * The JFreeChart Developer Guide, written by David Gilbert, is available   *
-    // * to purchase from Object Refinery Limited:                                *
-    // *                                                                          *
-    // * http://www.object-refinery.com/jfreechart/guide.html                     *
-    // *                                                                          *
-    // * Sales are used to provide funding for the JFreeChart project - please    * 
-    // * support us so that we can continue developing free software.             *
-    // ****************************************************************************
-    
-    /**
-     * Creates a dataset, consisting of two series of monthly data.
-     *
-     * @return the dataset.
-     */
-//    public XYDataset createDataset() {
-//
-//        final TimePeriodValues s1 = new TimePeriodValues("Series 1");
-//        
-//        final DateFormat df = DateFormat.getInstance();
-//        try {
-//            final Date d0 = df.parse("11/5/2003 0:00:00.000");
-//            final Date d1 = df.parse("11/5/2003 0:15:00.000");
-//            final Date d2 = df.parse("11/5/2003 0:30:00.000");
-//            final Date d3 = df.parse("11/5/2003 0:45:00.000");
-//            final Date d4 = df.parse("11/5/2003 1:00:00.001");
-//            final Date d5 = df.parse("11/5/2003 1:14:59.999");
-//            final Date d6 = df.parse("11/5/2003 1:30:00.000");
-//            final Date d7 = df.parse("11/5/2003 1:45:00.000");
-//            final Date d8 = df.parse("11/5/2003 2:00:00.000");
-//            final Date d9 = df.parse("11/5/2003 2:15:00.000");
-//                
-//            s1.add(new SimpleTimePeriod(d0, d1), 0.39);
-//            //s1.add(new SimpleTimePeriod(d1, d2), 0.338);
-//            s1.add(new SimpleTimePeriod(d2, d3), 0.225);
-//            s1.add(new SimpleTimePeriod(d3, d4), 0.235);
-//            s1.add(new SimpleTimePeriod(d4, d5), 0.238);
-//            s1.add(new SimpleTimePeriod(d5, d6), 0.236);
-//            s1.add(new SimpleTimePeriod(d6, d7), 0.25);
-//            s1.add(new SimpleTimePeriod(d7, d8), 0.238);
-//            s1.add(new SimpleTimePeriod(d8, d9), 0.215);
-//        }
-//        catch (Exception e) {
-//            System.out.println(e.toString());
-//        }
-//
-//        final TimePeriodValuesCollection dataset = new TimePeriodValuesCollection();
-//        dataset.addSeries(s1);
-//        dataset.setDomainIsPointsInTime(false);
-//
-//        return dataset;
-//
-//    }
-
-//    /**
-//     * Starting point for the demonstration application.
-//     *
-//     * @param args  ignored.
-//     */
-//    public static void main(final String[] args) {
-//
-//        final TimePeriodValuesDemo3 demo = new TimePeriodValuesDemo3("Time Period Values Demo 3");
-//        demo.pack();
-//        RefineryUtilities.centerFrameOnScreen(demo);
-//        demo.setVisible(true);
-//
-//    }
-//
-//}
-
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */
@@ -572,6 +539,11 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 		XYDataset nldnDataset = null;
 		XYDataset gld360Dataset = null;
 		XYDataset glmDataset = null;
+		
+		if (updateRangeFlag) {
+			updateRange();
+		}
+	
 		if (enableFlag) {
 			if (entlnBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
 				entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
@@ -600,6 +572,8 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 			}
 			else {
 				glmDataset = glmBuffer.get(dataFilter.getCurrentTimeMilli());
+//				TimePeriodValuesCollection timeVal = (TimePeriodValuesCollection) glmDataset;
+//				timeVal.getItemCount(series)
 			}
 //			nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
 //			gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
@@ -613,15 +587,36 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
         gld360Hist.getXYPlot().setDataset(gld360Dataset);
         glmHist.getXYPlot().setDataset(glmDataset);
         
+        // TODO update this based on precomputed  max frequencies
         // reset scaling of plots
-        entlnHist.getXYPlot().getDomainAxis().setAutoRange(true);
-        entlnHist.getXYPlot().getRangeAxis().setAutoRange(true);
+        
+        
+//		entlnMaxFrequency=0;
+//		nldnMaxFrequency=0;
+//		gld360MaxFrequency=0;
+//		glmMaxFrequency=0;
+
+        entlnHist.getXYPlot().getDomainAxis().setAutoRange(true);      
+        entlnHist.getXYPlot().getDomainAxis().setRange(new Range(0, entlnMaxFrequency));
+        if (entlnMaxFrequency>0)
+        	entlnHist.getXYPlot().getRangeAxis().setRange(new Range(0, entlnMaxFrequency));
+        else
+        	entlnHist.getXYPlot().getRangeAxis().setAutoRange(true);
         nldnHist.getXYPlot().getDomainAxis().setAutoRange(true);
-        nldnHist.getXYPlot().getRangeAxis().setAutoRange(true);
+        if (nldnMaxFrequency>0)
+        	nldnHist.getXYPlot().getRangeAxis().setRange(new Range(0, nldnMaxFrequency));
+        else
+        	nldnHist.getXYPlot().getRangeAxis().setAutoRange(true);
         gld360Hist.getXYPlot().getDomainAxis().setAutoRange(true);
-        gld360Hist.getXYPlot().getRangeAxis().setAutoRange(true);
+        if (gld360MaxFrequency>0)
+        	gld360Hist.getXYPlot().getRangeAxis().setRange(new Range(0, gld360MaxFrequency));
+        else
+        	gld360Hist.getXYPlot().getRangeAxis().setAutoRange(true);
         glmHist.getXYPlot().getDomainAxis().setAutoRange(true);
-        glmHist.getXYPlot().getRangeAxis().setAutoRange(true);
+        if (glmMaxFrequency>0)
+        	glmHist.getXYPlot().getRangeAxis().setRange(new Range(0, glmMaxFrequency));
+        else
+        	glmHist.getXYPlot().getRangeAxis().setAutoRange(true);
         
         // reset titles
         entlnHist.setTitle("ENTLN Flash Rate " + flashesPer);
@@ -631,6 +626,75 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 
 	}
 
+	public void updateRange()
+	{
+		entlnMaxFrequency=readMaxFrequency(conf.getEntlnMaxFlashRateLayer());
+		nldnMaxFrequency=readMaxFrequency(conf.getNldnMaxFlashRateLayer());
+		gld360MaxFrequency=readMaxFrequency(conf.getGld360MaxFlashRateLayer());
+		glmMaxFrequency=readMaxFrequency(conf.getGlmMaxFlashRateLayer());
+	
+		updateRangeFlag=false;
+	}
+	int readMaxFrequency(String layer) 
+	{
+		String timeFormat=null;
+		String appendTime = "";
+		int maxFreq=0;
+		// within 5 minutes, use seconds
+//		if ((dataFilter.getEndTimeMilli() - dataFilter.getStartTimeMilli()) < 300000) {
+		if (dataFilter.getDisplayIntervalMilli() < 300000) {
+			timeFormat = "'YYYY-MM-DD HH24:MI:SS TZ'";
+		}
+		// 5 hours 
+//		else if ((dataFilter.getEndTimeMilli() - dataFilter.getStartTimeMilli()) < 18000000) {
+		else if (dataFilter.getDisplayIntervalMilli() < 18000000) {
+			timeFormat = "'YYYY-MM-DD HH24:MI TZ'";
+		}
+		else  {
+			timeFormat = "'YYYY-MM-DD HH24 TZ'";
+		}
+		
+		// need new protocol string for start - end time intervals
+		
+		String encodedTimeFormat = URLEncoder.encode(";time_format:" + timeFormat);
+		String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + layer + "&" + dataFilter.getValidationParamString(dataFilter.getAnimationStartTimeMilli(), dataFilter.getAnimationEndTimeMilli()) + encodedTimeFormat; 
+        System.out.println(httpString);
+        
+        URL url=null;
+		try {
+			url = new URL(httpString);
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        BufferedReader in=null;
+		try {
+			in = new BufferedReader(new InputStreamReader(url.openStream()));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+        String inputLine;
+        try {
+			if ((inputLine = in.readLine()) != null) {
+				inputLine = in.readLine();
+				String [] strBuf = inputLine.split(",");
+				System.out.println("layer " + layer + " max freq line:  " + inputLine);
+				maxFreq = Integer.parseInt(strBuf[1]);               
+			}
+		    in.close();			 
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+ 		return maxFreq;
+	}
+	
 	@Override
 	public void clearCache() {
 		// TODO Auto-generated method stub
@@ -638,5 +702,21 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 		nldnBuffer.clear();
 		gld360Buffer.clear();
 		glmBuffer.clear();
+		
+		entlnMaxFrequency=0;
+		nldnMaxFrequency=0;
+		gld360MaxFrequency=0;
+		glmMaxFrequency=0;
+		
+		updateRangeFlag = true;
+	}
+
+	@Override
+	public void reset() {
+		// TODO Auto-generated method stub
+		
+		// use this to reset max frequency ranges, call from timeline view
+		updateRangeFlag = true;
+		
 	}
 }
