@@ -597,7 +597,7 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 //		glmMaxFrequency=0;
 
         entlnHist.getXYPlot().getDomainAxis().setAutoRange(true);      
-        entlnHist.getXYPlot().getDomainAxis().setRange(new Range(0, entlnMaxFrequency));
+//        entlnHist.getXYPlot().getDomainAxis().setRange(new Range(0, entlnMaxFrequency));
         if (entlnMaxFrequency>0)
         	entlnHist.getXYPlot().getRangeAxis().setRange(new Range(0, entlnMaxFrequency));
         else
