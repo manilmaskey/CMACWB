@@ -93,10 +93,35 @@ public class CreateAccountDialog {
 		confirmPassText.setMessage("Confirm your password");
 		confirmPassText.setLayoutData(textGridData);
 
-		Label emptylabel2 = new Label(loginForm, SWT.NONE);
-		emptylabel2.setLayoutData(loginLabelGridData);
+		Label sciDBServerNameLabel = new Label(loginForm, SWT.NONE);
+		sciDBServerNameLabel.setText("SciDB Server Name");
+		final Text sciDBServerNameText = new Text(loginForm, SWT.BORDER);
+		sciDBServerNameText.setMessage("SciDB Server Name");
+		sciDBServerNameText.setLayoutData(textGridData);
 
-		Label emptylabel3 = new Label(loginForm, SWT.NONE);
+		Label sciDBServerAddrLabel = new Label(loginForm, SWT.NONE);
+		sciDBServerAddrLabel.setText("SciDB server address");
+		final Text sciDBServerAddrText = new Text(loginForm, SWT.BORDER);
+		sciDBServerAddrText.setMessage("SciDB server address");
+		sciDBServerAddrText.setLayoutData(textGridData);
+
+		Label sciDBUsernameLabel = new Label(loginForm, SWT.NONE);
+		sciDBUsernameLabel.setText("SciDB username");
+		final Text sciDBUsernameText = new Text(loginForm, SWT.BORDER);
+		sciDBUsernameText.setMessage("SciDB username");
+		sciDBUsernameText.setLayoutData(textGridData);
+
+		Label sciDBPasswordLabel = new Label(loginForm, SWT.NONE);
+		sciDBPasswordLabel.setText("SciDB password");
+		final Text sciDBPasswordText = new Text(loginForm, SWT.BORDER | SWT.PASSWORD);
+		sciDBPasswordText.setMessage("SciDB password");
+		sciDBPasswordText.setLayoutData(textGridData);
+
+		Label emptylabel6 = new Label(loginForm, SWT.NONE);
+		emptylabel6.setLayoutData(loginLabelGridData);
+
+		Label emptylabel7 = new Label(loginForm, SWT.NONE);
+
 		GridData buttonGridData = new GridData();
 		buttonGridData.horizontalAlignment = SWT.CENTER;
 		buttonGridData.widthHint = 100;
@@ -109,8 +134,8 @@ public class CreateAccountDialog {
 		cancelButton.setText("Cancel");
 		cancelButton.setLayoutData(buttonGridData);
 
-		Label emptylabel4 = new Label(loginForm, SWT.NONE);
-		emptylabel4.setLayoutData(loginLabelGridData);
+		Label emptylabelLast = new Label(loginForm, SWT.NONE);
+		emptylabelLast.setLayoutData(loginLabelGridData);
 
 		Label copyRightLabel = new Label(loginForm, SWT.NONE);
 		copyRightLabel.setText("Copyright: ITSC, University of Alabama in Huntsville");
@@ -127,13 +152,18 @@ public class CreateAccountDialog {
 				String password = passText.getText();
 				String password2 = confirmPassText.getText();
 				String email = emailText.getText();
+				String sciDBServerName = sciDBServerNameText.getText();
+				String sciDBServerAddr = sciDBServerAddrText.getText();
+				String sciDBUsername = sciDBUsernameText.getText();
+				String sciDBPassword = sciDBPasswordText.getText();
 
 				if (!password.equals(password2)) {
 					MessageDialog.openError(shell, "Error", "Password Mismatch");
 				}
 				else {
 					PortalConnector pc = new PortalConnector();
-					JSONObject jsonObject = pc.createAccount(username, password, email);
+					JSONObject jsonObject = pc.createAccount(username, password, email, sciDBServerName,
+						sciDBServerAddr, sciDBUsername, sciDBPassword);
 
 					if (jsonObject != null) {
 						XMPPClient xc = new XMPPClient();

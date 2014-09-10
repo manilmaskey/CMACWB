@@ -65,14 +65,12 @@ public class PortalConnector {
 			Iterator<String> roleKeys = jsonRoles.keys();
 			String roleKey = null;
 			String roleValue = null;
-			if (User.userRoles == null)
-				User.userRoles = new HashMap<String, String>();
+			if (User.userRoles == null) User.userRoles = new HashMap<String, String>();
 			while (roleKeys.hasNext()) {
 				roleKey = roleKeys.next();
 				roleValue = jsonRoles.getString(roleKey);
 				User.userRoles.put(roleKey, roleValue);
-				if (roleValue.equalsIgnoreCase("admin") || roleValue.equalsIgnoreCase("administrator"))
-					User.isAdmin = true;
+				if (roleValue.equalsIgnoreCase("admin") || roleValue.equalsIgnoreCase("administrator")) User.isAdmin = true;
 			}
 			// User.userEmail = jsonUser.getString("mail");
 			if (!username.equals(adminUsername)) {
@@ -88,6 +86,7 @@ public class PortalConnector {
 
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Unable to login");
 			return null;
 		}
@@ -102,7 +101,8 @@ public class PortalConnector {
 
 	// /////////////////////////////////////////////////////////////////////////////
 
-	public JSONObject createAccount(String username, String password, String email) {
+	public JSONObject createAccount(String username, String password, String email, String sciDBServerName,
+					String sciDBServerAddr, String sciDBUsername, String sciDBPassword) {
 		JSONObject jsonObject = connectAdmin();
 		HttpClient httpclient = new DefaultHttpClient();
 
@@ -138,8 +138,17 @@ public class PortalConnector {
 			httppost.addHeader("X-CSRF-TOKEN", csrfToken);
 
 			HttpResponse response = httpclient.execute(httppost, mHttpContext);
+			EntityUtils.consumeQuietly(response.getEntity());
+			// System.out.println("Response " + response.toString());
+			SciDBUser sciDBUser = new SciDBUser(sciDBServerName, sciDBServerAddr, sciDBUsername, sciDBPassword,
+							username, username);
+			StringEntity sciDBSe = new StringEntity(sciDBUser.getJSON().toString());
+			sciDBSe.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+			httppost = new HttpPost(PortalUtilities.getNodeRestPoint());
+			httppost.setEntity(sciDBSe);
+			httppost.addHeader("X-CSRF-TOKEN", csrfToken);
+			response = httpclient.execute(httppost, mHttpContext);
 
-			System.out.println("Response " + response.toString());
 			// String jsonResponse = EntityUtils.toString(response.getEntity());
 			// System.out.println(jsonResponse);
 
