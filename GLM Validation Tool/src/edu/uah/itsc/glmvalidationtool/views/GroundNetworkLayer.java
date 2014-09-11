@@ -33,7 +33,7 @@ public class GroundNetworkLayer extends RenderableLayer{
 	// this allows us to set up a shared attribute between all points of layer
 	AnnotationAttributes pointAttrs = new AnnotationAttributes();
 	ArrayList <Renderable> points = new ArrayList<Renderable>();
-	Config conf = new Config();
+//	Config conf = new Config();
 	DataFilter dataFilter = new DataFilter();
 	String tableName;
 	String layerName=null;
@@ -52,6 +52,10 @@ public class GroundNetworkLayer extends RenderableLayer{
 		addRenderable(tooltip);
 	}
 	
+	public int getNumPoints()
+	{
+		return points.size();
+	}
 	public Color getColor() {
 		return color;
 	}
@@ -96,7 +100,7 @@ public class GroundNetworkLayer extends RenderableLayer{
     	
        	clearPoints();
        	
-    	String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString();
+    	String httpString = dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceStringCsv() + tableName + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString();
         System.out.println(httpString);
         
         URL url = new URL(httpString);

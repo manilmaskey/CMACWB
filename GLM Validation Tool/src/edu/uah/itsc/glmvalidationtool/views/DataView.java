@@ -111,7 +111,7 @@ public class DataView extends ViewPart implements DataFilterUpdate{
     private AnnotationPointPlacemark placeMark;
  //   private PointPlacemark mouseAn, latestAn;
     private GlobeAnnotation tooltipAnnotation;
-    private Config conf = new Config();
+//    private Config conf = new Config();
     
     private ArrayList<GroundNetworkLayer> flashLayers = new ArrayList();
 
@@ -148,12 +148,12 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 		
         Configuration.setValue(AVKey.GLOBE_CLASS_NAME, EarthFlat.class.getName());
         Configuration.setValue(AVKey.VIEW_CLASS_NAME, FlatOrbitView.class.getName());
-		Configuration.setValue(AVKey.INITIAL_LONGITUDE,Double.toString(conf.getInitialLongitude()));
+		Configuration.setValue(AVKey.INITIAL_LONGITUDE,dataFilter.getConfig().getInitialLongitude());
 
-		entlnColor = conf.getEntlnColor();
-		nldnColor = conf.getNldnColor();
-		gld360Color = conf.getGld360Color();
-		glmColor = conf.getGlmColor();
+		entlnColor = dataFilter.getConfig().getEntlnColor();
+		nldnColor = dataFilter.getConfig().getNldnColor();
+		gld360Color = dataFilter.getConfig().getGld360Color();
+		glmColor = dataFilter.getConfig().getGlmColor();
 		
 		// Init tooltip annotation
         tooltipAnnotation = new GlobeAnnotation("", Position.fromDegrees(0, 0, 0));
@@ -623,23 +623,23 @@ public class DataView extends ViewPart implements DataFilterUpdate{
         // create or redraw lightning layers
     	// ENTLN Flash Data 
         if (entlnFlashLayer==null) {
-        	entlnFlashLayer = new GroundNetworkLayer(conf.getEntlnFlashLayer(), "ENTLN Flash", entlnColor, this.tooltipAnnotation);
+        	entlnFlashLayer = new GroundNetworkLayer(dataFilter.getConfig().getEntlnFlashLayer(), "ENTLN Flash", entlnColor, this.tooltipAnnotation);
 	        this.addLayer(entlnFlashLayer);
 	        flashLayers.add(entlnFlashLayer);
         }
         if (nldnFlashLayer==null) {
-        	nldnFlashLayer = new GroundNetworkLayer(conf.getNldnFlashLayer(), "NLDN Flash", nldnColor, this.tooltipAnnotation);
-//        	nldnFlashLayer = new GroundNetworkLayer(conf.getNldnFlashLayer(), "NLDN Flash", new Color(75, 75, 255, 0), this.tooltipAnnotation);
+        	nldnFlashLayer = new GroundNetworkLayer(dataFilter.getConfig().getNldnFlashLayer(), "NLDN Flash", nldnColor, this.tooltipAnnotation);
+//        	nldnFlashLayer = new GroundNetworkLayer(dataFilter.getConfig().getNldnFlashLayer(), "NLDN Flash", new Color(75, 75, 255, 0), this.tooltipAnnotation);
 	        this.addLayer(nldnFlashLayer);
 	        flashLayers.add(nldnFlashLayer);
         }
         if (gld360Layer==null) {
-        	gld360Layer = new GroundNetworkLayer(conf.getGld360Layer(), "GLD360", gld360Color, this.tooltipAnnotation);
+        	gld360Layer = new GroundNetworkLayer(dataFilter.getConfig().getGld360Layer(), "GLD360", gld360Color, this.tooltipAnnotation);
 	        this.addLayer(gld360Layer);
 	        flashLayers.add(gld360Layer);
         }
         if (glmLayer==null) {
-        	glmLayer = new GroundNetworkLayer(conf.getGlmFlashLayer(), "GLM Flash", glmColor, this.tooltipAnnotation);
+        	glmLayer = new GroundNetworkLayer(dataFilter.getConfig().getGlmFlashLayer(), "GLM Flash", glmColor, this.tooltipAnnotation);
 	        this.addLayer(glmLayer);
 	        flashLayers.add(glmLayer);
        }
@@ -732,6 +732,7 @@ public class DataView extends ViewPart implements DataFilterUpdate{
 	    pgon.setHighlightAttributes(highlightAttributes);
 	     
 	    boundingBoxLayer.addRenderable(pgon);
+	    updateLegendImage();
 		      
     }
      
@@ -812,7 +813,25 @@ public class DataView extends ViewPart implements DataFilterUpdate{
     	RenderableLayer layer = new RenderableLayer();
     	layer.setName("Legend");
     	
-        BufferedImage image = new BufferedImage(100, 80, BufferedImage.TYPE_4BYTE_ABGR);
+        BufferedImage image = renderLegendImage();
+        
+        legendAnnotation = new ScreenAnnotation("", new Point((wwd.getWidth()-image.getWidth()-10), 60));
+        legendAnnotation.getAttributes().setImageSource(image);
+        legendAnnotation.getAttributes().setSize(
+            new Dimension(image.getWidth(), image.getHeight()));
+        legendAnnotation.getAttributes().setDrawOffset(new Point(image.getWidth() / 2, 0));
+        legendAnnotation.getAttributes().setAdjustWidthToText(AVKey.SIZE_FIXED);
+        legendAnnotation.getAttributes().setBorderWidth(0);
+        legendAnnotation.getAttributes().setCornerRadius(0);
+        legendAnnotation.getAttributes().setBackgroundColor(new Color(0f, 0f, 0f, 0f));
+        layer.addRenderable(legendAnnotation);
+        
+        return layer;
+    }
+
+    BufferedImage renderLegendImage()
+    {
+        BufferedImage image = new BufferedImage(150, 80, BufferedImage.TYPE_4BYTE_ABGR);
         Graphics g2 = image.getGraphics();
         int divisions = flashLayers.size();
         int margin = 2; // space between items in pixels
@@ -830,28 +849,23 @@ public class DataView extends ViewPart implements DataFilterUpdate{
             // Draw hour label
             x = w + margin + margin;
             y = y + h;
-            String label =  grnd.getName();
+            String label =  grnd.getName() + " (" +grnd.getNumPoints() + ")";
             g2.setColor(Color.BLACK);
             g2.drawString(label, x + 1, y + 1);
             g2.setColor(Color.WHITE);
             g2.drawString(label, x, y);
             cnt++;
         }
-        
-        legendAnnotation = new ScreenAnnotation("", new Point((wwd.getWidth()-image.getWidth()-10), 60));
-        legendAnnotation.getAttributes().setImageSource(image);
-        legendAnnotation.getAttributes().setSize(
-            new Dimension(image.getWidth(), image.getHeight()));
-        legendAnnotation.getAttributes().setDrawOffset(new Point(image.getWidth() / 2, 0));
-        legendAnnotation.getAttributes().setAdjustWidthToText(AVKey.SIZE_FIXED);
-        legendAnnotation.getAttributes().setBorderWidth(0);
-        legendAnnotation.getAttributes().setCornerRadius(0);
-        legendAnnotation.getAttributes().setBackgroundColor(new Color(0f, 0f, 0f, 0f));
-        layer.addRenderable(legendAnnotation);
-        
-        return layer;
+        return image;
     }
+    
+    void updateLegendImage()
+    {
+    	 BufferedImage image = renderLegendImage();
+    	 legendAnnotation.getAttributes().setImageSource(image);
 
+    }
+    
 	@Override
 	public void reset() {
 		// TODO Auto-generated method stub

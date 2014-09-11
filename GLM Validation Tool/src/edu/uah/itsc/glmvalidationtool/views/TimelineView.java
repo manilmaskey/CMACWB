@@ -65,10 +65,12 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.nebula.widgets.cdatetime.CDT;
 import org.eclipse.nebula.widgets.cdatetime.CDateTime;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -123,10 +125,10 @@ import gov.nasa.worldwind.geom.Sector;
 //	static DateFormat df;
 	private CDateTime cdtCurrent, cdtDisplayInterval;
 	private CDateTime cdtAnimationStart, cdtAnimationEnd;
-	private static final DataFilter dataFilter = new DataFilter();
+	private static DataFilter dataFilter = new DataFilter();
 	private WWEvent wwEvent = new WWEvent();
     private Sector selectedSector = null;
-    private Config conf = new Config();
+//    private Config conf = new Config();
     
     private static Text timeRangeText;
     private Scale scale;
@@ -143,6 +145,8 @@ import gov.nasa.worldwind.geom.Sector;
     Vector <BufferedImage> imgBuffer = new Vector<BufferedImage>();
     
     URL saveFile;
+	private ScrolledComposite scrolledComposite = null;
+	private Composite composite = null;
     
     //stopAction, 
 	/**
@@ -163,15 +167,21 @@ import gov.nasa.worldwind.geom.Sector;
 	 * to create the viewer and initialize it.
 	 */
 	public void createPartControl(Composite parent) {
-		
-
-
  
-//		GridLayout grid = new GridLayout();
-//		parent.setLayout(grid);
+//		parent.setLayout(new FillLayout(SWT.VERTICAL));
 
-		parent.setLayout(new FillLayout(SWT.VERTICAL));
-
+		scrolledComposite = new ScrolledComposite(parent, SWT.H_SCROLL
+				| SWT.V_SCROLL);
+		scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
+		true, true, 1, 1));
+		composite = new Composite(scrolledComposite, SWT.NONE);
+		composite.setLayout(new FillLayout(SWT.VERTICAL));
+//		scrolledComposite.setLayoutData(new FillLayout(SWT.VERTICAL));
+		scrolledComposite.setContent(composite);
+		scrolledComposite.setExpandHorizontal(true);
+		scrolledComposite.setExpandVertical(true);
+		scrolledComposite.setMinSize(new Point(500, 200));
+		
 		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
 		
 //		dataFilter.registerObject(this);
@@ -182,11 +192,12 @@ import gov.nasa.worldwind.geom.Sector;
         
 		refreshTimeRange();
 			
-		Group dateAnimationGroup = new Group(parent, SWT.SHADOW_NONE);
+		Group dateAnimationGroup = new Group(composite, SWT.SHADOW_NONE);
 		dateAnimationGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
 		// TODO need to make this configurable
-		long startTime = dataFilter.getDataEndTimeMilli()-1000*60*5;  // last 5 minutes
+//		long startTime = dataFilter.getDataEndTimeMilli()-1000*60*5;  // last 5 minutes
+		long startTime = dataFilter.getDataEndTimeMilli()-Long.parseLong(dataFilter.getConfig().getAnimationTimePeriod());  
 		dataFilter.setCurrentTime(startTime);
 		
 		cal.setTimeInMillis(startTime);
@@ -229,8 +240,8 @@ import gov.nasa.worldwind.geom.Sector;
 		
 		
 //	    scale = new Scale (parent, SWT.BORDER);
-	    scale = new Scale (parent, SWT.NONE);
-		Rectangle clientArea = parent.getClientArea ();
+	    scale = new Scale (composite, SWT.NONE);
+		Rectangle clientArea = composite.getClientArea ();
 		scale.setBounds (clientArea.x, clientArea.y, 200, 64);
 		scale.setMaximum ((int)(cdtAnimationEnd.getSelection().getTime() - cdtAnimationStart.getSelection().getTime()));
 		scale.setPageIncrement ((int)dataFilter.getDisplayIntervalMilli());
@@ -272,7 +283,7 @@ import gov.nasa.worldwind.geom.Sector;
 		
 		
 		
-		Group dateGroup = new Group(parent, SWT.SHADOW_NONE);
+		Group dateGroup = new Group(composite, SWT.SHADOW_NONE);
 		dateGroup.setLayout(new FillLayout(SWT.HORIZONTAL));
 		
 		cal.setTimeInMillis(dataFilter.getCurrentTimeMilli());
@@ -325,7 +336,7 @@ import gov.nasa.worldwind.geom.Sector;
 
 	    });
 
-		timeRangeText = new Text(parent, SWT.CENTER|SWT.MULTI|SWT.WRAP);
+		timeRangeText = new Text(composite, SWT.CENTER|SWT.MULTI|SWT.WRAP);
 		Date startDate = new Date(dataFilter.getDataStartTimeMilli());
 		Date endDate = new Date(dataFilter.getDataEndTimeMilli());
 		
@@ -641,16 +652,16 @@ import gov.nasa.worldwind.geom.Sector;
     {
 		MaxMin maxmin = new MaxMin();
 		long dateMax, dateMin;
-		getDataDateRange(maxmin, conf.getEntlnDateRangeLayer()); 
+		getDataDateRange(maxmin, dataFilter.getConfig().getEntlnDateRangeLayer()); 
 		dateMax = maxmin.getMax();
 		dateMin = maxmin.getMin();
-		getDataDateRange(maxmin, conf.getNldnDateRangeLayer()); 
+		getDataDateRange(maxmin, dataFilter.getConfig().getNldnDateRangeLayer()); 
 		dateMax = Math.max(dateMax, maxmin.getMax());
 		dateMin = Math.min(dateMin, maxmin.getMin());
-		getDataDateRange(maxmin, conf.getGld360DateRangeLayer()); 
+		getDataDateRange(maxmin, dataFilter.getConfig().getGld360DateRangeLayer()); 
 		dateMax = Math.max(dateMax, maxmin.getMax());
 		dateMin = Math.min(dateMin, maxmin.getMin());
-		getDataDateRange(maxmin, conf.getGlmDateRangeLayer()); 
+		getDataDateRange(maxmin, dataFilter.getConfig().getGlmDateRangeLayer()); 
 		dateMax = Math.max(dateMax, maxmin.getMax());
 		dateMin = Math.min(dateMin, maxmin.getMin());
 
@@ -686,7 +697,7 @@ import gov.nasa.worldwind.geom.Sector;
     
     void getDataDateRange(MaxMin maxmin, String layer)
     {
-		String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + layer; 
+		String httpString = dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceStringCsv() + layer; 
         System.out.println(httpString);
         
         try {

@@ -81,7 +81,7 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 	private WorldWindowGLCanvas wwd;
 	private LayerManagerLayer layerManager;
     private AnnotationPointPlacemark placeMark;
-    private Config conf = new Config();
+//    private Config conf = new Config();
 
 //    private RenderableLayer glmValidationLayer=null;
     private GlmValidationLayer glmValidationLayer=null;
@@ -94,6 +94,7 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 
 	private Map<Long, ArrayList<Renderable>> glmValidationBuffer = new HashMap<Long, ArrayList<Renderable>>();
 	private Map<Long, ArrayList<Renderable>> groundValidationBuffer = new HashMap<Long, ArrayList<Renderable>>();
+	private Map<Long, ArrayList<Integer>> stoplightCounts = new HashMap<Long, ArrayList<Integer>>();
 //	private Map<Long, ArrayList<Renderable>> entlnValidationBuffer = new HashMap<>();
 //	private Map<Long, ArrayList<Renderable>> nldnValidationBuffer = new HashMap<>();
 //	private Map<Long, ArrayList<Renderable>> gld360ValidationBuffer = new HashMap<>();
@@ -130,7 +131,7 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 		// make earth display as flat projection
         Configuration.setValue(AVKey.GLOBE_CLASS_NAME, EarthFlat.class.getName());
         Configuration.setValue(AVKey.VIEW_CLASS_NAME, FlatOrbitView.class.getName());
-		Configuration.setValue(AVKey.INITIAL_LONGITUDE,Double.toString(conf.getInitialLongitude()));
+		Configuration.setValue(AVKey.INITIAL_LONGITUDE,dataFilter.getConfig().getInitialLongitude());
 
 	      // Init tooltip annotation
         tooltipAnnotation = new GlobeAnnotation("", Position.fromDegrees(0, 0, 0));
@@ -445,30 +446,32 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
     {
                 
         if (glmValidationLayer==null) {
-        	glmValidationLayer = new GlmValidationLayer(conf.getGlmIntersectionLayer(), "GLM Detected", this.tooltipAnnotation);
+        	glmValidationLayer = new GlmValidationLayer(dataFilter.getConfig().getGlmIntersectionLayer(), "GLM Detected", this.tooltipAnnotation);
 	        this.addLayer(glmValidationLayer);
         }
         if (groundValidationLayer==null) {
-        	groundValidationLayer = new GlmValidationLayer(conf.getGroundIntersectionLayer(), "GLM Missing", this.tooltipAnnotation);
+        	groundValidationLayer = new GlmValidationLayer(dataFilter.getConfig().getGroundIntersectionLayer(), "GLM Missing", this.tooltipAnnotation);
 	        this.addLayer(groundValidationLayer);
         }
-        if (glmLegendLayer==null) {
-        	glmLegendLayer = createGlmLayerLegend();
-    			this.addLayer(glmLegendLayer);
-        }
 //        if (entlnValidationLayer==null) {
-//        	entlnValidationLayer = new GlmValidationLayer(conf.getEntlnFlashGlmIntersectionLayer(), "ENTLN Coincidence", this.tooltipAnnotation);
+//        	entlnValidationLayer = new GlmValidationLayer(dataFilter.getConfig().getEntlnFlashGlmIntersectionLayer(), "ENTLN Coincidence", this.tooltipAnnotation);
 //	        this.addLayer(entlnValidationLayer);
 //        }
 //        if (nldnValidationLayer==null) {
-//        	nldnValidationLayer = new GlmValidationLayer(conf.getNldnFlashGlmIntersectionLayer(), "NLDN Coincidence", this.tooltipAnnotation);
+//        	nldnValidationLayer = new GlmValidationLayer(dataFilter.getConfig().getNldnFlashGlmIntersectionLayer(), "NLDN Coincidence", this.tooltipAnnotation);
 //	        this.addLayer(nldnValidationLayer);
 //        }
 //        if (gld360ValidationLayer==null) {
-//        	gld360ValidationLayer = new GlmValidationLayer(conf.getGld360GlmIntersectionLayer(), "GLD360 Coincidence", this.tooltipAnnotation);
+//        	gld360ValidationLayer = new GlmValidationLayer(dataFilter.getConfig().getGld360GlmIntersectionLayer(), "GLD360 Coincidence", this.tooltipAnnotation);
 //	        this.addLayer(gld360ValidationLayer);
 //        }
         try {
+        	ArrayList<Integer> list=null;
+        	if (stoplightCounts.get(dataFilter.getCurrentTimeMilli())==null) {
+        		list = new ArrayList<Integer>();
+        		stoplightCounts.put(dataFilter.getCurrentTimeMilli(),list);
+        	}
+        	
 	    	// GLM intersection Data 
         	if (glmValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
         		glmValidationLayer.readCsvDataGlm();
@@ -481,10 +484,15 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
         	if (groundValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
         		groundValidationLayer.readCsvDataGround();
         		groundValidationBuffer.put(dataFilter.getCurrentTimeMilli(), groundValidationLayer.getPoints());
+        		list.add(GlmValidationLayer.getCount(0));
+        		list.add(GlmValidationLayer.getCount(1));
+        		list.add(GlmValidationLayer.getCount(2));
+        		list.add(GlmValidationLayer.getCount(3));
         	}
         	else {
            		groundValidationLayer.setPoints(groundValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
         	}
+        	
 //        	if (entlnValidationBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
 //        		entlnValidationLayer.readCsvDataGround();
 //        		entlnValidationBuffer.put(dataFilter.getCurrentTimeMilli(), entlnValidationLayer.getPoints());
@@ -506,6 +514,10 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 //        	else {
 //           		gld360ValidationLayer.setPoints(gld360ValidationBuffer.get(dataFilter.getCurrentTimeMilli()));        		
 //        	}
+            if (glmLegendLayer==null) {
+            	glmLegendLayer = createGlmLayerLegend();
+        			this.addLayer(glmLegendLayer);
+            }
         	glmValidationLayer.displayPoints();
         	groundValidationLayer.displayPoints();
 //        	entlnValidationLayer.displayPoints();
@@ -562,6 +574,8 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
  	    pgon.setHighlightAttributes(highlightAttributes);
  	     
  	    boundingBoxLayer.addRenderable(pgon);
+ 	    
+ 	    updateLegendImage();
 	    
     
     }
@@ -640,33 +654,8 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
    	RenderableLayer layer = new RenderableLayer();
    	layer.setName("Legend");
    	
-   	   
-       BufferedImage image = new BufferedImage(150, 80, BufferedImage.TYPE_4BYTE_ABGR);
-       Graphics g2 = image.getGraphics();
-       int divisions = GlmValidationLayer.labels.length;
-       int margin = 2; // space between items in pixels
-//       int w = image.getWidth() / 2 - margin;
-       int h = (image.getHeight() - margin * (divisions - 1)) / divisions;
-       int w = h;
-       int cnt=0;
-       for (int ind1=0;ind1<divisions;ind1++)
-       {
-           int x = 0;
-           int y = cnt * (image.getHeight() / divisions);
-           // Draw color rectangle
-           g2.setColor(GlmValidationLayer.colors[ind1]);
-           g2.fillRect(x, y, w, h);
-           // Draw hour label
-           x = w + margin + margin;
-           y = y + h;
-           String label =  GlmValidationLayer.labels[ind1];
-           g2.setColor(Color.BLACK);
-           g2.drawString(label, x + 1, y + 1);
-           g2.setColor(Color.WHITE);
-           g2.drawString(label, x, y);
-           cnt++;
-       }
-       
+    BufferedImage image = renderLegendImage();
+        
        legendAnnotation = new ScreenAnnotation("", new Point((wwd.getWidth()-image.getWidth()-10), 60));
        legendAnnotation.getAttributes().setImageSource(image);
        legendAnnotation.getAttributes().setSize(
@@ -680,6 +669,41 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
        
        return layer;
    }
+   BufferedImage renderLegendImage()
+   {
+	       BufferedImage image = new BufferedImage(180, 80, BufferedImage.TYPE_4BYTE_ABGR);
+	       Graphics g2 = image.getGraphics();
+	       int divisions = GlmValidationLayer.labels.length;
+	       int margin = 2; // space between items in pixels
+//	       int w = image.getWidth() / 2 - margin;
+	       int h = (image.getHeight() - margin * (divisions - 1)) / divisions;
+	       int w = h;
+	       int cnt=0;
+	       for (int ind1=0;ind1<divisions;ind1++)
+	       {
+	           int x = 0;
+	           int y = cnt * (image.getHeight() / divisions);
+	           // Draw color rectangle
+	           g2.setColor(GlmValidationLayer.colors[ind1]);
+	           g2.fillRect(x, y, w, h);
+	           // Draw hour label
+	           x = w + margin + margin;
+	           y = y + h;
+	           String label =  GlmValidationLayer.labels[ind1] + " (" +stoplightCounts.get(dataFilter.getCurrentTimeMilli()).get(ind1) + ")";
+	           g2.setColor(Color.BLACK);
+	           g2.drawString(label, x + 1, y + 1);
+	           g2.setColor(Color.WHITE);
+	           g2.drawString(label, x, y);
+	           cnt++;
+	       }
+	       return image;
+   }
+   void updateLegendImage()
+   {
+   	 BufferedImage image = renderLegendImage();
+   	 legendAnnotation.getAttributes().setImageSource(image);
+
+   }
 
 	@Override
 	public void refresh() {
@@ -692,6 +716,7 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 		// TODO Auto-generated method stub
 		glmValidationBuffer.clear();
 		groundValidationBuffer.clear();
+		stoplightCounts.clear();
 //		entlnValidationBuffer.clear();
 //		nldnValidationBuffer.clear();
 //		gld360ValidationBuffer.clear();
@@ -717,8 +742,8 @@ public class ValidationView extends ViewPart implements DataFilterUpdate {
 //	        glmValidationLayer = new RenderableLayer();
 //	        glmValidationLayer.setName("GLM Coincidence");
 //	        glmValidationLayer.addRenderable(this.tooltipAnnotation);
-//	        System.out.println(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashGlmIntersectionLayer() + "&" + dataFilter.getValidationParamString());
-//			json.addSourceGeometryToLayer(new URI(conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashGlmIntersectionLayer() + "&" + dataFilter.getValidationParamString()), glmValidationLayer);
+//	        System.out.println(dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceString() + dataFilter.getConfig().getEntlnFlashGlmIntersectionLayer() + "&" + dataFilter.getValidationParamString());
+//			json.addSourceGeometryToLayer(new URI(dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceString() + dataFilter.getConfig().getEntlnFlashGlmIntersectionLayer() + "&" + dataFilter.getValidationParamString()), glmValidationLayer);
 //	        this.addLayer(glmValidationLayer);
 //        }
 //        catch (URISyntaxException e) {

@@ -3,7 +3,7 @@ package edu.uah.itsc.glmvalidationtool.config;
 import java.awt.Color;
 
 public interface Getters {
-	public double getInitialLongitude();
+	public String getInitialLongitude();
 	public String getServiceString();
 	public String getServiceStringCsv();
 	public String getDatabaseName();
@@ -57,5 +57,15 @@ public interface Getters {
 	public Color getNldnColor();
 	public Color getGld360Color();
 	public Color getGlmColor();
+	
+	public String getMilliTimeWindow();
+	public String getDegreeRadius();
+	public String getAnimationTimePeriod();
+	public String getAnimationDisplayInterval();
+	public String getMinLat();
+	public String getMinLon();
+	public String getMaxLat();
+	public String getMaxLon();
+
 
 }

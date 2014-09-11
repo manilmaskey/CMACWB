@@ -34,6 +34,7 @@ public class Perspective implements IPerspectiveFactory {
 //		 bottom.addView(IPageLayout.ID_PROJECT_EXPLORER);
 
 		 bottom.addView(IPageLayout.ID_RES_NAV);
+//		 bottom.addView(IPageLayout.ID_PROP_SHEET);
 //		 bottom.addView("NavigationView");
 		 bottomright.addView("TimelineView");
 		 

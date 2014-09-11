@@ -102,7 +102,7 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	public static final String ID = "MetricsView";
 
 	private static DataFilter dataFilter = new DataFilter();
-	private static Config conf = new Config();
+//	private static Config conf = new Config();
 	private static Composite parent = null;
 	private static JFreeChart entlnHist;
 	private static JFreeChart nldnHist;
@@ -156,19 +156,19 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 
 		// need to do the rest in a method that gets called on DataFilterUpdate.refresh
 		     
-//		XYDataset entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
-//		XYDataset nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
-//		XYDataset gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
-//		XYDataset glmDataset = readHistogram(conf.getGlmFlashRateLayer());
+//		XYDataset entlnDataset = readHistogram(dataFilter.getConfig().getEntlnFlashRateLayer());
+//		XYDataset nldnDataset = readHistogram(dataFilter.getConfig().getNldnFlashRateLayer());
+//		XYDataset gld360Dataset = readHistogram(dataFilter.getConfig().getGld360FlashRateLayer());
+//		XYDataset glmDataset = readHistogram(dataFilter.getConfig().getGlmFlashRateLayer());
 		XYDataset entlnDataset = null;
 		XYDataset nldnDataset = null;
 		XYDataset gld360Dataset = null;
 		XYDataset glmDataset = null;
 		
-		entlnColor = conf.getEntlnColor();
-		nldnColor = conf.getNldnColor();
-		gld360Color = conf.getGld360Color();
-		glmColor = conf.getGlmColor();
+		entlnColor = dataFilter.getConfig().getEntlnColor();
+		nldnColor = dataFilter.getConfig().getNldnColor();
+		gld360Color = dataFilter.getConfig().getGld360Color();
+		glmColor = dataFilter.getConfig().getGlmColor();
         
 //        entlnHist = createChart(entlnDataset, Color.CYAN, "ENTLN Flash Rate" + flashesPer);
 //        nldnHist = createChart(nldnDataset, Color.BLUE, "NLDN Flash Rate" + flashesPer);
@@ -213,7 +213,6 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
         
         dataFilter.registerObject(this); // register this object with filter update interface
         
-        updateRange();
         refresh();
         
 //		chartFrame1.addDisposeListener(new DisposeListener()
@@ -345,8 +344,8 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
     		 
 //			queryString = "viewparams=" + URLEncoder.encode("starttime:'"+ startDate + "';endtime:'"+ endDate + "'"+ ";minlon:"+ MinLon + ";maxlon:"+ MaxLon + ";minlat:"+ MinLat + ";maxlat:"+ MaxLat , "UTF-8");
 			String encodedTimeFormat = URLEncoder.encode(";time_format:" + timeFormat);
-//    		String url = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceString() + conf.getEntlnFlashRateLayer() + "&" + dataFilter.getValidationParamString(); 
-    		String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + layer + "&" + dataFilter.getValidationParamString() + encodedTimeFormat; 
+//    		String url = dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceString() + dataFilter.getConfig().getEntlnFlashRateLayer() + "&" + dataFilter.getValidationParamString(); 
+    		String httpString = dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceStringCsv() + layer + "&" + dataFilter.getFrequencyParamString() + encodedTimeFormat; 
 	        System.out.println(httpString);
 	        
 	        URL url = new URL(httpString);
@@ -498,11 +497,11 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 //		try {
 // //   		String url = "jdbc:postgresql://54.83.58.23/glm_vv"; 
 //    		 
-//    		String url = conf.getProtocolJdbcPostgresql() + conf.getServerIP() + "/" + conf.getDatabaseName(); 
+//    		String url = dataFilter.getConfig().getProtocolJdbcPostgresql() + dataFilter.getConfig().getServerIP() + "/" + dataFilter.getConfig().getDatabaseName(); 
 //
 //			 
-////			Connection con = DataUtil.establishConnection(conf.getProtocolHttp() + conf.getServerIP(), conf.getServerUname(), conf.getServerPw());
-//			Connection con = DataUtil.establishConnection(url, conf.getServerUname(), conf.getServerPw());
+////			Connection con = DataUtil.establishConnection(dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP(), dataFilter.getConfig().getServerUname(), dataFilter.getConfig().getServerPw());
+//			Connection con = DataUtil.establishConnection(url, dataFilter.getConfig().getServerUname(), dataFilter.getConfig().getServerPw());
 //			Statement st = con.createStatement();
 //			String query = "select  to_char(datetime, " + timeFormat +  ") as time, count (id) as frequency from " + table + " where the_geom && ST_MakeEnvelope(" + dataFilter.getMinLon() + "," + dataFilter.getMinLat() + "," + dataFilter.getMaxLon() + "," + dataFilter.getMaxLat() + ", 4326) and datetime between '"+ DataUtil.millisecondsToSQLTimeStampString(dataFilter.getStartTimeMilli()) + "' and '" + DataUtil.millisecondsToSQLTimeStampString(dataFilter.getEndTimeMilli())+ "' group by time order by time";
 //			
@@ -546,28 +545,28 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 	
 		if (enableFlag) {
 			if (entlnBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
-				entlnDataset = readHistogram(conf.getEntlnFlashRateLayer());
+				entlnDataset = readHistogram(dataFilter.getConfig().getEntlnFlashRateLayer());
 				entlnBuffer.put(dataFilter.getCurrentTimeMilli(), entlnDataset);
 			}
 			else {
 				entlnDataset = entlnBuffer.get(dataFilter.getCurrentTimeMilli());
 			}
 			if (nldnBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
-				nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
+				nldnDataset = readHistogram(dataFilter.getConfig().getNldnFlashRateLayer());
 				nldnBuffer.put(dataFilter.getCurrentTimeMilli(), nldnDataset);
 			}
 			else {
 				nldnDataset = nldnBuffer.get(dataFilter.getCurrentTimeMilli());
 			}
 			if (gld360Buffer.get(dataFilter.getCurrentTimeMilli())==null) {
-				gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
+				gld360Dataset = readHistogram(dataFilter.getConfig().getGld360FlashRateLayer());
 				gld360Buffer.put(dataFilter.getCurrentTimeMilli(), gld360Dataset);
 			}
 			else {
 				gld360Dataset = gld360Buffer.get(dataFilter.getCurrentTimeMilli());
 			}
 			if (glmBuffer.get(dataFilter.getCurrentTimeMilli())==null) {
-				glmDataset = readHistogram(conf.getGlmFlashRateLayer());
+				glmDataset = readHistogram(dataFilter.getConfig().getGlmFlashRateLayer());
 				glmBuffer.put(dataFilter.getCurrentTimeMilli(), glmDataset);
 			}
 			else {
@@ -575,9 +574,9 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 //				TimePeriodValuesCollection timeVal = (TimePeriodValuesCollection) glmDataset;
 //				timeVal.getItemCount(series)
 			}
-//			nldnDataset = readHistogram(conf.getNldnFlashRateLayer());
-//			gld360Dataset = readHistogram(conf.getGld360FlashRateLayer());
-//			glmDataset = readHistogram(conf.getGlmFlashRateLayer());
+//			nldnDataset = readHistogram(dataFilter.getConfig().getNldnFlashRateLayer());
+//			gld360Dataset = readHistogram(dataFilter.getConfig().getGld360FlashRateLayer());
+//			glmDataset = readHistogram(dataFilter.getConfig().getGlmFlashRateLayer());
 	        
 		}
 		
@@ -628,10 +627,10 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 
 	public void updateRange()
 	{
-		entlnMaxFrequency=readMaxFrequency(conf.getEntlnMaxFlashRateLayer());
-		nldnMaxFrequency=readMaxFrequency(conf.getNldnMaxFlashRateLayer());
-		gld360MaxFrequency=readMaxFrequency(conf.getGld360MaxFlashRateLayer());
-		glmMaxFrequency=readMaxFrequency(conf.getGlmMaxFlashRateLayer());
+		entlnMaxFrequency=readMaxFrequency(dataFilter.getConfig().getEntlnMaxFlashRateLayer());
+		nldnMaxFrequency=readMaxFrequency(dataFilter.getConfig().getNldnMaxFlashRateLayer());
+		gld360MaxFrequency=readMaxFrequency(dataFilter.getConfig().getGld360MaxFlashRateLayer());
+		glmMaxFrequency=readMaxFrequency(dataFilter.getConfig().getGlmMaxFlashRateLayer());
 	
 		updateRangeFlag=false;
 	}
@@ -657,7 +656,7 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 		// need new protocol string for start - end time intervals
 		
 		String encodedTimeFormat = URLEncoder.encode(";time_format:" + timeFormat);
-		String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + layer + "&" + dataFilter.getValidationParamString(dataFilter.getAnimationStartTimeMilli(), dataFilter.getAnimationEndTimeMilli()) + encodedTimeFormat; 
+		String httpString = dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceStringCsv() + layer + "&" + dataFilter.getFrequencyParamString(dataFilter.getAnimationStartTimeMilli(), dataFilter.getAnimationEndTimeMilli()) + encodedTimeFormat; 
         System.out.println(httpString);
         
         URL url=null;

@@ -1,6 +1,13 @@
 package edu.uah.itsc.glmvalidationtool.config;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -14,10 +21,25 @@ public class Config implements Getters,Setters{
 	{
 	}
 
+	public void write(String filename) throws IOException
+	{
+		OutputStream out = new FileOutputStream(filename);
+
+		keyValuePair.storeToXML(out, "GLM Validation Tool configuration file");
+		out.close();
+	}
+	public void read(String filename) throws IOException
+	{
+		InputStream in = new FileInputStream(filename);
+
+		keyValuePair.loadFromXML(in);
+		in.close();
+	}
+	
 	@Override
-	public void setInitialLongitude(double lon) {
+	public void setInitialLongitude(String lon) {
 		// TODO Auto-generated method stub
-		keyValuePair.setProperty("InitialLongitude", Double.toString(lon));
+		keyValuePair.setProperty("InitialLongitude", lon);
 	}
 
 	@Override
@@ -105,9 +127,9 @@ public class Config implements Getters,Setters{
 	}
 
 	@Override
-	public double getInitialLongitude() {
+	public String getInitialLongitude() {
 		// TODO Auto-generated method stub
-		return Double.parseDouble(keyValuePair.getProperty("InitialLongitude", Double.toString(defaults.getInitialLongitude())));
+		return keyValuePair.getProperty("InitialLongitude",defaults.getInitialLongitude());
 	}
 
 	@Override
@@ -556,5 +578,88 @@ public class Config implements Getters,Setters{
 		// TODO Auto-generated method stub
 		return keyValuePair.getProperty("GlmMaxFlashRateLayer", defaults.getGlmMaxFlashRateLayer());
 	}
+	
+	
+	@Override
+	public String getMilliTimeWindow() {
+		return keyValuePair.getProperty("MilliTimeWindow", defaults.getMilliTimeWindow());	
+	}
+
+	@Override
+	public void setMilliTimeWindow(String milliTimeWindow) {
+		keyValuePair.setProperty("MilliTimeWindow", milliTimeWindow);
+	}
+
+	@Override
+	public String getDegreeRadius() {
+		return keyValuePair.getProperty("DegreeRadius", defaults.getDegreeRadius());	
+	}
+
+	@Override
+	public void setDegreeRadius(String degreeRadius) {
+		keyValuePair.setProperty("DegreeRadius", degreeRadius);
+	}
+
+	@Override
+	public String getAnimationTimePeriod() {
+		return keyValuePair.getProperty("AnimationTimePeriod", defaults.getAnimationTimePeriod());	
+	}
+
+	@Override
+	public void setAnimationTimePeriod(String animationTimePeriod) {
+		keyValuePair.setProperty("AnimationTimePeriod", animationTimePeriod);
+	}
+
+	@Override
+	public String getAnimationDisplayInterval() {
+		return keyValuePair.getProperty("AnimationDisplayInterval", defaults.getAnimationDisplayInterval());	
+	}
+
+	@Override
+	public void setAnimationDisplayInterval(String animationDisplayInterval) {
+		keyValuePair.setProperty("AnimationDisplayInterval", animationDisplayInterval);
+	}
+
+	@Override
+	public String getMinLat() {
+		return keyValuePair.getProperty("MinLat", defaults.getMinLat());	
+	}
+
+	@Override
+	public void setMinLat(String minLat) {
+		keyValuePair.setProperty("MinLat", minLat);
+	}
+
+	@Override
+	public String getMinLon() {
+		return keyValuePair.getProperty("MinLon", defaults.getMinLon());	
+	}
+
+	@Override
+	public void setMinLon(String minLon) {
+		keyValuePair.setProperty("MinLon", minLon);
+	}
+
+	@Override
+	public String getMaxLat() {
+		return keyValuePair.getProperty("MaxLat", defaults.getMaxLat());	
+	}
+
+	@Override
+	public void setMaxLat(String maxLat) {
+		keyValuePair.setProperty("MaxLat", maxLat);
+	}
+
+	@Override
+	public String getMaxLon() {
+		return keyValuePair.getProperty("MaxLon", defaults.getMaxLon());	
+	}
+
+	@Override
+	public void setMaxLon(String maxLon) {
+		keyValuePair.setProperty("MaxLon", maxLon);
+	}
+
+	
 
 }

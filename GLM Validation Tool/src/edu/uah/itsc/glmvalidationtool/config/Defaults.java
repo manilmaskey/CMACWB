@@ -66,6 +66,21 @@ public class Defaults implements Getters{
 	private static String gld360ColorString = Color.PINK.getRed() + "," + Color.PINK.getGreen() + "," + Color.PINK.getBlue() + "," + Color.PINK.getAlpha();
 	private static String glmColorString = Color.MAGENTA.getRed() + "," + Color.MAGENTA.getGreen() + "," + Color.MAGENTA.getBlue() + "," + Color.MAGENTA.getAlpha();
 	
+	
+	// GLM coincidence parameters
+	private static String milliTimeWindow = "600";  // milliseconds
+	private static String degreeRadius = "0.25";  // degrees
+	
+	// user configurable runtime parameters
+	private static String animationTimePeriod = "300000"; // 5 minutes in miliseconds
+	private static String animationDisplayInterval = "60000" ; // 1 minute in milliseconds
+	private static String minLat = "32.0";
+	private static String minLon = "-92.0";
+	private static String maxLat = "38.5";
+	private static String maxLon = "-82.5";
+
+	
+	
 	public Defaults()
 	{
 		
@@ -110,9 +125,9 @@ public class Defaults implements Getters{
 	}
 
 	@Override
-	public double getInitialLongitude() {
+	public String getInitialLongitude() {
 		// TODO Auto-generated method stub
-		return Double.parseDouble(initialLongitude);
+		return initialLongitude;
 	}
 
 	@Override
@@ -331,6 +346,54 @@ public class Defaults implements Getters{
 	public String getGlmDateRangeLayer() {
 		// TODO Auto-generated method stub
 		return glmDateRangeLayer;
+	}
+
+	@Override
+	public String getMilliTimeWindow() {
+		// TODO Auto-generated method stub
+		return milliTimeWindow;
+	}
+
+	@Override
+	public String getDegreeRadius() {
+		// TODO Auto-generated method stub
+		return degreeRadius;
+	}
+
+	@Override
+	public String getAnimationTimePeriod() {
+		// TODO Auto-generated method stub
+		return animationTimePeriod;
+	}
+
+	@Override
+	public String getAnimationDisplayInterval() {
+		// TODO Auto-generated method stub
+		return animationDisplayInterval;
+	}
+
+	@Override
+	public String getMinLat() {
+		// TODO Auto-generated method stub
+		return minLat;
+	}
+
+	@Override
+	public String getMinLon() {
+		// TODO Auto-generated method stub
+		return minLon;
+	}
+
+	@Override
+	public String getMaxLat() {
+		// TODO Auto-generated method stub
+		return maxLat;
+	}
+
+	@Override
+	public String getMaxLon() {
+		// TODO Auto-generated method stub
+		return maxLon;
 	}
 
 }

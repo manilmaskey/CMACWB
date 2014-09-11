@@ -3,7 +3,8 @@ package edu.uah.itsc.glmvalidationtool.config;
 import java.awt.Color;
 
 public interface Setters {
-	public void setInitialLongitude(double lon);
+//	public void setInitialLongitude(double lon);
+	public void setInitialLongitude(String lon);
 	public void setServiceString(String serviceString);
 	public void setServiceStringCsv(String serviceString);
 	public void setDatabaseName(String databaseName);
@@ -57,4 +58,14 @@ public interface Setters {
 	public void setGlmColor(Color color);
 	public void setGlmColor(int R, int G, int B, int Alpha);
 
+	public void setMilliTimeWindow(String milliTimeWindow);
+	public void setDegreeRadius(String degreeRadius);
+	public void setAnimationTimePeriod(String animationTimePeriod);
+	public void setAnimationDisplayInterval(String animationDisplayInterval);
+	public void setMinLat(String minLat);
+	public void setMinLon(String minLon);
+	public void setMaxLat(String maxLat);
+	public void setMaxLon(String maxLon);
+
+	
 }

@@ -31,12 +31,14 @@ public class GlmValidationLayer extends RenderableLayer{
 	public static Color [] colors = {Color.RED, Color.YELLOW, new Color(0,180,0,255), new Color(130,255,130,255)};
 	public static String [] labels = {"GLM miss, Gnd hit", "GLM hit, Gnd miss", "GLM hit, Gnd hit 1", "GLM hit, Gnd hit 2+"};
 //	private String [] labels = {"No match", "1 match", "2+ matches"};
+	static final private int numCategories = 4;
+	private static int[] counts = new int[numCategories];
 	
 	Color color = Color.YELLOW;
 	// this allows us to set up a shared attribute between all points of layer
 	AnnotationAttributes pointAttrs = new AnnotationAttributes();
 	ArrayList <Renderable> points = new ArrayList<Renderable>();
-	Config conf = new Config();
+//	Config conf = new Config();
 	DataFilter dataFilter = new DataFilter();
 	String tableName;
 	String layerName=null;
@@ -54,6 +56,10 @@ public class GlmValidationLayer extends RenderableLayer{
 		addRenderable(tooltip);
 	}
 	
+	public static int getCount(int index)
+	{
+		return counts[index];
+	}
 //	public Color[] getColors() {
 //		return colors;
 //	}
@@ -88,6 +94,8 @@ public class GlmValidationLayer extends RenderableLayer{
      	p.setValue("glm_missing", "true"); 
      	p.setValue("Sensor", lightningNetwork); 
     	p.setValue("DisplayColor", colors[0]);
+    	
+    	counts[0]++;
     	return p;
 
     }
@@ -121,13 +129,16 @@ public class GlmValidationLayer extends RenderableLayer{
         if (instrumentCnt==0) {
         	p.setValue("DisplayColor", colors[1]);
 //          p.getAttributes().setTextColor(Color.RED);
+        	counts[1]++;
         }
         else if(instrumentCnt==1) {
         	p.setValue("DisplayColor", colors[2]);
+        	counts[2]++;
 //          p.getAttributes().setTextColor(Color.YELLOW);  	
         }
         else {
         	p.setValue("DisplayColor", colors[3]);
+        	counts[3]++;
 //          p.getAttributes().setTextColor(Color.GREEN);  	
         }
 
@@ -139,9 +150,9 @@ public class GlmValidationLayer extends RenderableLayer{
     	
        	clearPoints();
        	
-		String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getValidationParamString(); 
+		String httpString = dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceStringCsv() + tableName + "&" + dataFilter.getValidationParamString(); 
 
-//    	String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString();
+//    	String httpString = dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceStringCsv() + tableName + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString();
         System.out.println(httpString);
         
         URL url = new URL(httpString);
@@ -153,6 +164,9 @@ public class GlmValidationLayer extends RenderableLayer{
         boolean firstTime=true;
         double lat, lon;
         long entln, nldn, gld360;
+        for (int ind1=0;ind1<numCategories;ind1++) {
+        	counts[ind1] = 0;
+        }
         while ((inputLine = in.readLine()) != null) {
 //            System.out.println(inputLine);
             if (firstTime) { // skip header line then parse out the counts
@@ -196,8 +210,8 @@ public class GlmValidationLayer extends RenderableLayer{
     	
        	clearPoints();
        	
-		String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getValidationParamString(); 
- //   	String httpString = conf.getProtocolHttp() + conf.getServerIP() + ":" + conf.getServerPort() + conf.getServiceStringCsv() + tableName + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString();
+		String httpString = dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceStringCsv() + tableName + "&" + dataFilter.getValidationParamString(); 
+ //   	String httpString = dataFilter.getConfig().getProtocolHttp() + dataFilter.getConfig().getServerIP() + ":" + dataFilter.getConfig().getServerPort() + dataFilter.getConfig().getServiceStringCsv() + tableName + "&" + dataFilter.getBoundingBoxString() + "&" + dataFilter.getViewParamString();
         System.out.println(httpString);
         
         URL url = new URL(httpString);
