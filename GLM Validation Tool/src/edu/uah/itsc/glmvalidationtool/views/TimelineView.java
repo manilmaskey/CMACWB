@@ -487,7 +487,8 @@ import gov.nasa.worldwind.geom.Sector;
            
            refreshAction = new Action("Apply bounding box and refresh display using current time") {
                public void run() {
-                        DrawCurrent();
+            	   refreshTimeRange();
+                   DrawCurrent();
               }
            };
            refreshAction.setImageDescriptor(ImageDescriptor.createFromFile(this.getClass(), "/icons/nav_refresh.gif"));

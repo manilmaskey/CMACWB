@@ -39,25 +39,25 @@ public class DataFilter {
 	}
 	public void refreshObjects()
 	{
-		System.out.println("RefreshObjects");
+//		System.out.println("RefreshObjects");
 		for (Object obj:updateObjects) {
-			System.out.println("object " + obj.toString());
+//			System.out.println("object " + obj.toString());
 			((DataFilterUpdate) obj).refresh();
 		}
 	}
 	public void clearCache()
 	{
-		System.out.println("clearCache");
+//		System.out.println("clearCache");
 		for (Object obj:updateObjects) {
-			System.out.println("object " + obj.toString());
+//			System.out.println("object " + obj.toString());
 			((DataFilterUpdate) obj).clearCache();
 		}
 	}
 	public void reset()
 	{
-		System.out.println("reset");
+//		System.out.println("reset");
 		for (Object obj:updateObjects) {
-			System.out.println("object " + obj.toString());
+//			System.out.println("object " + obj.toString());
 			((DataFilterUpdate) obj).reset();
 		}
 	}
@@ -315,8 +315,4 @@ public class DataFilter {
 		return queryString;
 	}
 	
-	// BBOX(the_geom, -90, 40, -60, 45)
-//	SELECT *
-//	FROM mytable
-//	WHERE mytable.geom && ST_MakeEnvelope(minLon, minLat, maxLon, maxLat, 4326);
 }
