@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: GLM_Validation_Tool
-Bundle-SymbolicName: GLM_Validation_Tool;singleton:=true
+Bundle-Name: glm
+Bundle-SymbolicName: edu.uah.itsc.cmac.glm;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: edu.uah.itsc.glmvalidationtool.Activator
+Bundle-Activator: edu.uah.itsc.cmac.glm.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui;bundle-version="3.105.0",
  org.eclipse.ui.ide;bundle-version="3.9.2",

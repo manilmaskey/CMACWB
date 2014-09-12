@@ -8,7 +8,7 @@
       <application
             visible="true">
          <run
-               class="edu.uah.itsc.glmvalidationtool.Application">
+               class="edu.uah.itsc.cmac.glm.Application">
          </run>
       </application>
    </extension>
@@ -16,81 +16,61 @@
          point="org.eclipse.ui.views">
       <category
             name="GLM Validation Category"
-            id="GLM_Validation_Tool">
+            id="glm">
       </category>
       <view
-            category="GLM_Validation_Tool"
-            class="edu.uah.itsc.glmvalidationtool.views.NavigationView"
+            category="glm"
+            class="edu.uah.itsc.cmac.glm.views.NavigationView"
             icon="icons/sample.gif"
             id="NavigationView"
             name="Project">
       </view>
       <view
-            category="GLM_Validation_Tool"
-            class="edu.uah.itsc.glmvalidationtool.views.DataView"
+            category="glm"
+            class="edu.uah.itsc.cmac.glm.views.DataView"
             icon="icons/sample.gif"
             id="DataView"
             name="Lightning Data View">
       </view>
       <view
-            category="GLM_Validation_Tool"
-            class="edu.uah.itsc.glmvalidationtool.views.MetricsView"
+            category="glm"
+            class="edu.uah.itsc.cmac.glm.views.MetricsView"
             icon="icons/sample.gif"
             id="MetricsView"
             name="Flash Rate View">
       </view>
       <view
-            category="GLM_Validation_Tool"
-            class="edu.uah.itsc.glmvalidationtool.views.TimelineView"
+            category="glm"
+            class="edu.uah.itsc.cmac.glm.views.TimelineView"
             icon="icons/sample.gif"
             id="TimelineView"
             name="Animation Controls">
       </view>
       <view
-            category="GLM_Validation_Tool"
-            class="edu.uah.itsc.glmvalidationtool.views.ValidationView"
+            category="glm"
+            class="edu.uah.itsc.cmac.glm.views.ValidationView"
             icon="icons/sample.gif"
             id="ValidationView"
             name="GLM Coincidence View">
       </view>
    </extension>
-   <!--
-   <extension
-         point="org.eclipse.ui.perspectiveExtensions">
-      <perspectiveExtension
-            targetID="org.eclipse.jdt.ui.JavaPerspective">
-         <view
-               id="glm_validation_tool.views.SampleView"
-               ratio="0.5"
-               relationship="right"
-               relative="org.eclipse.ui.views.ProblemView">
-         </view>
-      </perspectiveExtension>
-   </extension>
-   <extension
-         point="org.eclipse.help.contexts">
-      <contexts
-            file="contexts.xml">
-      </contexts>
-   </extension>
-   -->
-   <extension
+    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            class="edu.uah.itsc.glmvalidationtool.views.Perspective"
-            id="Perspective"
-            name="GLM Validation Tool">
+            class="edu.uah.itsc.cmac.glm.views.Perspective"
+            id="edu.uah.itsc.cmac.glm.Perspective"
+            name="GLM Validation">
       </perspective>
    </extension>
    <extension
          id="product"
          point="org.eclipse.core.runtime.products">
       <product
-            application="GLM_Validation_Tool.application"
-            name="GLM Validation Tool Product">
+            application="edu.uah.itsc.cmac.glm.application"
+            name="glm">
          <property
                name="appName"
-               value="GLM Validation Tool Product">
+               value="glm">
          </property>
       </product>
    </extension>

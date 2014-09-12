@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="GLM Validation Tool Product" id="GLM_Validation_Tool.product" application="GLM_Validation_Tool.application" useFeatures="false" includeLaunchers="true">
+<product name="glm" id="edu.uah.itsc.cmac.glm.product" application="edu.uah.itsc.cmac.glm.application" useFeatures="false" includeLaunchers="true">
+
 
    <configIni use="default">
    </configIni>
@@ -14,19 +15,21 @@
    <windowImages/>
 
 
-   <launcher name="GLM_Validation_Tool">
+   <launcher name="glm">
       <solaris/>
       <win useIco="false">
          <bmp/>
       </win>
    </launcher>
 
+
    <vm>
    </vm>
 
+
    <plugins>
-      <plugin id="GLM_Validation_Tool"/>
       <plugin id="com.ibm.icu"/>
+      <plugin id="edu.uah.itsc.cmac.glm"/>
       <plugin id="edu.uah.itsc.glider.jogl2"/>
       <plugin id="edu.uah.itsc.glider.jogl2.amd64" fragment="true"/>
       <plugin id="edu.uah.itsc.glider.jogl2.linux32" fragment="true"/>
