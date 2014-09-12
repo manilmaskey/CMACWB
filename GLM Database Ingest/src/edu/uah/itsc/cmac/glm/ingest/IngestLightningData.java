@@ -1,13 +1,13 @@
-package edu.uah.itsc.glmvalidationtool.ingest;
+package edu.uah.itsc.cmac.glm.ingest;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
-import edu.uah.itsc.glmvalidationtool.config.Config;
-import edu.uah.itsc.glmvalidationtool.config.Config.DataType;
-import edu.uah.itsc.glmvalidationtool.data.GlmEventData;
-import edu.uah.itsc.glmvalidationtool.data.GlmFlashData;
-import edu.uah.itsc.glmvalidationtool.data.LightningData;
+import edu.uah.itsc.cmac.glm.config.Config;
+import edu.uah.itsc.cmac.glm.config.Config.DataType;
+import edu.uah.itsc.cmac.glm.data.GlmEventData;
+import edu.uah.itsc.cmac.glm.data.GlmFlashData;
+import edu.uah.itsc.cmac.glm.data.LightningData;
 
 public class IngestLightningData {
 
