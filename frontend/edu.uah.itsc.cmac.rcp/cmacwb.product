@@ -4,6 +4,7 @@
 <product name="Collaborative Workbench" uid="cwb" id="edu.uah.itsc.cmac.rcp.cwb" application="edu.uah.itsc.cmac.rcp.application" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
+      <image path="/edu.uah.itsc.cmac3/icons/branding_files/icon-128.png"/>
       <text>
          Collaborative Workbench (CWB) is funded by NASA Computational Modeling Algorithms and Cyberinfrastructure (CMAC) Grant. 
 
@@ -38,6 +39,7 @@ http://www.itsc.uah.edu
             winExtraLargeHigh="/edu.uah.itsc.cmac3/icons/launcher_files/icon-256.bmp"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>
