@@ -90,6 +90,13 @@
                   style="push">
             </command>
          </menu>
+         <menu
+               label="Help">
+            <command
+                  commandId="org.eclipse.ui.help.aboutAction"
+                  style="push">
+            </command>
+         </menu>
       </menuContribution>
       <menuContribution
             allPopups="false"
@@ -158,6 +165,10 @@
          <property
                name="appName"
                value="Collaborative Workbench">
+         </property>
+         <property
+               name="aboutImage"
+               value="platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/icon-128.png">
          </property>
       </product>
    </extension>
