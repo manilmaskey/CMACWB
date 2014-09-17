@@ -25,6 +25,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -99,17 +100,20 @@ public class AllowCloneCommandHandler extends AbstractHandler implements IHandle
 
 		Label emptyLabel1 = new Label(shell, SWT.NONE);
 
-		Composite userComposite = new Composite(shell, SWT.BORDER);
-		GridLayout layout = new GridLayout(8, false);
+		Composite userComposite = new Composite(shell, SWT.BORDER | SWT.V_SCROLL);
+		GridData gData = new GridData();
+		gData.heightHint = 100;
+		userComposite.setLayoutData(gData);
+
+		GridLayout layout = new GridLayout(2, false);
 		userComposite.setLayout(layout);
 
 		if (portalUserList == null) {
 			portalUserList = PortalUtilities.getUserList();
 			portalUserList.sort(new Comparator<PortalUser>() {
-
 				@Override
 				public int compare(PortalUser user1, PortalUser user2) {
-					return user1.getUsername().toLowerCase().compareTo(user2.getUsername().toLowerCase());
+					return user1.getFullName().toLowerCase().compareTo(user2.getFullName().toLowerCase());
 				}
 			});
 		}
@@ -124,9 +128,9 @@ public class AllowCloneCommandHandler extends AbstractHandler implements IHandle
 
 		buttons = new HashMap<Button, PortalUser>();
 		for (final PortalUser user : portalUserList) {
-			Label nameLabel = new Label(userComposite, SWT.NONE);
-			nameLabel.setText(user.getUsername());
 			Button checkButton = new Button(userComposite, SWT.CHECK);
+			Label nameLabel = new Label(userComposite, SWT.NONE);
+			nameLabel.setText(user.getFullName() + " (" + user.getUsername() + ")");
 			if (prevGranteesName.contains(user.getUsername())) {
 				checkButton.setSelection(true);
 				grantees.add(user);
