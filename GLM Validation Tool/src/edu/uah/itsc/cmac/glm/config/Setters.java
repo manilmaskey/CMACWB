@@ -57,6 +57,11 @@ public interface Setters {
 	public void setGld360Color(int R, int G, int B, int Alpha);
 	public void setGlmColor(Color color);
 	public void setGlmColor(int R, int G, int B, int Alpha);
+	public void setEntlnColorString(String colorString);
+	public void setNldnColorString(String colorString);
+	public void setGld360ColorString(String colorString);
+	public void setGlmColorString(String colorString);
+
 
 	public void setMilliTimeWindow(String milliTimeWindow);
 	public void setDegreeRadius(String degreeRadius);

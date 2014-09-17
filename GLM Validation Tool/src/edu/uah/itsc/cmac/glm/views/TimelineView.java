@@ -59,9 +59,17 @@ import javax.imageio.ImageIO;
 import javax.media.Format;
 import javax.media.MediaLocator;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.window.Window;
 import org.eclipse.nebula.widgets.cdatetime.CDT;
 import org.eclipse.nebula.widgets.cdatetime.CDateTime;
 import org.eclipse.swt.SWT;
@@ -85,9 +93,15 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.ElementTreeSelectionDialog;
+import org.eclipse.ui.dialogs.ISelectionStatusValidator;
 import org.eclipse.ui.internal.views.ViewsPlugin;
+import org.eclipse.ui.model.WorkbenchContentProvider;
+import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.data.time.SimpleTimePeriod;
+
+import com.sun.media.util.Resource;
 
 import edu.uah.itsc.cmac.glm.config.Config;
 import edu.uah.itsc.cmac.glm.data.DataFilter;
@@ -352,6 +366,14 @@ import gov.nasa.worldwind.geom.Sector;
 
 	    dataFilter.refreshObjects();
 	    
+	    // this was used to create initial glm.properties file
+//	    try {
+//			dataFilter.getConfig().write("glm.properties");
+//		} catch (IOException e2) {
+//			// TODO Auto-generated catch block
+//			e2.printStackTrace();
+//		}
+	    
 	    try {
 			robot = new Robot();
 		} catch (AWTException e1) {
@@ -537,10 +559,45 @@ import gov.nasa.worldwind.geom.Sector;
     	
 		IWorkbench wb = PlatformUI.getWorkbench();
 		IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
+		
+//		ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog
+//		(
+//			Display.getCurrent().getActiveShell(),
+//		    new WorkbenchLabelProvider(),
+//		    new WorkbenchContentProvider()
+//		);
+//
+//		dialog.setInput( ResourcesPlugin.getWorkspace().getRoot() );
+//		dialog.setAllowMultiple( false );
+//		dialog.setTitle("Save Quicktime Movie");
+//		dialog.setMessage("Select movie");
+////		dialog.setValidator(new ISelectionStatusValidator() {
+////			public IStatus validate(Object[] selection) {
+////				StatusInfo res= new StatusInfo();
+////				// only single selection
+////				if (selection.length == 1 && (selection[0] instanceof IFile))
+////					res.setOK();
+////				else
+////					res.setError(""); //$NON-NLS-1$
+////				return res;
+////			}
+////		});
+//
+//		IResource resource=null;
+//		if( dialog.open() == Window.OK )
+//		{
+//		    resource = (IResource) dialog.getFirstResult();
+//
+//		}
+//		String movieFilename = resource.getFullPath().toOSString();
+		
 		FileDialog fd = new  FileDialog(win.getShell(), SWT.SAVE);
+		fd.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
 		fd.setFilterExtensions(new String[]{"*.mov"});
 		fd.setFilterNames(new String[]{"Quicktime movie files"});
 		String movieFilename = fd.open();
+		
+		
 		if (movieFilename == null) {
 			recordFlag=!recordFlag;
    			recordAction.setToolTipText("Record Animation");
@@ -571,11 +628,20 @@ import gov.nasa.worldwind.geom.Sector;
 		animator.start();
     	
     }
+    
     private void StopRecordAnimation()
     {
     	animator.stop();
     	// write out buffered movie
-    	
+    	IProject [] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+    	for (int ind1=0;ind1<projects.length;ind1++) {
+    		try {
+				projects[ind1].refreshLocal(IResource.DEPTH_INFINITE,null);
+			} catch (CoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
     }
     
     private void DrawBox()

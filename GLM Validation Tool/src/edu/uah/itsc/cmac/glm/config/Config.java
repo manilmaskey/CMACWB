@@ -16,23 +16,101 @@ public class Config implements Getters,Setters{
 	private static Properties keyValuePair = new Properties();
 	private static Defaults defaults = new Defaults();
     public static enum DataType {ENTLN_FLASH, ENTLN_STROKE, NLDN_FLASH, NLDN_STROKE, GLD360, GLM_EVENT, GLM_FLASH, OTHER};
-
+    private boolean initFlag=false;
+    
 	public Config()
 	{
+		if (!initFlag) {
+			String fn = getClass().getClassLoader().getResource("glm.properties").toString();
+			InputStream file = getClass().getClassLoader().getResourceAsStream("glm.properties");
+			try {
+				keyValuePair.load(file);
+				System.out.println("read " +keyValuePair.size() + " properties from file " + fn);
+				file.close();
+			} catch (IOException e) {
+				System.out.println("Config error: could not open glm.properties file");
+				// TODO Auto-generated catch block
+//				e.printStackTrace();
+			}
+			initFlag=true;
+		}
+		
+
+	}
+	private void initDefaults()
+	{
+		// explicitly load keyValuePair with all defaults or changed values in preparation to write defaults file
+		setInitialLongitude(getInitialLongitude());
+		setServiceString(getServiceString());
+		setServiceStringCsv(getServiceStringCsv());
+		setDatabaseName(getDatabaseName());
+		setServerIP(getServerIP());
+		setProtocolHttp(getProtocolHttp());
+		setProtocolJdbcPostgresql(getProtocolJdbcPostgresql());
+		setServerPort(getServerPort());
+		setServerUname(getServerUname());
+		setServerPw(getServerPw());
+		
+		setEntlnFlashTable(getEntlnFlashTable());
+		setNldnFlashTable(getNldnFlashTable());
+		setGld360Table(getGld360Table());
+		setGlmFlashTable(getGlmFlashTable());
+//		setEntlnStrokeTable(getEntlnStrokeTable());
+//		setNldnStrokeTable(getNldnStrokeTable());
+//		setGlmEventTable(getGlmEventTable());
+		
+		setEntlnFlashLayer(getEntlnFlashLayer());
+		setNldnFlashLayer(getNldnFlashLayer());
+		setGld360Layer(getGld360Layer());
+		setGlmFlashLayer(getGlmFlashLayer());
+		
+		setGlmIntersectionLayer(getGlmIntersectionLayer());
+		setGroundIntersectionLayer(getGroundIntersectionLayer());
+		
+		setEntlnFlashRateLayer(getEntlnFlashRateLayer());
+		setNldnFlashRateLayer(getNldnFlashRateLayer());
+		setGld360FlashRateLayer(getGld360FlashRateLayer());
+		setGlmFlashRateLayer(getGlmFlashRateLayer());
+
+		setEntlnMaxFlashRateLayer(getEntlnMaxFlashRateLayer());
+		setNldnMaxFlashRateLayer(getNldnMaxFlashRateLayer());
+		setGld360MaxFlashRateLayer(getGld360MaxFlashRateLayer());
+		setGlmMaxFlashRateLayer(getGlmMaxFlashRateLayer());
+
+		setEntlnDateRangeLayer(getEntlnDateRangeLayer());
+		setNldnDateRangeLayer(getNldnDateRangeLayer());
+		setGld360DateRangeLayer(getGld360DateRangeLayer());
+		setGlmDateRangeLayer(getGlmDateRangeLayer());
+
+		setEntlnColorString(getEntlnColorString());
+		setNldnColorString(getNldnColorString());
+		setGld360ColorString(getGld360ColorString());
+		setGlmColorString(getGlmColorString());
+		
+		setMilliTimeWindow(getMilliTimeWindow());
+		setDegreeRadius(getDegreeRadius());
+		setAnimationTimePeriod(getAnimationTimePeriod());
+		setAnimationDisplayInterval(getAnimationDisplayInterval());
+		setMinLat(getMinLat());
+		setMinLon(getMinLon());
+		setMaxLat(getMaxLat());
+		setMaxLon(getMaxLon());
+
 	}
 
 	public void write(String filename) throws IOException
 	{
 		OutputStream out = new FileOutputStream(filename);
-
-		keyValuePair.storeToXML(out, "GLM Validation Tool configuration file");
+		
+		initDefaults();
+		keyValuePair.store(out, "GLM Validation Tool configuration file");
 		out.close();
 	}
 	public void read(String filename) throws IOException
 	{
 		InputStream in = new FileInputStream(filename);
 
-		keyValuePair.loadFromXML(in);
+		keyValuePair.load(in);
 		in.close();
 	}
 	
@@ -658,6 +736,29 @@ public class Config implements Getters,Setters{
 	@Override
 	public void setMaxLon(String maxLon) {
 		keyValuePair.setProperty("MaxLon", maxLon);
+	}
+	@Override
+	public void setEntlnColorString(String colorString) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("EntlnColorIntRGBA", colorString);
+	}
+	@Override
+	public void setNldnColorString(String colorString) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("NldnColorIntRGBA", colorString);
+		
+	}
+	@Override
+	public void setGld360ColorString(String colorString) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("Gld360ColorIntRGBA", colorString);
+		
+	}
+	@Override
+	public void setGlmColorString(String colorString) {
+		// TODO Auto-generated method stub
+		keyValuePair.setProperty("GlmColorIntRGBA", colorString);
+		
 	}
 
 	
