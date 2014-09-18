@@ -681,6 +681,9 @@ public class MetricsView extends ViewPart implements DataFilterUpdate {
 				inputLine = in.readLine();
 				String [] strBuf = inputLine.split(",");
 				System.out.println("layer " + layer + " max freq line:  " + inputLine);
+				if (strBuf.length<2) {
+					return 0;
+				}
 				maxFreq = Integer.parseInt(strBuf[1]);               
 			}
 		    in.close();			 

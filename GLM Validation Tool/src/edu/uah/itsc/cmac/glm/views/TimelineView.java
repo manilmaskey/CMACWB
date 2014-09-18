@@ -532,64 +532,10 @@ import gov.nasa.worldwind.geom.Sector;
     
     private void RecordAnimation()
     {
-    	// check current time, if between start and end, start animation
-    	
-    	
-    	// create new MovieEncoder
-//		BufferedImage img = robot.createScreenCapture(new java.awt.Rectangle(screenSize));
-//		BufferedImage img = robot.createScreenCapture(new java.awt.Rectangle(new Dimension(640,480)));
 		
-//		try {
-//			ImageIO.write(img, "JPG", new File("screen.jpg"));
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
-//		try {
-////			saveFile=new URL("movie.mov");
-//			saveFile=new URL("file://Users/Todd/movie.mov");
-//		} catch (MalformedURLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
-    	// look for navigator window
-    	
-    	
+    		
 		IWorkbench wb = PlatformUI.getWorkbench();
 		IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
-		
-//		ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog
-//		(
-//			Display.getCurrent().getActiveShell(),
-//		    new WorkbenchLabelProvider(),
-//		    new WorkbenchContentProvider()
-//		);
-//
-//		dialog.setInput( ResourcesPlugin.getWorkspace().getRoot() );
-//		dialog.setAllowMultiple( false );
-//		dialog.setTitle("Save Quicktime Movie");
-//		dialog.setMessage("Select movie");
-////		dialog.setValidator(new ISelectionStatusValidator() {
-////			public IStatus validate(Object[] selection) {
-////				StatusInfo res= new StatusInfo();
-////				// only single selection
-////				if (selection.length == 1 && (selection[0] instanceof IFile))
-////					res.setOK();
-////				else
-////					res.setError(""); //$NON-NLS-1$
-////				return res;
-////			}
-////		});
-//
-//		IResource resource=null;
-//		if( dialog.open() == Window.OK )
-//		{
-//		    resource = (IResource) dialog.getFirstResult();
-//
-//		}
-//		String movieFilename = resource.getFullPath().toOSString();
 		
 		FileDialog fd = new  FileDialog(win.getShell(), SWT.SAVE);
 		fd.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
@@ -884,6 +830,12 @@ import gov.nasa.worldwind.geom.Sector;
 		        // wrap around to start and loop if greater than animation end time
 		        if (dataFilter.getCurrentTimeMilli()>cdtAnimationEnd.getSelection().getTime()) {
 		        	dataFilter.setCurrentTime(cdtAnimationStart.getSelection().getTime());
+			    	if (recordFlag) {
+			    		StopRecordAnimation();
+				        refreshWidgets();
+				    	dataFilter.refreshObjects();
+			    		return;
+			    	}
 		        }
 		        // set scale and current cdt 
 //				scale.setSelection((int)(dataFilter.getCurrentTimeMilli()-cdtAnimationStart.getSelection().getTime()));
