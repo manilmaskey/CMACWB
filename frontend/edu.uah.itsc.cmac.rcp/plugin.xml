@@ -85,6 +85,14 @@
          <menu
                label="Window">
             <command
+                  commandId="org.eclipse.ui.views.showView"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.perspectives.showPerspective"
+                  style="push">
+            </command>
+            <command
                   commandId="org.eclipse.ui.window.preferences"
                   label="Preferences"
                   style="push">
@@ -145,6 +153,10 @@
             <separator
                   name="edu.uah.itsc.cmac.rcp.cmacSeparator">
             </separator>
+            <command
+                  commandId="org.eclipse.ui.perspectives.showPerspective"
+                  style="push">
+            </command>
          </toolbar>
       </menuContribution>
    </extension>
