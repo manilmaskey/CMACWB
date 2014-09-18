@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -127,6 +128,9 @@ public class AllowCloneCommandHandler extends AbstractHandler implements IHandle
 
 		Label emptyLabel2 = new Label(shell, SWT.NONE);
 
+		if (!prevGranteesName.isEmpty())
+			selectPrevious(prevGranteesName);
+
 		Composite buttonComposite = new Composite(shell, SWT.NONE);
 		buttonComposite.setLayout(new GridLayout(2, true));
 
@@ -183,6 +187,24 @@ public class AllowCloneCommandHandler extends AbstractHandler implements IHandle
 		shell.pack();
 		shell.open();
 
+	}
+
+	private void selectPrevious(ArrayList<String> prevGranteesName) {
+		Table table = viewer.getTable();
+
+		TableItem[] items = table.getItems();
+		ArrayList<TableItem> selectedItems = new ArrayList<TableItem>();
+		for (TableItem tableItem : items) {
+			PortalUser user = (PortalUser) tableItem.getData();
+			if (prevGranteesName.contains(user.getUsername()))
+				selectedItems.add(tableItem);
+		}
+
+		TableItem[] selectedArray = new TableItem[1];
+		if (!selectedItems.isEmpty()) {
+			table.setSelection(selectedItems.toArray(selectedArray));
+			table.showSelection();
+		}
 	}
 
 	private void createTable(Composite parent) {
