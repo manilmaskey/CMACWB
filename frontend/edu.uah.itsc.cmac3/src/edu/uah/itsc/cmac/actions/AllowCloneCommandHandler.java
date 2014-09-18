@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.http.HttpResponse;
@@ -20,8 +19,12 @@ import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -32,6 +35,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,11 +56,11 @@ public class AllowCloneCommandHandler extends AbstractHandler implements IHandle
 	private IStructuredSelection			selection		= StructuredSelection.EMPTY;
 	private IFolder							selectedFolder;
 	private static ArrayList<PortalUser>	portalUserList;
-	private HashMap<Button, PortalUser>		buttons;
 	private HashSet<PortalUser>				grantees;
 	private HashMap<String, String>			workflowMap;
 	private String							workflowOwner	= null;
 	private String							workflowPath;
+	private TableViewer						viewer;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -96,17 +101,9 @@ public class AllowCloneCommandHandler extends AbstractHandler implements IHandle
 		grantees = new HashSet<PortalUser>();
 
 		Label userLabel = new Label(shell, SWT.NONE);
-		userLabel.setText("Check users to send");
+		userLabel.setText("Select (Ctrl/Command + Click) users to send");
 
 		Label emptyLabel1 = new Label(shell, SWT.NONE);
-
-		Composite userComposite = new Composite(shell, SWT.BORDER | SWT.V_SCROLL);
-		GridData gData = new GridData();
-		gData.heightHint = 100;
-		userComposite.setLayoutData(gData);
-
-		GridLayout layout = new GridLayout(2, false);
-		userComposite.setLayout(layout);
 
 		if (portalUserList == null) {
 			portalUserList = PortalUtilities.getUserList();
@@ -126,87 +123,119 @@ public class AllowCloneCommandHandler extends AbstractHandler implements IHandle
 			prevGranteesName.addAll(Arrays.asList(workflowMap.get("allow_clone_to").split(",\\s*")));
 		}
 
-		buttons = new HashMap<Button, PortalUser>();
-		for (final PortalUser user : portalUserList) {
-			Button checkButton = new Button(userComposite, SWT.CHECK);
-			Label nameLabel = new Label(userComposite, SWT.NONE);
-			nameLabel.setText(user.getFullName() + " (" + user.getUsername() + ")");
-			if (prevGranteesName.contains(user.getUsername())) {
-				checkButton.setSelection(true);
-				grantees.add(user);
-			}
-			checkButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					Button button = (Button) e.widget;
-					if (button.getSelection())
-						grantees.add(user);
-					else
-						grantees.remove(user);
-				}
-			});
-			buttons.put(checkButton, user);
-		}
+		createTable(shell);
 
 		Label emptyLabel2 = new Label(shell, SWT.NONE);
 
-		if (!portalUserList.isEmpty()) {
-			Composite buttonComposite = new Composite(shell, SWT.NONE);
-			buttonComposite.setLayout(new GridLayout(2, true));
+		Composite buttonComposite = new Composite(shell, SWT.NONE);
+		buttonComposite.setLayout(new GridLayout(2, true));
 
-			Button selectAllButton = new Button(buttonComposite, SWT.PUSH);
-			selectAllButton.setText("Select All");
-			selectAllButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					for (Map.Entry<Button, PortalUser> entry : buttons.entrySet()) {
-						Button button = entry.getKey();
-						PortalUser user = entry.getValue();
-						grantees.add(user);
-						button.setSelection(true);
-					}
-				}
-			});
+		Button selectAllButton = new Button(buttonComposite, SWT.PUSH);
+		selectAllButton.setText("Select All");
+		selectAllButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Table table = viewer.getTable();
+				table.selectAll();
+				table.showSelection();
+			}
+		});
 
-			Button selectNoneButton = new Button(buttonComposite, SWT.PUSH);
-			selectNoneButton.setText("Select None");
-			selectNoneButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					for (Map.Entry<Button, PortalUser> entry : buttons.entrySet()) {
-						Button button = entry.getKey();
-						PortalUser user = entry.getValue();
-						grantees.remove(user);
-						button.setSelection(false);
-					}
-				}
-			});
+		Button selectNoneButton = new Button(buttonComposite, SWT.PUSH);
+		selectNoneButton.setText("Select None");
+		selectNoneButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				viewer.setSelection(StructuredSelection.EMPTY);
+			}
+		});
 
-			Button okButton = new Button(buttonComposite, SWT.PUSH);
-			okButton.setText("OK");
-			okButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					Utilities.setCursorBusy(true);
-					addClonePermission();
-					createNotifications();
-					Utilities.setCursorBusy(false);
-					shell.close();
+		Button okButton = new Button(buttonComposite, SWT.PUSH);
+		okButton.setText("OK");
+		okButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				IStructuredSelection selectedItems = (IStructuredSelection) viewer.getSelection();
+				Iterator iter = selectedItems.iterator();
+				while (iter.hasNext()) {
+					PortalUser user = (PortalUser) iter.next();
+					grantees.add(user);
+					System.out.println(user.getFullName());
 				}
-			});
 
-			Button cancelButton = new Button(buttonComposite, SWT.PUSH);
-			cancelButton.setText("Cancel");
-			cancelButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					shell.close();
-				}
-			});
-		}
+				Utilities.setCursorBusy(true);
+				addClonePermission();
+				createNotifications();
+				Utilities.setCursorBusy(false);
+				shell.close();
+			}
+		});
+
+		Button cancelButton = new Button(buttonComposite, SWT.PUSH);
+		cancelButton.setText("Cancel");
+		cancelButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				shell.close();
+			}
+		});
+
 		shell.pack();
 		shell.open();
 
+	}
+
+	private void createTable(Composite parent) {
+		viewer = new TableViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER);
+
+		createColumns();
+		Table table = viewer.getTable();
+		table.setHeaderVisible(true);
+		table.setLinesVisible(true);
+		GridData layoutData = new GridData();
+		layoutData.grabExcessVerticalSpace = true;
+		layoutData.verticalAlignment = SWT.TOP;
+		layoutData.heightHint = 200;
+		table.setLayoutData(layoutData);
+
+		viewer.setContentProvider(new ArrayContentProvider());
+		viewer.setInput(portalUserList);
+	}
+
+	public void createColumns() {
+		String[] titles = { "Username", "Name" };
+		int[] bounds = { 100, 200 };
+
+		// Username
+		TableViewerColumn column = createTableViewerColumn(titles[0], bounds[0], 0);
+		column.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				PortalUser user = (PortalUser) element;
+				return user.getUsername();
+			}
+		});
+
+		// Name
+		column = createTableViewerColumn(titles[1], bounds[1], 1);
+		column.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				PortalUser user = (PortalUser) element;
+				return user.getFullName();
+			}
+		});
+	}
+
+	private TableViewerColumn createTableViewerColumn(final String title, int bound, final int colNumber) {
+
+		final TableViewerColumn viewerColumn = new TableViewerColumn(viewer, SWT.NONE);
+		final TableColumn column = viewerColumn.getColumn();
+		column.setText(title);
+		column.setWidth(bound);
+		column.setResizable(true);
+		column.setMoveable(true);
+		return viewerColumn;
 	}
 
 	private void addClonePermission() {
