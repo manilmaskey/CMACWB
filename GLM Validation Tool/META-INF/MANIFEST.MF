@@ -5,18 +5,18 @@ Bundle-SymbolicName: edu.uah.itsc.cmac.glm;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: edu.uah.itsc.cmac.glm.Activator
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.ui;bundle-version="3.105.0",
- org.eclipse.ui.ide;bundle-version="3.9.2",
- org.eclipse.ui.workbench;bundle-version="3.105.2",
- org.eclipse.jface;bundle-version="3.9.1",
+ org.eclipse.ui,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.workbench,
+ org.eclipse.jface,
  org.eclipse.draw2d;bundle-version="3.9.0",
  edu.uah.itsc.glider.jogl2;bundle-version="1.1.1",
- org.eclipse.ui.views;bundle-version="3.6.100",
- org.eclipse.core.resources;bundle-version="3.8.101",
- org.eclipse.platform;bundle-version="4.3.2",
- org.eclipse.nebula.cwt;bundle-version="0.9.0",
- org.eclipse.nebula.widgets.cdatetime;bundle-version="0.14.0",
- org.eclipse.ui.navigator;bundle-version="3.5.300"
+ org.eclipse.ui.views,
+ org.eclipse.core.resources,
+ org.eclipse.platform,
+ org.eclipse.nebula.cwt,
+ org.eclipse.nebula.widgets.cdatetime,
+ org.eclipse.ui.navigator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/gdal.jar,
