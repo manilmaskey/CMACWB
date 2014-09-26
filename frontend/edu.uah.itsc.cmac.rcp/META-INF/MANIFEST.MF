@@ -66,5 +66,6 @@ Require-Bundle: org.eclipse.core.resources,
  org.python.pydev.shared_core;bundle-version="3.6.0",
  org.python.pydev.shared_interactive_console;bundle-version="3.6.0",
  org.python.pydev.shared_ui;bundle-version="3.6.0",
- org.eclipse.ecf.provider.xmpp.ui;bundle-version="1.0.0"
+ org.eclipse.ecf.provider.xmpp.ui;bundle-version="1.0.0",
+ org.eclipse.core.runtime;bundle-version="3.9.100"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

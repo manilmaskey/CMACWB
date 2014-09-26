@@ -17,6 +17,7 @@ http://www.itsc.uah.edu
    </configIni>
 
    <launcherArgs>
+      <programArgs>-data @noDefault</programArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
@@ -39,7 +40,6 @@ http://www.itsc.uah.edu
             winExtraLargeHigh="/edu.uah.itsc.cmac3/icons/launcher_files/icon-256.bmp"/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>
