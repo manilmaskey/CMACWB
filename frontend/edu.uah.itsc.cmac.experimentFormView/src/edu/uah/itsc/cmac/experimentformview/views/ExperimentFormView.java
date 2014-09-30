@@ -79,7 +79,7 @@ public class ExperimentFormView extends ViewPart {
 		titleText.setLayoutData(new GridData(200, 15));
 
 		Label descriptionLabel = toolkit.createLabel(client, "Description");
-		final Text descriptionText = toolkit.createText(client, "", SWT.MULTI);
+		final Text descriptionText = toolkit.createText(client, "", SWT.MULTI | SWT.WRAP);
 		descriptionText.setLayoutData(new GridData(200, 150));
 
 		// Label creatorLabel = toolkit.createLabel(client, "Creator");
