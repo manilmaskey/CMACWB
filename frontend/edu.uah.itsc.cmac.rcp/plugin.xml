@@ -85,8 +85,23 @@
          <menu
                label="Window">
             <command
+                  commandId="org.eclipse.ui.views.showView"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.perspectives.showPerspective"
+                  style="push">
+            </command>
+            <command
                   commandId="org.eclipse.ui.window.preferences"
                   label="Preferences"
+                  style="push">
+            </command>
+         </menu>
+         <menu
+               label="Help">
+            <command
+                  commandId="org.eclipse.ui.help.aboutAction"
                   style="push">
             </command>
          </menu>
@@ -138,6 +153,10 @@
             <separator
                   name="edu.uah.itsc.cmac.rcp.cmacSeparator">
             </separator>
+            <command
+                  commandId="org.eclipse.ui.perspectives.showPerspective"
+                  style="push">
+            </command>
          </toolbar>
       </menuContribution>
    </extension>
@@ -158,6 +177,10 @@
          <property
                name="appName"
                value="Collaborative Workbench">
+         </property>
+         <property
+               name="aboutImage"
+               value="platform:/plugin/edu.uah.itsc.cmac3/icons/branding_files/icon-128.png">
          </property>
       </product>
    </extension>

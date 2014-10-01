@@ -259,8 +259,14 @@ public class PortalUtilities {
 				for (i = 0; i < userArray.size(); i++) {
 					JSONObject user = (JSONObject) userArray.get(i);
 					user = (JSONObject) user.get("user");
-					PortalUser pUser = new PortalUser((String) user.get("name"), (String) user.get("uid"),
-						(String) user.get("email"));
+
+					String username = (String) user.get("name");
+					String uid = (String) user.get("uid");
+					String email = (String) user.get("email");
+					String firstName = (String) user.get("first_name");
+					String lastName = (String) user.get("last_name");
+
+					PortalUser pUser = new PortalUser(username, uid, email, firstName, lastName);
 					portalUserList.add(pUser);
 				}
 
