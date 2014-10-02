@@ -62,15 +62,18 @@ public class LoginDialog {
 	}
 
 	public void createContents() {
+		shell = new Shell(display, SWT.SHELL_TRIM & (~SWT.RESIZE) & (~SWT.MAX) & (~SWT.MIN) & (~SWT.CLOSE));
+		shell.setText("Login to CWB");
+		GridLayout layout = new GridLayout(2, false);
+		shell.setLayout(layout);
+
+		setWindowPosition(shell);
+		
 		// Check if the preferences have been set already. If not open wizard page
 		if (!Utilities.isPreferenceSet())
 			openPreferenceWizard();
 
 		// Shell must be created with style SWT.NO_TRIM
-		shell = new Shell(display, SWT.SHELL_TRIM & (~SWT.RESIZE) & (~SWT.MAX) & (~SWT.MIN) & (~SWT.CLOSE));
-		shell.setText("Login to CWB");
-		GridLayout layout = new GridLayout(2, false);
-		shell.setLayout(layout);
 
 		Label logoLabel = new Label(shell, SWT.NONE);
 		logoLabel.setImage(getImageFromPlugin("login.png"));
