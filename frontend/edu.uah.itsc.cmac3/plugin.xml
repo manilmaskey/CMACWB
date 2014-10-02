@@ -273,6 +273,10 @@
                         </with>
                     </visibleWhen>
                 </command>
+                <command
+                      commandId="org.eclipse.ui.file.properties"
+                      style="push">
+                </command>
             </menuContribution>
             <menuContribution locationURI="popup:org.python.pydev.editor.PythonEditor.EditorContext">
                 <dynamic class="org.eclipse.ecf.docshare.menu.DocShareRosterMenuContributionItem" id="edu.uah.itsc.cmac.shreedhan.pythonEditorMenuContribution">
