@@ -42,10 +42,10 @@
             id="PIWorkFlow.actionSet2"
             label="Workflow "
             visible="true">
-         <menu
+         <!-- <menu
                id="CMACWorkFlow.menu1"
                label="Workflow &amp;Options">
-         </menu>
+         </menu> -->
          <action
                class="edu.uah.itsc.workflow.menuOptions.WorkFlowSave"
                icon="icons/sample.gif"
