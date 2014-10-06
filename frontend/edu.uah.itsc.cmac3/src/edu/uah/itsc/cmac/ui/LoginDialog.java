@@ -260,6 +260,10 @@ public class LoginDialog {
 
 		JSONObject jsonObject = pc.connect(username, password);
 
+		proceedLogin(username, password, selectedServer, jsonObject);
+	}
+
+	private void proceedLogin(String username, String password, String selectedServer, JSONObject jsonObject) {
 		if (jsonObject != null) {
 			User.username = username;
 			User.password = password;
