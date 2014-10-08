@@ -130,6 +130,7 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		String loginURL = restURL + "/user/login";
 		String userURL = restURL + "/user";
 		String searchURL = restURL + "/search_node/retrieve.json";
+		String passwordResetURL = restURL + "/user/[uid]/password_reset";
 
 		map.put("portal_domain", domain);
 		map.put("portal_cron_url", cronURL);
@@ -147,6 +148,7 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		map.put("portal_login_url", loginURL);
 		map.put("portal_user_url", userURL);
 		map.put("search_url", searchURL);
+		map.put("password_reset_url", passwordResetURL);
 
 		return map;
 	}

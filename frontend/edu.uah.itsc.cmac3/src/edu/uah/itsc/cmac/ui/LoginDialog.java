@@ -5,10 +5,27 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.ParseException;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -23,6 +40,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
@@ -37,6 +55,8 @@ import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.Activator;
 import edu.uah.itsc.cmac.Utilities;
 import edu.uah.itsc.cmac.portal.PortalConnector;
+import edu.uah.itsc.cmac.portal.PortalPost;
+import edu.uah.itsc.cmac.portal.PortalUtilities;
 import edu.uah.itsc.cmac.ui.preferencewizard.PreferenceWizard;
 
 public class LoginDialog {
@@ -57,7 +77,7 @@ public class LoginDialog {
 		shell.setLayout(layout);
 
 		setWindowPosition(shell);
-		
+
 		// Check if the preferences have been set already. If not open wizard page
 		if (!Utilities.isPreferenceSet())
 			openPreferenceWizard();
@@ -114,6 +134,9 @@ public class LoginDialog {
 		createNewButton.setText("New Account");
 		createNewButton.setLayoutData(buttonGridData);
 
+		Link resetPasswordLink = new Link(loginForm, SWT.NONE);
+		resetPasswordLink.setText("<a>Reset my password</a>");
+
 		Label emptylabel3 = new Label(loginForm, SWT.NONE);
 		emptylabel3.setLayoutData(loginLabelGridData);
 
@@ -146,6 +169,71 @@ public class LoginDialog {
 			public void widgetSelected(SelectionEvent e) {
 				CreateAccountDialog createAccountDialog = new CreateAccountDialog(shell);
 				createAccountDialog.createContents();
+			}
+		});
+
+		resetPasswordLink.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				InputDialog dialog = new InputDialog(shell, "Reset password", "Enter your email", "",
+					new IInputValidator() {
+
+						@Override
+						public String isValid(String newText) {
+							if (newText.isEmpty())
+								return "Please provide your email";
+							else
+								return null;
+						}
+					});
+				if (dialog.open() == Window.CANCEL)
+					return;
+				String email = dialog.getValue();
+				String passwordResetUrl = PortalUtilities.getPasswordResetURL();
+				passwordResetUrl = passwordResetUrl.replace("[uid]", email);
+				try {
+
+					PortalConnector portalConnector = new PortalConnector();
+					JSONObject adminJSON = portalConnector.connectAdmin();
+					String sessionName = adminJSON.getString("session_name");
+					String sessionID = adminJSON.getString("sessid");
+
+					HttpPost httppost = new HttpPost(passwordResetUrl);
+					BasicHttpContext mHttpContext = new BasicHttpContext();
+					CookieStore mCookieStore = new BasicCookieStore();
+
+					JSONObject json = new JSONObject();
+					json.put("name", email);
+					StringEntity se = new StringEntity(json.toString());
+					se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+					httppost.setEntity(se);
+
+					BasicClientCookie cookie = new BasicClientCookie(sessionName, sessionID);
+					cookie.setVersion(0);
+					cookie.setDomain(PortalUtilities.getPortalDomain());
+					cookie.setPath("/");
+					mCookieStore.addCookie(cookie);
+
+					mHttpContext.setAttribute(ClientContext.COOKIE_STORE, mCookieStore);
+
+					PortalPost post = new PortalPost();
+					String csrfToken = post.getCSRF(PortalUtilities.getTokenURL(), mHttpContext);
+					httppost.addHeader("X-CSRF-TOKEN", csrfToken);
+
+					HttpClient httpclient = new DefaultHttpClient();
+					HttpResponse response = httpclient.execute(httppost, mHttpContext);
+
+					if (response.getStatusLine().getStatusCode() != 200)
+						MessageDialog.openError(shell, "Error",
+							"Unable to request reset password\n" + EntityUtils.toString(response.getEntity()));
+					else {
+						MessageDialog.openInformation(shell, "Success",
+							"You will receive password email reset link soon");
+					}
+				}
+				catch (Exception e1) {
+
+				}
 			}
 		});
 
