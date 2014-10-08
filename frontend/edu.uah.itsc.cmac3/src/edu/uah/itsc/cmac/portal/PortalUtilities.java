@@ -134,6 +134,10 @@ public class PortalUtilities {
 	public static String getPortalDomain() {
 		return Utilities.getKeyValueFromPreferences("portal", "portal_domain");
 	}
+	
+	public static String getPasswordResetURL() {
+		return Utilities.getKeyValueFromPreferences("portal", "password_reset_url");
+	}
 
 	public static String getSciDBServerListURL() {
 		return Utilities.getKeyValueFromPreferences("portal", "scidb_server_list_url");
