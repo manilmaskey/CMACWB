@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -154,6 +153,9 @@ public class LoginDialog {
 		Link resetPasswordLink = new Link(loginForm, SWT.NONE);
 		resetPasswordLink.setText("<a>Reset my password</a>");
 
+		Link modifySciDBCredentialsLink = new Link(loginForm, SWT.NONE);
+		modifySciDBCredentialsLink.setText("<a>Modify my SciDB Credentials</a>");
+
 		Label emptylabel3 = new Label(loginForm, SWT.NONE);
 		emptylabel3.setLayoutData(loginLabelGridData);
 
@@ -184,7 +186,7 @@ public class LoginDialog {
 		createNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				CreateAccountDialog createAccountDialog = new CreateAccountDialog(shell);
+				CreateAccountDialog createAccountDialog = new CreateAccountDialog(shell, LoginDialog.this);
 				createAccountDialog.createContents();
 			}
 		});
@@ -251,6 +253,14 @@ public class LoginDialog {
 				catch (Exception e1) {
 
 				}
+			}
+		});
+
+		modifySciDBCredentialsLink.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				ModifyCredentialDialog modifyCredentialDialog = new ModifyCredentialDialog(shell, LoginDialog.this);
+				modifyCredentialDialog.createContents();
 			}
 		});
 
@@ -350,7 +360,7 @@ public class LoginDialog {
 		proceedLogin(username, password, selectedServer, jsonObject);
 	}
 
-	private void proceedLogin(String username, String password, String selectedServer, JSONObject jsonObject) {
+	public void proceedLogin(String username, String password, String selectedServer, JSONObject jsonObject) {
 		if (jsonObject != null) {
 			User.username = username;
 			User.password = password;
