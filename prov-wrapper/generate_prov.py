@@ -84,7 +84,7 @@ def main(argv):
    input_output_files={};
    content = lines = [line.strip() for line in open(inputfile)]
    for l in lines:
-    input_output_files[l.split(":")[0].replace("'","")]=l.split(":")[1].replace("'","");
+    input_output_files[l.split("^")[0].replace("'","")]=l.split("^")[1].replace("'","");
    
 
    generatePROV(scriptname,outputfile,input_output_files)

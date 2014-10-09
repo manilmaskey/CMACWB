@@ -20,11 +20,12 @@ $inputs_outputs=explode(",",$_POST['inputs_outputs']);
 
 
  foreach($inputs_outputs as $i_o){
+ 	 $i_o=str_replace("http:", "http^", $i_o);
      $key_value=explode(":",$i_o);
      $key=trim($key_value[0]);
      $value=trim($key_value[1]);
-
-    fwrite($handle,  "$key:$value\n");
+	 $key=str_replace("http^", "http:", $key);
+     fwrite($handle,  "$key^$value\n");
 }
 
 
@@ -38,6 +39,6 @@ if(strpos($os,"Windows")!==FALSE){
 
 
 $result = exec($python_executable.' generate_prov.py -i '.$filename_inputs_outputs ." -o ".$filename_provn. " -s ".$scriptname );
-
+file_put_contents('/tmp/fio.txt', file_get_contents($filename_inputs_outputs));
 readfile($filename_provn);
 fclose($handle);
