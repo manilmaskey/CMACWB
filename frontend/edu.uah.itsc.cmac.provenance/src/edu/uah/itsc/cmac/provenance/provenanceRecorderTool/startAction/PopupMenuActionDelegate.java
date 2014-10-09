@@ -18,6 +18,7 @@ import org.apache.http.client.fluent.Form;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -26,10 +27,12 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IObjectActionDelegate;
+import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -43,6 +46,7 @@ import edu.uah.itsc.cmac.Utilities;
 
 public class PopupMenuActionDelegate implements IObjectActionDelegate {
 	private Shell shell;
+	private ISelectionService service;
 
 	public PopupMenuActionDelegate() {
 		super();
@@ -55,10 +59,26 @@ public class PopupMenuActionDelegate implements IObjectActionDelegate {
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
 
 		shell = targetPart.getSite().getShell();
+	 
 	}
 
 	public void run(IAction action) {
 
+		System.out.println(ResourcesPlugin.getWorkspace().getRoot().getLocation());
+		 
+ 
+		
+		
+		
+		String path = null;
+		
+		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
+		IFile file = (IFile) ((IStructuredSelection)selection).getFirstElement();
+		String fileName= file.getName();
+		String filePath =file.getRawLocation().toOSString();
+		 
+		
+	/*	 
 		IEditorPart myeditor = Activator.getDefault().getWorkbench()
 				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
@@ -68,17 +88,14 @@ public class PopupMenuActionDelegate implements IObjectActionDelegate {
 		if (myeditor != null && myeditor.isDirty())
 			myeditor.doSave(new NullProgressMonitor());
 
-		/*
-		 * IEditorPart myeditor = PlatformUI.getWorkbench()
-		 * .getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		 */
+		 
 		String filePath = myeditor.toString().replace("PyEdit", "")
 				.replace("[", "").replace("]", "");
-		;
+		 
 
 		IEditorInput input = myeditor.getEditorInput();
 		String fileName = input.getName();
-
+*/
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		try {
 			String content = new String(readAllBytes(get(filePath)));
@@ -139,7 +156,7 @@ public class PopupMenuActionDelegate implements IObjectActionDelegate {
 				pb.redirectOutput(Redirect.appendTo(log));
 				Process p = pb.start();
 				p.waitFor();
-
+				
 				IProject[] iProjects = ResourcesPlugin.getWorkspace().getRoot()
 						.getProjects();
 
