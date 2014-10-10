@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -16,6 +17,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -24,6 +26,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.osgi.service.prefs.Preferences;
 
 /**
  * This class controls all aspects of the application's execution
@@ -60,6 +63,11 @@ public class Application implements IApplication {
 
 	private void setWorkspace() throws IOException, MalformedURLException {
 		String workspaceLoc = System.getProperty("user.home") + System.getProperty("file.separator") + "cwb.workspace";
+
+		Preferences preferences = ConfigurationScope.INSTANCE.getNode("edu.uah.itsc.cmac.preferences");
+		Preferences prefNode = preferences.node("workspace");
+		workspaceLoc = prefNode.get("last", workspaceLoc);
+
 		Display display = Display.getDefault();
 		final Shell shell = new Shell(display, SWT.SHELL_TRIM & (~SWT.RESIZE) & (~SWT.MAX) & (~SWT.MIN) & (~SWT.CLOSE));
 
@@ -88,6 +96,14 @@ public class Application implements IApplication {
 		Button browseButton = new Button(shell, SWT.PUSH);
 		browseButton.setText("Browse");
 		browseButton.setLayoutData(buttonData);
+
+		Label emptyLabel12 = new Label(shell, SWT.NONE);
+		Composite rememberComposite = new Composite(shell, SWT.NONE);
+		rememberComposite.setLayout(new GridLayout(2, false));
+		final Button rememberWorkspaceCheck = new Button(rememberComposite, SWT.CHECK);
+
+		Label rememberWorkspaceLabel = new Label(rememberComposite, SWT.NONE);
+		rememberWorkspaceLabel.setText("Remember workspace");
 
 		Label emptyLabel2 = new Label(shell, SWT.NONE);
 		emptyLabel2.setLayoutData(emptyData);
@@ -133,6 +149,12 @@ public class Application implements IApplication {
 					instanceLocation.release();
 				try {
 					instanceLocation.set(new URL("file", null, selectedDir), false);
+					if (rememberWorkspaceCheck.getSelection()) {
+						Preferences preferences = ConfigurationScope.INSTANCE.getNode("edu.uah.itsc.cmac.preferences");
+						Preferences prefNode = preferences.node("workspace");
+						prefNode.put("last", selectedDir);
+						preferences.flush();
+					}
 				}
 				catch (Exception e) {
 					MessageDialog.openError(shell, "Error", "Cannot select workspace");
