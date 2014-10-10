@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.commands">
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="edu.uah.itsc.cmac.provenace.commands.sampleCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="edu.uah.itsc.cmac.provenance.provenanceRecorderTool"
+            nameFilter="*.py"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="edu.uah.itsc.cmac.provenance.provenanceRecorderTool.startAction.PopupMenuActionDelegate"
+               definitionId="edu.uah.itsc.cmac.provenance.provenanceRecorderTool.startAction"
+               enablesFor="1"
+               icon="icons/WorkflowConductorIcon.png"
+               id="edu.uah.itsc.cmac.provenance.provenanceRecorderTool.startAction"
+               label="Execute and Record Provenance"
+               menubarPath="additions">
+         </action>
+      </objectContribution>
+   </extension>
+
+</plugin>
