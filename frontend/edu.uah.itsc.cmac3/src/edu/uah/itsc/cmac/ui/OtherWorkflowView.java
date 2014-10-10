@@ -20,6 +20,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -32,20 +34,13 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.part.ViewPart;
@@ -260,89 +255,41 @@ public class OtherWorkflowView extends ViewPart {
 		if (obj instanceof File) {
 			final String bucketName = ((File) obj).getName();
 
-			final Shell shell = new Shell();
-			shell.setText("Enter workflow name");
-			shell.setLayout(new GridLayout(2, false));
-			GridData gridData = new GridData();
-			gridData.heightHint = 400;
-			gridData.widthHint = 400;
+			InputDialog dialog = new InputDialog(Display.getDefault().getActiveShell(), "New Workflow",
+				"Enter name for new workflow", "workflow", new IInputValidator() {
+					@Override
+					public String isValid(String newText) {
+						if (newText.isEmpty())
+							return "You must provide name for the workflow";
+						return null;
+					}
+				});
 
-			shell.setLayoutData(gridData);
-			Label space0 = new Label(shell, SWT.NONE);
-			space0.setLayoutData(gridData);
-			Label space01 = new Label(shell, SWT.NONE);
-			space01.setLayoutData(gridData);
-			Label workflowLabel = new Label(shell, SWT.NONE);
-			workflowLabel.setText("Workflow name");
-			final Text workflowText = new Text(shell, SWT.BORDER);
-			workflowText.setMessage("Enter new workflow name");
-			gridData.heightHint = 20;
-			gridData.widthHint = 200;
-			workflowText.setLayoutData(gridData);
-			Label space = new Label(shell, SWT.NONE);
-			space.setLayoutData(gridData);
-			Label space2 = new Label(shell, SWT.NONE);
-			space2.setLayoutData(gridData);
-			Button finishButton = new Button(shell, SWT.NONE);
-			finishButton.setText("Finish");
-			gridData.widthHint = 150;
-			finishButton.setLayoutData(gridData);
-			finishButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					String workflow = workflowText.getText();
-					if (workflow.isEmpty()) {
-						MessageBox message = new MessageBox(shell);
-						message.setMessage("Please provide a valid workflow name");
-						message.open();
-						return;
-					}
-					super.widgetSelected(e);
-					try {
-						createInNavigator(bucketName, workflow);
-						String path = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() + "/"
-							+ bucketName;
-						GITUtility.createLocalRepo(workflow, path);
-						refreshOtherWorkflows();
-					}
-					catch (IOException exception) {
-						System.out.println("Yes I caught it");
-						MessageDialog.openError(shell, "Error!!", exception.getMessage());
-						return;
-					}
-					shell.pack();
-					shell.close();
+			if (dialog.open() == Window.OK) {
 
-					try {
-						IFolder folder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
-							.getFolder(workflow);
-						folder.refreshLocal(IFolder.DEPTH_INFINITE, null);
-					}
-					catch (CoreException e1) {
-						e1.printStackTrace();
-					}
-
+				String workflow = dialog.getValue();
+				try {
+					createInNavigator(bucketName, workflow);
+					String path = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() + "/"
+						+ bucketName;
+					GITUtility.createLocalRepo(workflow, path);
+					refreshOtherWorkflows();
 				}
-			});
-
-			Button cancelButton = new Button(shell, SWT.NONE);
-			cancelButton.setLayoutData(gridData);
-			cancelButton.setText("Cancel");
-			cancelButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					super.widgetSelected(e);
-					shell.close();
+				catch (IOException exception) {
+					MessageDialog.openError(Display.getDefault().getActiveShell(), "Error!!", exception.getMessage());
+					return;
 				}
-			});
-			Label space3 = new Label(shell, SWT.NONE);
-			space.setLayoutData(gridData);
-			Label space4 = new Label(shell, SWT.NONE);
-			space2.setLayoutData(gridData);
 
-			shell.pack();
-			// shell.setSize(450, 200);
-			shell.open();
+				try {
+					IFolder folder = ResourcesPlugin.getWorkspace().getRoot().getProject(bucketName)
+						.getFolder(workflow);
+					folder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+				}
+				catch (CoreException e1) {
+					e1.printStackTrace();
+				}
+			}
+
 		}
 	}
 
