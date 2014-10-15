@@ -175,6 +175,7 @@ public class CreateAccountDialog {
 						xc.setPassword(password);
 						User.username = username;
 						User.password = password;
+						shell.close();
 						loginDialog.proceedLogin(username, password, sciDBServerName, jsonObject);
 					}
 					else
