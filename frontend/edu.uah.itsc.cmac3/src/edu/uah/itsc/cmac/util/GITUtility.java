@@ -284,6 +284,19 @@ public class GITUtility {
 		}
 	}
 
+	/**
+	 * Deletes files matched using pattern from the repository
+	 * @param repoName
+	 * - Name of the repository
+	 * @param repoLocalPath
+	 * - Path of the repository <b>NOT</b> including the repository. If C:\projects\myProject is the actual repository
+	 * location, pass "C:\projects" only
+	 * @param pattern
+	 * - Git pattern to be deleted
+	 * @return - Returns DirCache returned by JGit's {@link org.eclipse.jgit.api.RmCommand#call()}
+	 * @throws NoFilepatternException
+	 * @throws GitAPIException
+	 */
 	public static DirCache delete(String repoName, String repoLocalPath, String pattern) throws NoFilepatternException,
 		GitAPIException {
 		Git git = getGit(repoName, repoLocalPath);
