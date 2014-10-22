@@ -1,0 +1,19 @@
+sudo apt-get -y install libxml2-utils
+sudo apt-get -y install graphviz
+
+sudo apt-get install unzip
+
+#sudo apt-get -y install default-jdk
+
+wget http://search.maven.org/remotecontent?filepath=org/openprovenance/prov/toolbox/0.6.1/toolbox-0.6.1-release.zip -O provtoolkit.zip
+
+unzip provtoolkit.zip
+
+sudo apt-get -y install inkscape 
+
+sudo apt-get -y install python-setuptools
+
+
+sudo easy_install prov
+
+#sudo  apt-get -y install apache2 libapache2-mod-php5 php-pear php5-dev make python-setuptools emacs php5-gd
