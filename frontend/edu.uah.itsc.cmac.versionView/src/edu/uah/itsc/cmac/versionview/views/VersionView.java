@@ -3,11 +3,12 @@ package edu.uah.itsc.cmac.versionview.views;
 import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.swt.SWT;
@@ -85,13 +86,15 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 	}
 
 	private void createVersionBar(final Git git, final Ref ref, final IFolder selectedFolder) {
+		RevTag tag = getTag(git, ref);
+		if (tag == null)
+			return;
+
 		Composite composite = new Composite(bar, SWT.FILL);
 		GridLayout gridLayout = new GridLayout(4, false);
 		gridLayout.horizontalSpacing = 30;
 		gridLayout.verticalSpacing = 20;
 		composite.setLayout(gridLayout);
-
-		RevTag tag = getTag(git, ref);
 
 		Label versionLabel = new Label(composite, SWT.NONE);
 		versionLabel.setText("Version: " + tag.getTagName());
@@ -109,11 +112,12 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 			public void widgetSelected(SelectionEvent e) {
 				super.widgetSelected(e);
 				String stringRef = ref.getTarget().getName();
-				GITUtility.hardReset(git, stringRef);
+				// GITUtility.hardReset(git, stringRef);
 				try {
+					git.checkout().setName(ref.getName()).call();
 					selectedFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
 				}
-				catch (CoreException e1) {
+				catch (Exception e1) {
 					e1.printStackTrace();
 				}
 			}
@@ -145,6 +149,10 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 		ObjectId id = ref.getObjectId();
 
 		try {
+			RevObject object = revWalk.parseAny(id);
+			// This is lightweight tag not annotated, skip this
+			if (object instanceof RevCommit)
+				return null;
 			// The call to parseTag seems to lock the pack files in the objects db of git directory.
 			// Have not been able to find any way to release those locks.
 			// The eclipse instance has to be restarted to be able to remove these locks
