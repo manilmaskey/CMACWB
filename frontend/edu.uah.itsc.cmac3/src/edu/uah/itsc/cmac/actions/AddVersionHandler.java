@@ -23,7 +23,8 @@ import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.util.GITUtility;
 
 public class AddVersionHandler extends AbstractHandler {
-	private static final String		REMOTE_URL	= "amazon-s3://.jgit@";
+	private static final String	REMOTE_URL	= "amazon-s3://.jgit@";
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelectionChecked(event);
@@ -35,7 +36,7 @@ public class AddVersionHandler extends AbstractHandler {
 			return null;
 		}
 
-		final Shell shell = new Shell(Display.getCurrent());
+		final Shell shell = new Shell(Display.getDefault().getActiveShell());
 		shell.setText("Save a version");
 		shell.setLayout(new GridLayout(2, false));
 
@@ -46,13 +47,13 @@ public class AddVersionHandler extends AbstractHandler {
 		/* Version Name Text */
 		final Text versionNameText = new Text(shell, SWT.BORDER);
 		versionNameText.setLayoutData(new GridData(SWT.FILL, 20, true, false));
-		
+
 		Label spaceLabel = new Label(shell, SWT.NONE);
 		spaceLabel.setText("");
-		
+
 		Label noteLabel = new Label(shell, SWT.NONE);
 		noteLabel.setText("(Note: username will be added to the version name during search)");
-		
+
 		/* Comment Label */
 		Label versionCommentLabel = new Label(shell, SWT.NONE);
 		versionCommentLabel.setText("Comments");
@@ -77,16 +78,18 @@ public class AddVersionHandler extends AbstractHandler {
 				IFolder selectedFolder = (IFolder) firstElement;
 				String parentPath = selectedFolder.getParent().getLocation().toString();
 				String repoName = selectedFolder.getName();
-				Ref ref = GITUtility.createTag(repoName, parentPath, User.username + "." + versionName, comments);
-				String project = selectedFolder.getProject().getName();
-				String repoRemotePath = REMOTE_URL + project;
-				if (ref != null)
-					try {
+				try {
+					GITUtility.commitLocalChanges(repoName, parentPath, "Commit before creating tag", User.username,
+						User.userEmail);
+					Ref ref = GITUtility.createTag(repoName, parentPath, User.username + "." + versionName, comments);
+					String project = selectedFolder.getProject().getName();
+					String repoRemotePath = REMOTE_URL + project;
+					if (ref != null)
 						GITUtility.push(repoName, parentPath, repoRemotePath);
-					}
-					catch (Exception e1) {
-						e1.printStackTrace();
-					}
+				}
+				catch (Exception exception) {
+					exception.printStackTrace();
+				}
 				shell.close();
 			}
 		});
