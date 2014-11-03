@@ -13,6 +13,8 @@ import org.eclipse.ecf.core.security.ConnectContextFactory;
 import org.eclipse.ecf.core.security.IConnectContext;
 import org.eclipse.ecf.remoteservice.IRemoteServiceContainerAdapter;
 
+import edu.uah.itsc.cmac.Utilities;
+
 public class XMPPClient {
 	private String							client;
 	private String							server	= "@zelda.itsc.uah.edu";
@@ -81,10 +83,15 @@ public class XMPPClient {
 
 	public void createUser(String username, String password, String email, String name) {
 
-		String baseurl = "http://zelda.itsc.uah.edu:9090/plugins/userService/userservice?type=add&secret=VMQuf3eA&";
+		String xmppServerDomain = Utilities.getKeyValueFromPreferences("portal", "xmpp_server_domain");
+		String xmppServerSecret = Utilities.getKeyValueFromPreferences("portal", "xmpp_server_secret");
+		String xmppServerGroup = Utilities.getKeyValueFromPreferences("portal", "xmpp_server_group");
+
+		String baseurl = "http://" + xmppServerDomain + "/plugins/userService/userservice?type=add&secret="
+			+ xmppServerSecret + "&";
 
 		String posturl = baseurl + "username=" + username + "&password=" + password + "&name=" + name + "&email="
-			+ email + "&groups=CMAC";
+			+ email + "&groups=" + xmppServerGroup;
 
 		URL url = null;
 		try {

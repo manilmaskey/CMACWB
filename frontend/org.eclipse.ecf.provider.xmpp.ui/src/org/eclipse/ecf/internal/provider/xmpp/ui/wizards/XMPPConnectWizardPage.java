@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import edu.uah.itsc.aws.User;
+import edu.uah.itsc.cmac.Utilities;
 
 public class XMPPConnectWizardPage extends WizardPage {
 
@@ -101,7 +102,8 @@ public class XMPPConnectWizardPage extends WizardPage {
 
 		connectText = new Combo(parent, SWT.SINGLE | SWT.BORDER | SWT.DROP_DOWN);
 		connectText.setLayoutData(fillData);
-		connectText.setText(User.username+"@zelda.itsc.uah.edu");
+		connectText.setText(User.username + "@"
+			+ Utilities.getKeyValueFromPreferences("portal", "xmpp_server_domain").split(":")[0]);
 		connectText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				verify();
