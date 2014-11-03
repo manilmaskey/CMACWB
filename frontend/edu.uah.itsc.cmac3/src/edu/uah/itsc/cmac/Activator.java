@@ -127,6 +127,8 @@ public class Activator extends AbstractUIPlugin {
 
 						try {
 							GITUtility.delete(repoName, repoLocalPath, fileName);
+							GITUtility.commitLocalChanges(repoName, repoLocalPath, "Commit after deletion",
+								User.username, User.userEmail);
 						}
 						catch (Exception e) {
 							e.printStackTrace();

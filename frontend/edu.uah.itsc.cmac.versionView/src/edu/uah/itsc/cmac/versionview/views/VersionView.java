@@ -1,5 +1,6 @@
 package edu.uah.itsc.cmac.versionview.views;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
@@ -69,6 +70,7 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 				createVersionBar(git, ref, selectedFolder);
 				git.close();
 			}
+			createHeadVersion(git, selectedFolder);
 		}
 		git.getRepository().close();
 		git.close();
@@ -83,6 +85,42 @@ public class VersionView extends ViewPart implements VersionViewInterface {
 		item.setText("No versions available");
 		item.setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
 		item.setControl(composite);
+	}
+
+	private void createHeadVersion(final Git git, final IFolder selectedFolder) {
+		try {
+			final Ref HEAD = git.getRepository().getRef("refs/heads/master");
+			Composite composite = new Composite(bar, SWT.NONE);
+			composite.setLayout(new GridLayout(1, true));
+			Label headVersionLabel = new Label(composite, SWT.NONE);
+			headVersionLabel
+				.setText("Master HEAD version. This version is the main branch and is not related to any version.");
+
+			Button resetButton = new Button(composite, SWT.PUSH);
+			resetButton.setText("Get HEAD version");
+			resetButton.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					super.widgetSelected(e);
+					String stringRef = HEAD.getTarget().getName();
+					try {
+						git.checkout().setName(HEAD.getName()).call();
+						selectedFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+					}
+					catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				}
+			});
+
+			ExpandItem item = new ExpandItem(bar, SWT.NONE, 0);
+			item.setText("Master HEAD version");
+			item.setHeight(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+			item.setControl(composite);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void createVersionBar(final Git git, final Ref ref, final IFolder selectedFolder) {
