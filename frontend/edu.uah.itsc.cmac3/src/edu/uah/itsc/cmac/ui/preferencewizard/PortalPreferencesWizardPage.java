@@ -23,6 +23,13 @@ public class PortalPreferencesWizardPage extends WizardPage {
 	private Text					restURLText;
 	private Label					cronURLLabel;
 	private Text					cronURLText;
+	private Label					xmppServerDomainLabel;
+	private Text					xmppServerDomainText;
+	private Label					xmppServerSecretLabel;
+	private Text					xmppServerSecretText;
+	private Label					xmppServerGroupLabel;
+	private Text					xmppServerGroupText;
+
 	private HashMap<String, String>	map;
 	private PreferenceWizard		preferenceWizard;
 
@@ -55,6 +62,15 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		cronURLLabel = createLabel(container, "Portal CRON URL");
 		cronURLText = createText(container, gridData,
 			"Portal CRON URL. E.g. http://54.208.76.40/d7/cmac/cron.php?cron_key=xxxxxxxxxxxxxxxxxxxxxxx", null);
+
+		xmppServerDomainLabel = createLabel(container, "Openfire Server Domain");
+		xmppServerDomainText = createText(container, gridData, "E.g. 54.208.76.40:9090", null);
+
+		xmppServerSecretLabel = createLabel(container, "Openfire Secret");
+		xmppServerSecretText = createText(container, gridData, "Openfire UserService Secret E.g. 7xRl531D", null);
+
+		xmppServerGroupLabel = createLabel(container, "Openfire Group");
+		xmppServerGroupText = createText(container, gridData, "Openfire Group NameE.g. CMAC", null);
 
 		fillData();
 
@@ -92,7 +108,8 @@ public class PortalPreferencesWizardPage extends WizardPage {
 
 	private boolean checkData() {
 		if (isValid(domainText.getText()) && isValid(siteText.getText()) && isValid(cronURLText.getText())
-			&& isValid(restURLText.getText()))
+			&& isValid(restURLText.getText()) && isValid(xmppServerDomainText.getText())
+			&& isValid(xmppServerSecretText.getText()) && isValid(xmppServerGroupText.getText()))
 			return true;
 		else
 			return false;
@@ -132,6 +149,10 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		String searchURL = restURL + "/search_node/retrieve.json";
 		String passwordResetURL = restURL + "/user/[uid]/password_reset";
 
+		String xmppServerDomain = xmppServerDomainText.getText();
+		String xmppServerSecret = xmppServerSecretText.getText();
+		String xmppServerGroup = xmppServerGroupText.getText();
+
 		map.put("portal_domain", domain);
 		map.put("portal_cron_url", cronURL);
 		map.put("portal_url", siteURL);
@@ -150,6 +171,10 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		map.put("search_url", searchURL);
 		map.put("password_reset_url", passwordResetURL);
 
+		map.put("xmpp_server_domain", xmppServerDomain);
+		map.put("xmpp_server_secret", xmppServerSecret);
+		map.put("xmpp_server_group", xmppServerGroup);
+
 		return map;
 	}
 
@@ -166,6 +191,9 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		siteText.setText(map.get("portal_url"));
 		restURLText.setText(map.get("portal_rest_url"));
 		cronURLText.setText(map.get("portal_cron_url"));
+		xmppServerDomainText.setText(map.get("xmpp_server_domain"));
+		xmppServerSecretText.setText(map.get("xmpp_server_secret"));
+		xmppServerGroupText.setText(map.get("xmpp_server_group"));
 
 	}
 }
