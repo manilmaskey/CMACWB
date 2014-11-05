@@ -70,7 +70,7 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		xmppServerSecretText = createText(container, gridData, "Openfire UserService Secret E.g. 7xRl531D", null);
 
 		xmppServerGroupLabel = createLabel(container, "Openfire Group");
-		xmppServerGroupText = createText(container, gridData, "Openfire Group NameE.g. CMAC", null);
+		xmppServerGroupText = createText(container, gridData, "Openfire Group Name E.g. CMAC", null);
 
 		fillData();
 
@@ -192,13 +192,25 @@ public class PortalPreferencesWizardPage extends WizardPage {
 		if (map == null)
 			return;
 
-		domainText.setText(map.get("portal_domain"));
-		siteText.setText(map.get("portal_url"));
-		restURLText.setText(map.get("portal_rest_url"));
-		cronURLText.setText(map.get("portal_cron_url"));
-		xmppServerDomainText.setText(map.get("xmpp_server_domain"));
-		xmppServerSecretText.setText(map.get("xmpp_server_secret"));
-		xmppServerGroupText.setText(map.get("xmpp_server_group"));
+		if (map.containsKey("portal_domain"))
+			domainText.setText(map.get("portal_domain"));
+		if (map.containsKey("portal_url"))
+			siteText.setText(map.get("portal_url"));
+
+		if (map.containsKey("portal_rest_url"))
+			restURLText.setText(map.get("portal_rest_url"));
+
+		if (map.containsKey("portal_cron_url"))
+			cronURLText.setText(map.get("portal_cron_url"));
+
+		if (map.containsKey("xmpp_server_domain"))
+			xmppServerDomainText.setText(map.get("xmpp_server_domain"));
+
+		if (map.containsKey("xmpp_server_secret"))
+			xmppServerSecretText.setText(map.get("xmpp_server_secret"));
+
+		if (map.containsKey("xmpp_server_group"))
+			xmppServerGroupText.setText(map.get("xmpp_server_group"));
 
 	}
 }
