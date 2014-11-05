@@ -188,11 +188,20 @@ public class AmazonPreferencesWizardPage extends WizardPage {
 		if (map == null)
 			return;
 
-		communityBucketText.setText(map.get("community_bucket_name"));
-		awsAdminAccessKeyText.setText(map.get("aws_admin_access_key"));
-		awsAdminSecretKeyText.setText(map.get("aws_admin_secret_key"));
-		awsAdminUserIDText.setText(map.get("aws_user_id"));
-		backendExecuteURLText.setText(map.get("backend_execute_url_suffix"));
+		if (map.containsKey("community_bucket_name"))
+			communityBucketText.setText(map.get("community_bucket_name"));
+
+		if (map.containsKey("aws_admin_access_key"))
+			awsAdminAccessKeyText.setText(map.get("aws_admin_access_key"));
+
+		if (map.containsKey("aws_admin_secret_key"))
+			awsAdminSecretKeyText.setText(map.get("aws_admin_secret_key"));
+
+		if (map.containsKey("aws_user_id"))
+			awsAdminUserIDText.setText(map.get("aws_user_id"));
+
+		if (map.containsKey("backend_execute_url_suffix"))
+			backendExecuteURLText.setText(map.get("backend_execute_url_suffix"));
 
 	}
 
