@@ -177,7 +177,12 @@ public class CMACArtifactPropertyTester extends PropertyTester {
 				return false;
 
 		}
-
+		else if (expectedValue.equals("deleteLocal")) {
+			if (receiver instanceof IFolder || receiver instanceof IFile)
+				return true;
+			else
+				return false;
+		}
 		else if (expectedValue.equals("rename")) {
 			if (receiver instanceof IFolder) {
 				return true;

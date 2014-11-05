@@ -90,6 +90,8 @@
             </command>
             <command description="Delete from cloud" id="edu.uah.itsc.cmac.Delete" name="Delete from cloud">
             </command>
+            <command description="Delete" id="edu.uah.itsc.cmac.DeleteLocal" name="Delete">
+            </command>
             <command id="edu.uah.itsc.cmac.NewFile" name="New CMAC Editor">
             </command>
             <command description="Rename" id="edu.uah.itsc.cmac.Rename" name="Rename">
@@ -231,6 +233,16 @@
                         </with>
                     </visibleWhen>
                 </command>
+                <command commandId="edu.uah.itsc.cmac.DeleteLocal" style="push" icon="icons/delete.png">
+                    <visibleWhen>
+                        <with variable="selection">
+                            <iterate ifEmpty="false" operator="and">
+                                <test property="my.property.namespace.type" value="deleteLocal">
+                                </test>
+                            </iterate>
+                        </with>
+                    </visibleWhen>
+                </command>
                 <command commandId="edu.uah.itsc.cmac.Refresh" style="push" icon="icons/refresh-16x16.png">
                     <visibleWhen>
                         <with variable="activeMenuSelection">
@@ -344,6 +356,16 @@
                         </iterate>
                     </with>
                 </enabledWhen>
+            </handler>
+            <handler class="edu.uah.itsc.cmac.actions.DeleteLocalCommandHandler" commandId="edu.uah.itsc.cmac.DeleteLocal" >
+			<enabledWhen>
+				<with variable="selection">
+					<iterate ifEmpty="false" operator="and">
+						<test property="my.property.namespace.type" value="deleteLocal">
+						</test>
+					</iterate>
+				</with>
+			</enabledWhen>
             </handler>
             <handler class="edu.uah.itsc.cmac.actions.NewFileHandler" commandId="edu.uah.itsc.cmac.NewFile">
                 <enabledWhen>
