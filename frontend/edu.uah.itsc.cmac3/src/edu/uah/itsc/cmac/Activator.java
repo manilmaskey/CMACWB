@@ -49,7 +49,6 @@ public class Activator extends AbstractUIPlugin {
 			LoginDialog loginDialog = new LoginDialog(PlatformUI.createDisplay());
 			loginDialog.createContents();
 		}
-		setResourceChangeListener();
 
 	}
 
