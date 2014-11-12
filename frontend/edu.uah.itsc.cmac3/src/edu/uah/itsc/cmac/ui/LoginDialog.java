@@ -6,7 +6,6 @@ import java.net.URL;
 import java.util.Collections;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -167,7 +166,7 @@ public class LoginDialog {
 		createNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				CreateAccountDialog createAccountDialog = new CreateAccountDialog(shell);
+				CreateAccountDialog createAccountDialog = new CreateAccountDialog(shell, LoginDialog.this);
 				createAccountDialog.createContents();
 			}
 		});
@@ -300,6 +299,10 @@ public class LoginDialog {
 
 		JSONObject jsonObject = pc.connect(username, password);
 
+		proceedLogin(username, password, jsonObject);
+	}
+
+	public void proceedLogin(String username, String password, JSONObject jsonObject) {
 		if (jsonObject != null) {
 			User.username = username;
 			User.password = password;

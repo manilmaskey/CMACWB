@@ -35,9 +35,11 @@ public class CreateAccountDialog {
 
 	private Shell	loginShell;
 	private Display	display;
+	private LoginDialog loginDialog;
 
-	public CreateAccountDialog(Shell loginShell) {
+	public CreateAccountDialog(Shell loginShell, LoginDialog loginDialog) {
 		this.loginShell = loginShell;
+		this.loginDialog = loginDialog;
 		this.display = loginShell.getDisplay();
 	}
 
@@ -143,7 +145,7 @@ public class CreateAccountDialog {
 						User.username = username;
 						User.password = password;
 						shell.close();
-						loginShell.close();
+						loginDialog.proceedLogin(username, password, jsonObject);
 					}
 					else
 						MessageDialog.openError(shell, "Error", "Could not create new account!");
