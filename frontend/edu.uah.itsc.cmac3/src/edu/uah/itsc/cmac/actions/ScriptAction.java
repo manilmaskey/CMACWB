@@ -18,6 +18,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -132,18 +133,22 @@ class LongRunningOperation implements IRunnableWithProgress {
 	private String				folder;
 	private String				title;
 	private String				desc;
+	private String				versionName;
+	private String				comments;
 	private IFolder				folderResource;
 	private IWorkbenchPage		page;
 	private String				publicURL;
 	private String				repoOwner;
 	private boolean				isSharedRepo;
 
-	public LongRunningOperation(boolean indeterminate, String title, String desc, String file, String folder,
-		String bucket, IFolder folderResource, IWorkbenchPage page, String publicURL, String repoOwner,
-		boolean isSharedRepo) {
+	public LongRunningOperation(boolean indeterminate, String title, String desc, String versionName, String comments,
+		String file, String folder, String bucket, IFolder folderResource, IWorkbenchPage page, String publicURL,
+		String repoOwner, boolean isSharedRepo) {
 		this.indeterminate = indeterminate;
 		this.title = title;
 		this.desc = desc;
+		this.versionName = versionName;
+		this.comments = comments;
 		this.file = file;
 		this.folder = folder;
 		this.bucket = bucket;
@@ -165,9 +170,13 @@ class LongRunningOperation implements IRunnableWithProgress {
 				repoRemotePath = repoRemotePath + "cmac-community/";
 			}
 			repoRemotePath = repoRemotePath + bucket;
+
 			GITUtility.pull(repoName, repoLocalPath);
-			GITUtility.commitLocalChanges(repoName, repoLocalPath, "", User.username, User.userEmail);
+			GITUtility.commitLocalChanges(repoName, repoLocalPath, "Commit before creating tag", User.username,
+				User.userEmail);
+			Ref ref = GITUtility.createTag(repoName, repoLocalPath, User.username + "." + versionName, comments);
 			GITUtility.push(repoName, repoLocalPath, repoRemotePath);
+
 			ExecuteCommand execCommand = new ExecuteCommand.Builder(bucket, repoName, file).shared(isSharedRepo)
 				.name(User.username).mail(User.userEmail).repoOwner(repoOwner)
 				.accessKey(Utilities.getKeyValueFromPreferences("s3", "aws_admin_access_key"))
