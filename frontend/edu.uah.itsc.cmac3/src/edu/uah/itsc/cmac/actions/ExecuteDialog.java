@@ -186,6 +186,9 @@ public class ExecuteDialog {
 				if (tag.getKey().equalsIgnoreCase("name"))
 					instanceString[count++] = tag.getValue();
 			}
+			if (tags.isEmpty()) {
+				instanceString[count++] = instance.getInstanceId();
+			}
 			// instanceString[count++] = instance.getKeyName();
 		}
 		return instanceString;

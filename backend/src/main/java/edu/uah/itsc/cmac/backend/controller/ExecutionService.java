@@ -3,8 +3,12 @@
  */
 package edu.uah.itsc.cmac.backend.controller;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -57,7 +61,8 @@ public class ExecutionService {
 		boolean isSharedRepo = execCommand.isSharedRepo();
 
 		String repoRemotePath = "amazon-s3://.jgit@";
-		String userDirPath = "/home/ubuntu/cmac_backend_environment/s3/";
+		String userDirPath = "/home/ec2-user/cmac_backend_environment/s3/";
+		// String userDirPath = "/home/ubuntu/cmac_backend_environment/s3/";
 		// String userDirPath = "C:/cmac_backend_environment/s3/";
 		if (isSharedRepo) {
 			userDirPath = userDirPath + "cmac-community/";
@@ -136,8 +141,27 @@ public class ExecutionService {
 		Process process = null;
 		try {
 			process = Runtime.getRuntime().exec(cmd, null, workflowDirectory);
+			BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			BufferedReader errorStream = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+			File file = new File(System.getProperty("user.home") +  "/cwb_last_execution_log.log");
+			if (!file.exists())
+				file.createNewFile();
+			BufferedWriter outputStream = new BufferedWriter(new FileWriter(file.getAbsoluteFile()));
+			String out = null;
+			while ((out = inputStream.readLine()) != null) {
+				outputStream.write(out);
+			}
+
+			while ((out = errorStream.readLine()) != null) {
+				outputStream.write(out);
+			}
+
 			process.waitFor();
 			process.destroy();
+
+			inputStream.close();
+			errorStream.close();
+			outputStream.close();
 		}
 		catch (Exception e) {
 			e.printStackTrace();

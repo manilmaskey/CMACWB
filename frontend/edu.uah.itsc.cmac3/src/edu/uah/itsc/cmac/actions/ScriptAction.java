@@ -183,7 +183,10 @@ class LongRunningOperation implements IRunnableWithProgress {
 				.secretKey(Utilities.getKeyValueFromPreferences("s3", "aws_admin_secret_key")).build();
 			StringEntity seData = new StringEntity(execCommand.toJSONString());
 			seData.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-			HttpResponse response = postData("http://54.208.76.40:8080/cmacBackend/services/action/execute", seData);
+			String postURL = Utilities.getKeyValueFromPreferences("s3", "backend_execute_url");
+			postURL = postURL.replace("[url]", publicURL).replace("[port]", "8080");
+			HttpResponse response = postData(postURL, seData);
+			// HttpResponse response = postData("http://54.208.76.40:8080/cmacBackend/services/action/execute", seData);
 			// HttpResponse response = postData("http://localhost:8080/cmacBackend/services/action/execute", seData);
 			if (response.getStatusLine().getStatusCode() == 200) {
 				GITUtility.pull(repoName, repoLocalPath);

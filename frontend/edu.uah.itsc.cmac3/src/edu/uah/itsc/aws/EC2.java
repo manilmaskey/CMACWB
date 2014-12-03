@@ -10,6 +10,8 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.CreateImageRequest;
@@ -18,7 +20,6 @@ import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DeregisterImageRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
@@ -92,8 +93,21 @@ public class EC2 {
 			request.withFilters(filter);
 		}
 
-		DescribeInstancesResult result = amazonEC2.describeInstances(request);
-		List<Reservation> reservations = result.getReservations();
+		List<Reservation> reservations = new ArrayList<Reservation>();
+
+		for (Regions r : Regions.values()) {
+			// We won't have access to all regions, for eg. GovCloud, so catch exception that AWS throws and continue
+			try {
+				amazonEC2.setRegion(Region.getRegion(r));
+				reservations.addAll(amazonEC2.describeInstances(request).getReservations());
+			}
+			catch (Exception e) {
+				continue;
+			}
+		}
+
+		amazonEC2.setRegion(Region.getRegion(Regions.US_EAST_1));
+
 		for (Reservation reservation : reservations) {
 			List<Instance> instances = reservation.getInstances();
 			for (Instance instance : instances) {
@@ -109,9 +123,22 @@ public class EC2 {
 		filter.withName("tag:Name");
 		filter.withValues(instanceNameTag);
 		DescribeInstancesRequest request = new DescribeInstancesRequest();
-		DescribeInstancesResult result = amazonEC2.describeInstances(request.withFilters(filter));
 
-		List<Reservation> reservations = result.getReservations();
+		List<Reservation> reservations = new ArrayList<Reservation>();
+
+		for (Regions r : Regions.values()) {
+			// We won't have access to all regions, for eg. GovCloud, so catch exception that AWS throws and continue
+			try {
+				amazonEC2.setRegion(Region.getRegion(r));
+				reservations.addAll(amazonEC2.describeInstances(request.withFilters(filter)).getReservations());
+			}
+			catch (Exception e) {
+				continue;
+			}
+
+		}
+
+		amazonEC2.setRegion(Region.getRegion(Regions.US_EAST_1));
 
 		for (Reservation reservation : reservations) {
 			List<Instance> instances = reservation.getInstances();
@@ -121,7 +148,7 @@ public class EC2 {
 				if (publicURL == null)
 					return null;
 				else
-					return "http://" + publicURL + ":3000/posts/";
+					return publicURL;
 			}
 		}
 		return null;
