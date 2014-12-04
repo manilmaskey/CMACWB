@@ -169,6 +169,13 @@ public class ExecutionService {
 				execCommand.toJSON());
 		}
 
+		// 4.1. After execution of programs, list all huge files
+		// 4.2. If there are any huge files move them into a folder
+		// 4.3. Add the folder in .gitignore file
+		// 4.4. Generate download link for the folder
+		// 4.5. Create a new file and store the download link for output folder
+		
+		
 		try {
 			// 5. Commit everything
 			GITUtility.commitLocalChanges(repoName, userDirPath, "Commit after executing file " + fileName + "\n"
