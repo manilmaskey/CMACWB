@@ -61,7 +61,7 @@ public class UploadCommandHandler extends AbstractHandler {
 				return null;
 
 			final Shell shell = new Shell(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-			shell.setText("Save a version");
+			shell.setText("Upload - Save a version");
 			shell.setLayout(new GridLayout(2, false));
 
 			/* Version Name Label */
@@ -94,31 +94,6 @@ public class UploadCommandHandler extends AbstractHandler {
 			submitButton.setText("Submit");
 
 			submitButton.addSelectionListener(new SelectionAdapter() {
-				private void doExpensiveWork(IProgressMonitor monitor) {
-					// mimic a long time job here
-					for (int i = 0; i < 10; i++) {
-						try {
-							// give a progress bar to indicate progress
-							monitor.worked(10);
-
-							Thread.sleep(2000);
-							System.out.println("step: " + i);
-						}
-						catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-
-				private void syncWithUI() {
-					Display.getDefault().asyncExec(new Runnable() {
-						public void run() {
-							MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-								.getShell(), "message", "completed!");
-						}
-					});
-				}
-
 				@Override
 				public void widgetSelected(SelectionEvent e) {
 					super.widgetSelected(e);
@@ -127,23 +102,6 @@ public class UploadCommandHandler extends AbstractHandler {
 					final IFolder selectedFolder = (IFolder) firstElement;
 					final String repoLocalPath = selectedFolder.getParent().getLocation().toString();
 					final String repoName = selectedFolder.getName();
-
-					Job job2 = new Job("test") {
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							monitor.beginTask("start task", 100);
-
-							// time consuming work here
-							doExpensiveWork(monitor);
-							// sync with UI
-							syncWithUI();
-
-							return Status.OK_STATUS;
-						}
-
-					};
-					job2.setUser(true);
-					job2.schedule();
 
 					Job job = new Job("Uploading....") {
 

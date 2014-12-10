@@ -132,6 +132,16 @@ public class ExecuteDialog {
 			public void widgetSelected(SelectionEvent event) {
 				try {
 					System.out.println("Button clicked");
+					String title = titleText.getText();
+					String desc = descText.getText();
+					String keyword = keywordText.getText();
+					String versionName = versionNameText.getText();
+					String comment = commentText.getLineDelimiter();
+
+					if (title.isEmpty() || desc.isEmpty() || versionName.isEmpty() || comment.isEmpty()) {
+						throw new Exception("Please provide valid input");
+					}
+
 					EC2 amazonEC2 = new EC2();
 					PortalPost portalPost = new PortalPost();
 					String instanceNameTag = instanceCombo.getItem(instanceCombo.getSelectionIndex());
@@ -139,10 +149,9 @@ public class ExecuteDialog {
 					if (publicURL == null)
 						throw new Exception("This instance does not have a public IP. Cannot execute workflow.");
 					System.out.println(publicURL);
-					Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keywordText.getText());
+					Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keyword);
 					workflow.setPath(path);
 					workflow.setSubmittor(User.username);
-					// workflow.setShared(false);
 					System.out.println(workflow.getJSON());
 
 					if (nodeID != null) {
@@ -154,9 +163,9 @@ public class ExecuteDialog {
 					}
 
 					portalPost.runCron();
-					new ProgressMonitorDialog(shell).run(true, true, new LongRunningOperation(true,
-						titleText.getText(), descText.getText(), versionNameText.getText(), commentText.getText(),
-						file, folder, bucket, folderResource, page, publicURL, repoOwner, isShared));
+					new ProgressMonitorDialog(shell).run(true, true, new LongRunningOperation(true, title, desc,
+						versionName, comment, file, folder, bucket, folderResource, page, publicURL, repoOwner,
+						isShared));
 					shell.close();
 				}
 				catch (Exception e) {
