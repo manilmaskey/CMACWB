@@ -13,8 +13,12 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -33,6 +37,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.Utilities;
@@ -186,10 +193,10 @@ class LongRunningOperation implements IRunnableWithProgress {
 			String postURL = Utilities.getKeyValueFromPreferences("s3", "backend_execute_url");
 			postURL = postURL.replace("[url]", publicURL).replace("[port]", "8080");
 			HttpResponse response = postData(postURL, seData);
-			// HttpResponse response = postData("http://54.208.76.40:8080/cmacBackend/services/action/execute", seData);
-			// HttpResponse response = postData("http://localhost:8080/cmacBackend/services/action/execute", seData);
 			if (response.getStatusLine().getStatusCode() == 200) {
 				GITUtility.pull(repoName, repoLocalPath);
+				String message = EntityUtils.toString(response.getEntity());
+				createLargeFileLinks(message, folderResource);
 				folderResource.refreshLocal(IFolder.DEPTH_INFINITE, null);
 			}
 			else {
@@ -205,6 +212,39 @@ class LongRunningOperation implements IRunnableWithProgress {
 		monitor.done();
 		if (monitor.isCanceled())
 			throw new InterruptedException("The long running operation was cancelled");
+	}
+
+	private void createLargeFileLinks(String message, IFolder folderResource) {
+		try {
+			JSONObject jsonResponse = new JSONObject(message);
+			jsonResponse = jsonResponse.getJSONObject("response");
+			String largeDir = jsonResponse.getString("largeDir");
+			JSONArray largeFiles = jsonResponse.getJSONArray("files");
+			if (largeFiles.length() <= 0)
+				return;
+
+			IFolder largeDirFolder = folderResource.getFolder(largeDir);
+			if (!largeDirFolder.exists())
+				largeDirFolder.create(true, true, null);
+
+			for (int i = 0; i < largeFiles.length(); i++) {
+				JSONObject file = (JSONObject) largeFiles.get(i);
+				String fileName = file.getString("name");
+				int fileSize = file.getInt("size");
+				String s3Location = file.getString("s3Location");
+				IFile ifile = largeDirFolder.getFile(fileName);
+				if (!ifile.exists()) {
+					ifile.createLink(ifile.getProjectRelativePath(), IResource.ALLOW_MISSING_LOCAL, null);
+				}
+			}
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+		catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private HttpResponse postData(String url, StringEntity seData) throws ClientProtocolException, IOException {

@@ -6,9 +6,13 @@ package edu.uah.itsc.cmac.backend.controller;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -18,11 +22,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3Client;
+
 import edu.uah.itsc.cmac.backend.util.FileUtility;
 import edu.uah.itsc.cmac.backend.util.GITUtility;
+import edu.uah.itsc.cmac.backend.util.PropertyUtility;
 import edu.uah.itsc.cmac.model.ExecuteCommand;
 
 /**
@@ -60,10 +69,31 @@ public class ExecutionService {
 		String repoOwner = execCommand.getRepoOwner();
 		boolean isSharedRepo = execCommand.isSharedRepo();
 
+		PropertyUtility property = new PropertyUtility("cmacBackend.properties");
+
 		String repoRemotePath = "amazon-s3://.jgit@";
-		String userDirPath = "/home/ec2-user/cmac_backend_environment/s3/";
-		// String userDirPath = "/home/ubuntu/cmac_backend_environment/s3/";
-		// String userDirPath = "C:/cmac_backend_environment/s3/";
+		String userDirPath = null;
+		String ignore_large_size_limit = null;
+		String large_directory = null;
+		String large_bucket_name = null;
+
+		userDirPath = property.getValue("backend_environment_path");
+		ignore_large_size_limit = property.getValue("ignore_large_size_limit");
+		large_directory = property.getValue("large_directory");
+		large_bucket_name = property.getValue("large_bucket_name");
+
+		if (userDirPath == null)
+			userDirPath = "/home/ec2-user/cmac_backend_environment/s3/";
+
+		if (ignore_large_size_limit == null)
+			ignore_large_size_limit = "50";
+
+		if (large_directory == null)
+			large_directory = "large_files";
+
+		if (large_bucket_name == null)
+			large_bucket_name = "cmac_large_files_bucket";
+
 		if (isSharedRepo) {
 			userDirPath = userDirPath + "cmac-community/";
 			repoRemotePath = repoRemotePath + "cmac-community/";
@@ -143,7 +173,7 @@ public class ExecutionService {
 			process = Runtime.getRuntime().exec(cmd, null, workflowDirectory);
 			BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			BufferedReader errorStream = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			File file = new File(System.getProperty("user.home") +  "/cwb_last_execution_log.log");
+			File file = new File(System.getProperty("user.home") + "/cwb_last_execution_log.log");
 			if (!file.exists())
 				file.createNewFile();
 			BufferedWriter outputStream = new BufferedWriter(new FileWriter(file.getAbsoluteFile()));
@@ -170,12 +200,70 @@ public class ExecutionService {
 		}
 
 		// 4.1. After execution of programs, list all huge files
+		int large_file_limit = Integer.parseInt(ignore_large_size_limit);
+		
+		ArrayList<File> ignoredFiles = getLargeFileList(workflowDirectory, large_file_limit);
+		
+		JSONArray ignoredFilesArray = null;
+		// TODO: Consider newly generated files only.
 		// 4.2. If there are any huge files move them into a folder
-		// 4.3. Add the folder in .gitignore file
-		// 4.4. Generate download link for the folder
-		// 4.5. Create a new file and store the download link for output folder
-		
-		
+		if (ignoredFiles.size() > 0) {
+			File largeDir = new File(workflowDirectory.getAbsolutePath() + "/" + large_directory);
+			File gitIgnoreFile = new File(workflowDirectory.getAbsolutePath() + "/.gitignore");
+
+			if (!largeDir.exists() || !largeDir.isDirectory()) {
+				largeDir.mkdirs();
+			}
+
+			// 4.3. Add the folder in .gitignore file
+			try {
+				if (!gitIgnoreFile.exists()) {
+					gitIgnoreFile.createNewFile();
+				}
+
+				FileInputStream fis = new FileInputStream(gitIgnoreFile);
+				byte[] data = new byte[(int) gitIgnoreFile.length()];
+				fis.read(data);
+				fis.close();
+				String contents = new String(data, "UTF-8");
+
+				Pattern regex = Pattern.compile("^" + largeDir.getName() + "/$", Pattern.MULTILINE);
+				Matcher regexMatcher = regex.matcher(contents);
+
+				if (!regexMatcher.find()) {
+					contents = contents + "\n" + largeDir.getName() + "/";
+					BufferedWriter writer = new BufferedWriter(new FileWriter(gitIgnoreFile));
+					writer.write(contents);
+					writer.close();
+				}
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			// 4.4 Move all the ignored files from large dir to S3
+			ignoredFilesArray = new JSONArray();
+			AmazonS3Client amazonS3Client = new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey));
+			for (File file : ignoredFiles) {
+				String s3Location = bucketName + "/" + userName + "/" + repoName + "/" + file.getName();
+				amazonS3Client.putObject(large_bucket_name, s3Location, file);
+				JSONObject fileObject = new JSONObject();
+				fileObject.put("name", file.getName());
+				fileObject.put("size", file.length());
+				fileObject.put("s3Location", large_bucket_name + "/" + s3Location);
+				ignoredFilesArray.put(fileObject);
+			}
+
+
+			// 4.6 Put all the large files inside the directory
+			for (File file : ignoredFiles) {
+				String name = file.getAbsolutePath().replace(workflowDirectory.getAbsolutePath(), "");
+				String newName = largeDir.getAbsolutePath() + "/" + name;
+				file.renameTo(new File(newName));
+			}
+
+		}
+
 		try {
 			// 5. Commit everything
 			GITUtility.commitLocalChanges(repoName, userDirPath, "Commit after executing file " + fileName + "\n"
@@ -191,8 +279,35 @@ public class ExecutionService {
 				execCommand.toJSON());
 		}
 
+		JSONObject responseObject = new JSONObject();
+		responseObject.put("files", ignoredFilesArray);
+		responseObject.put("requestInput", execCommand.toJSON());
+		responseObject.put("largeDir", large_directory);
+		
 		// 7. Return successful message
-		return buildResponse(200, "Executed " + fileName + " successfully", execCommand.toJSON());
+		return buildResponse(200, "Successfully executed " + fileName , responseObject);
+	}
+
+	private ArrayList<File> getLargeFileList(File workflowDirectory, int large_file_limit) {
+		ArrayList<File> largeFileList = new ArrayList<File>();
+		walkDirectory(workflowDirectory, large_file_limit, largeFileList);
+		return largeFileList;
+	}
+
+	private void walkDirectory(File file, int large_file_limit, ArrayList<File> list) {
+		if (file == null || list == null)
+			return;
+
+		if (file.getName().startsWith(".git"))
+			return;
+
+		if (file.isDirectory()) {
+			for (File listFile : file.listFiles())
+				walkDirectory(listFile, large_file_limit, list);
+		}
+		else if (file.length() >= large_file_limit)
+			list.add(file);
+
 	}
 
 	private String getSystemCommand(String fileName) {
@@ -213,7 +328,7 @@ public class ExecutionService {
 		try {
 			jsonObject.put("message", message);
 			if (responseObject != null)
-				jsonObject.put("response", responseObject.toString());
+				jsonObject.put("response", responseObject);
 		}
 		catch (JSONException e) {
 			e.printStackTrace();

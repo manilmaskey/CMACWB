@@ -163,6 +163,7 @@ public class ExecuteDialog {
 					}
 
 					portalPost.runCron();
+					// publicURL = "localhost";
 					new ProgressMonitorDialog(shell).run(true, true, new LongRunningOperation(true, title, desc,
 						versionName, comment, file, folder, bucket, folderResource, page, publicURL, repoOwner,
 						isShared));
