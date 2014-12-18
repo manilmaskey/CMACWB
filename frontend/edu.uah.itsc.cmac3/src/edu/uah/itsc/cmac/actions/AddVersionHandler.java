@@ -36,6 +36,12 @@ public class AddVersionHandler extends AbstractHandler {
 			return null;
 		}
 
+		addVersion(firstElement);
+
+		return null;
+	}
+
+	private void addVersion(final Object firstElement) {
 		final Shell shell = new Shell(Display.getDefault().getActiveShell());
 		shell.setText("Save a version");
 		shell.setLayout(new GridLayout(2, false));
@@ -107,8 +113,6 @@ public class AddVersionHandler extends AbstractHandler {
 
 		shell.pack();
 		shell.open();
-
-		return null;
 	}
 
 }

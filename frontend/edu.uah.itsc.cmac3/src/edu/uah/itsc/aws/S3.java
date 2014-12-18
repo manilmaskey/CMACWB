@@ -12,10 +12,14 @@ package edu.uah.itsc.aws;
  * Filename: S3.java Author:
  */
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -44,6 +48,7 @@ import com.amazonaws.services.s3.model.DeleteBucketRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.MultiObjectDeleteException;
 import com.amazonaws.services.s3.model.MultiObjectDeleteException.DeleteError;
@@ -469,5 +474,22 @@ public class S3 {
 		BufferedWriter bw = new BufferedWriter(fw);
 		bw.write(content);
 		bw.close();
+	}
+	
+	public void downloadFile(String path, String bucketName, String key) throws IOException {
+		File file = new File(path);
+		if (file.exists())
+			file.delete();
+		file.createNewFile();
+		InputStream objData = amazonS3Service.getObject(new GetObjectRequest(bucketName, key)).getObjectContent();
+		OutputStream writer = new BufferedOutputStream(new FileOutputStream(file));
+		int read = -1;
+		while ((read = objData.read()) != -1 ) {
+			writer.write(read);
+		}
+		writer.flush();
+		writer.close();
+		objData.close();
+		
 	}
 }

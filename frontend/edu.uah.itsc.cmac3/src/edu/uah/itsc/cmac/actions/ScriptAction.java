@@ -13,17 +13,25 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.util.EntityUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -32,6 +40,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.Utilities;
@@ -132,18 +143,22 @@ class LongRunningOperation implements IRunnableWithProgress {
 	private String				folder;
 	private String				title;
 	private String				desc;
+	private String				versionName;
+	private String				comments;
 	private IFolder				folderResource;
 	private IWorkbenchPage		page;
 	private String				publicURL;
 	private String				repoOwner;
 	private boolean				isSharedRepo;
 
-	public LongRunningOperation(boolean indeterminate, String title, String desc, String file, String folder,
-		String bucket, IFolder folderResource, IWorkbenchPage page, String publicURL, String repoOwner,
-		boolean isSharedRepo) {
+	public LongRunningOperation(boolean indeterminate, String title, String desc, String versionName, String comments,
+		String file, String folder, String bucket, IFolder folderResource, IWorkbenchPage page, String publicURL,
+		String repoOwner, boolean isSharedRepo) {
 		this.indeterminate = indeterminate;
 		this.title = title;
 		this.desc = desc;
+		this.versionName = versionName;
+		this.comments = comments;
 		this.file = file;
 		this.folder = folder;
 		this.bucket = bucket;
@@ -165,19 +180,27 @@ class LongRunningOperation implements IRunnableWithProgress {
 				repoRemotePath = repoRemotePath + "cmac-community/";
 			}
 			repoRemotePath = repoRemotePath + bucket;
+
 			GITUtility.pull(repoName, repoLocalPath);
-			GITUtility.commitLocalChanges(repoName, repoLocalPath, "", User.username, User.userEmail);
+			GITUtility.commitLocalChanges(repoName, repoLocalPath, "Commit before creating tag", User.username,
+				User.userEmail);
+			Ref ref = GITUtility.createTag(repoName, repoLocalPath, User.username + "." + versionName, comments);
 			GITUtility.push(repoName, repoLocalPath, repoRemotePath);
+
 			ExecuteCommand execCommand = new ExecuteCommand.Builder(bucket, repoName, file).shared(isSharedRepo)
 				.name(User.username).mail(User.userEmail).repoOwner(repoOwner)
 				.accessKey(Utilities.getKeyValueFromPreferences("s3", "aws_admin_access_key"))
-				.secretKey(Utilities.getKeyValueFromPreferences("s3", "aws_admin_secret_key")).build();
+				.secretKey(Utilities.getKeyValueFromPreferences("s3", "aws_admin_secret_key"))
+				.largeBucketName(Utilities.getKeyValueFromPreferences("s3", "large_bucket_name")).build();
 			StringEntity seData = new StringEntity(execCommand.toJSONString());
 			seData.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-			HttpResponse response = postData("http://54.208.76.40:8080/cmacBackend/services/action/execute", seData);
-			// HttpResponse response = postData("http://localhost:8080/cmacBackend/services/action/execute", seData);
+			String postURL = Utilities.getKeyValueFromPreferences("s3", "backend_execute_url");
+			postURL = postURL.replace("[url]", publicURL).replace("[port]", "8080");
+			HttpResponse response = postData(postURL, seData);
 			if (response.getStatusLine().getStatusCode() == 200) {
 				GITUtility.pull(repoName, repoLocalPath);
+				String message = EntityUtils.toString(response.getEntity());
+				createLargeFileLinks(message, folderResource);
 				folderResource.refreshLocal(IFolder.DEPTH_INFINITE, null);
 			}
 			else {
@@ -193,6 +216,65 @@ class LongRunningOperation implements IRunnableWithProgress {
 		monitor.done();
 		if (monitor.isCanceled())
 			throw new InterruptedException("The long running operation was cancelled");
+	}
+
+	private void createLargeFileLinks(String message, IFolder folderResource) {
+		try {
+			JSONObject jsonResponse = new JSONObject(message);
+			jsonResponse = jsonResponse.getJSONObject("response");
+			final String largeDir = jsonResponse.getString("largeDir");
+			JSONArray largeFiles = jsonResponse.getJSONArray("files");
+			if (largeFiles.length() <= 0)
+				return;
+
+			IFolder largeDirFolder = folderResource.getFolder(largeDir);
+			if (!largeDirFolder.exists())
+				largeDirFolder.create(true, true, null);
+
+			for (int i = 0; i < largeFiles.length(); i++) {
+				JSONObject file = (JSONObject) largeFiles.get(i);
+				String fileName = file.getString("name");
+				int fileSize = file.getInt("size");
+				String relativePath = file.getString("path");
+				String s3Location = file.getString("s3Location");
+				IFile ifile = largeDirFolder.getFile(relativePath);
+				if (ifile.exists())
+					ifile.delete(true, null);
+				if (!ifile.getParent().exists()) {
+					File parentDir = new File(ifile.getParent().getLocation().toString());
+					parentDir.mkdirs();
+					largeDirFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+
+				}
+				File localFile = new File(ifile.getLocation().toString());
+				if (!localFile.exists())
+					localFile.createNewFile();
+				ifile.createLink(ifile.getLocation(), IResource.NONE, null);
+				ifile.setPersistentProperty(new QualifiedName("edu.uah.itsc.cmac3.needS3Download", "needS3Download"),
+					"true");
+				ifile.setPersistentProperty(new QualifiedName("edu.uah.itsc.cmac3.s3Location", "s3Location"),
+					s3Location);
+			}
+
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Information",
+						"Some large files were generated while executing this program.\nThese files are stored in directory '"
+							+ largeDir + "' and will be downloaded when you try to open them.");
+				}
+			});
+
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+		catch (CoreException e) {
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private HttpResponse postData(String url, StringEntity seData) throws ClientProtocolException, IOException {

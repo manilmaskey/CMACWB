@@ -14,9 +14,13 @@ import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
+import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidConfigurationException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.InvalidTagNameException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.PersonIdent;
@@ -99,7 +103,8 @@ public class GITUtility {
 		repository.close();
 	}
 
-	public static void push(String repoName, String repoLocalPath, String repoRemotePath) throws Exception {
+	public static void push(String repoName, String repoLocalPath, String repoRemotePath) throws IOException,
+		URISyntaxException, InvalidRemoteException, TransportException, GitAPIException {
 		FileRepositoryBuilder builder = new FileRepositoryBuilder();
 		File localPath = new File(repoLocalPath + "/" + repoName + "/.git");
 		Repository repository = builder.setGitDir(localPath).findGitDir().build();
@@ -110,7 +115,7 @@ public class GITUtility {
 
 		if (head == null) {
 			System.out.println("Nothing to push");
-			throw new Exception("Not a valid tracking workflow");
+			throw new InvalidConfigurationException("Not a valid tracking workflow");
 		}
 
 		// Get commit object from the head of the master branch
@@ -215,22 +220,16 @@ public class GITUtility {
 		}
 	}
 
-	public static Ref createTag(String repoName, String repoLocalPath, String versionName, String comments) {
+	public static Ref createTag(String repoName, String repoLocalPath, String versionName, String comments)
+		throws ConcurrentRefUpdateException, InvalidTagNameException, NoHeadException, GitAPIException {
 		if (!validRepoName(repoName))
 			return null;
-		try {
-			Git git = getGit(repoName, repoLocalPath);
-			Ref tagRef = git.tag().setName(versionName).setMessage(comments)
-				.setTagger(new PersonIdent(User.username, User.userEmail)).call();
-			git.getRepository().close();
-			git.close();
-			return tagRef;
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			return null;
-
-		}
+		Git git = getGit(repoName, repoLocalPath);
+		Ref tagRef = git.tag().setName(versionName).setMessage(comments)
+			.setTagger(new PersonIdent(User.username, User.userEmail)).call();
+		git.getRepository().close();
+		git.close();
+		return tagRef;
 	}
 
 	public static void hardReset(String repoName, String repoLocalPath, String ref) {
@@ -286,6 +285,7 @@ public class GITUtility {
 
 	/**
 	 * Deletes files matched using pattern from the repository
+	 * 
 	 * @param repoName
 	 * - Name of the repository
 	 * @param repoLocalPath

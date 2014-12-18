@@ -25,6 +25,8 @@ public class AmazonPreferencesWizardPage extends WizardPage {
 	private Composite				container;
 	private Label					communityBucketLabel;
 	private Text					communityBucketText;
+	private Label					largeBucketLabel;
+	private Text					largeBucketText;
 	private Label					awsAdminAccessKeyLabel;
 	private Text					awsAdminAccessKeyText;
 	private Label					awsAdminSecretKeyLabel;
@@ -57,6 +59,11 @@ public class AmazonPreferencesWizardPage extends WizardPage {
 
 		communityBucketLabel = createLabel(container, "Community Bucket name");
 		communityBucketText = createText(container, gridData, "Community bucket name. E.g. cmac-community", null);
+
+		largeBucketLabel = createLabel(container, "Large files Bucket name");
+		largeBucketText = createText(container, gridData, "Large files Bucket name. E.g. cmac-community", null);
+		largeBucketText
+			.setToolTipText("Bucket to include large files which are generated during execution of workflows");
 
 		awsAdminAccessKeyLabel = createLabel(container, "AWS Admin Access Key");
 		awsAdminAccessKeyText = createText(container, gridData, "AWS Access key provided by Amazon", null);
@@ -153,9 +160,9 @@ public class AmazonPreferencesWizardPage extends WizardPage {
 	}
 
 	private boolean checkData() {
-		if (isValid(communityBucketText.getText()) && isValid(awsAdminAccessKeyText.getText())
-			&& isValid(awsAdminSecretKeyText.getText()) && isValid(awsAdminUserIDText.getText())
-			&& isValid(backendExecuteURLText.getText()))
+		if (isValid(communityBucketText.getText()) && isValid(largeBucketText.getText())
+			&& isValid(awsAdminAccessKeyText.getText()) && isValid(awsAdminSecretKeyText.getText())
+			&& isValid(awsAdminUserIDText.getText()) && isValid(backendExecuteURLText.getText()))
 			return true;
 		else
 			return false;
@@ -172,6 +179,7 @@ public class AmazonPreferencesWizardPage extends WizardPage {
 		if (map == null)
 			map = new HashMap<String, String>();
 		map.put("community_bucket_name", communityBucketText.getText());
+		map.put("large_bucket_name", largeBucketText.getText());
 		map.put("aws_admin_access_key", awsAdminAccessKeyText.getText());
 		map.put("aws_admin_secret_key", awsAdminSecretKeyText.getText());
 		map.put("aws_user_id", awsAdminUserIDText.getText());
@@ -190,6 +198,9 @@ public class AmazonPreferencesWizardPage extends WizardPage {
 
 		if (map.containsKey("community_bucket_name"))
 			communityBucketText.setText(map.get("community_bucket_name"));
+
+		if (map.containsKey("large_bucket_name"))
+			largeBucketText.setText(map.get("large_bucket_name"));
 
 		if (map.containsKey("aws_admin_access_key"))
 			awsAdminAccessKeyText.setText(map.get("aws_admin_access_key"));

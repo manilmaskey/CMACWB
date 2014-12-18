@@ -18,6 +18,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -45,19 +46,21 @@ public class ExecuteDialog {
 
 	public ExecuteDialog(final String path, final String file, final String folder, final String bucket,
 		final IFolder folderResource, final IWorkbenchPage page, final String repoOwner) {
-		final Shell shell = new Shell();
+		final Shell shell = new Shell(Display.getDefault().getActiveShell());
 		shell.setText("Workflow Settings");
 		shell.setLayout(new GridLayout(2, false));
 		Label title = new Label(shell, SWT.NONE);
 		title.setText("Title : ");
 		final Text titleText = new Text(shell, SWT.BORDER);
-		addSpanData(titleText);
+		titleText.setLayoutData(new GridData(SWT.FILL, 20, true, false));
+
 		Label description = new Label(shell, SWT.NONE);
 		description.setText("Description : ");
 		final Text descText = new Text(shell, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-		GridData data = new GridData(GridData.FILL_BOTH);
-		data.horizontalSpan = 2;
-		descText.setLayoutData(data);
+		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		gridData.heightHint = 100;
+		gridData.widthHint = 300;
+		descText.setLayoutData(gridData);
 
 		/*
 		 * Shreedhan Add keyword label and keyword text
@@ -65,7 +68,7 @@ public class ExecuteDialog {
 		Label keywordLabel = new Label(shell, SWT.NONE);
 		keywordLabel.setText("Keywords");
 		final Text keywordText = new Text(shell, SWT.BORDER);
-		addSpanData(keywordText);
+		keywordText.setLayoutData(new GridData(SWT.FILL, 20, true, false));
 		Label instanceLabel = new Label(shell, SWT.NONE);
 		instanceLabel.setText("Run on instance");
 		final Combo instanceCombo = new Combo(shell, SWT.READ_ONLY);
@@ -74,7 +77,29 @@ public class ExecuteDialog {
 			instanceCombo.setItems(instanceList);
 			instanceCombo.select(0);
 		}
-		addSpanData(instanceCombo);
+
+		/* Version Name Label */
+		Label versionNameLabel = new Label(shell, SWT.NONE);
+		versionNameLabel.setText("Version Name");
+
+		/* Version Name Text */
+		final Text versionNameText = new Text(shell, SWT.BORDER);
+		versionNameText.setLayoutData(new GridData(SWT.FILL, 20, true, false));
+
+		Label spaceLabel = new Label(shell, SWT.NONE);
+		spaceLabel.setText("");
+
+		Label noteLabel = new Label(shell, SWT.NONE);
+		noteLabel.setText("(Note: username will be added to the version name during search)");
+
+		/* Comment Label */
+		Label versionCommentLabel = new Label(shell, SWT.NONE);
+		versionCommentLabel.setText("Comments");
+
+		/* Comment Text */
+		final Text commentText = new Text(shell, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
+
+		commentText.setLayoutData(gridData);
 
 		Button ok = new Button(shell, SWT.PUSH);
 		ok.setText("  OK  ");
@@ -107,6 +132,16 @@ public class ExecuteDialog {
 			public void widgetSelected(SelectionEvent event) {
 				try {
 					System.out.println("Button clicked");
+					String title = titleText.getText();
+					String desc = descText.getText();
+					String keyword = keywordText.getText();
+					String versionName = versionNameText.getText();
+					String comment = commentText.getLineDelimiter();
+
+					if (title.isEmpty() || desc.isEmpty() || versionName.isEmpty() || comment.isEmpty()) {
+						throw new Exception("Please provide valid input");
+					}
+
 					EC2 amazonEC2 = new EC2();
 					PortalPost portalPost = new PortalPost();
 					String instanceNameTag = instanceCombo.getItem(instanceCombo.getSelectionIndex());
@@ -114,10 +149,9 @@ public class ExecuteDialog {
 					if (publicURL == null)
 						throw new Exception("This instance does not have a public IP. Cannot execute workflow.");
 					System.out.println(publicURL);
-					Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keywordText.getText());
+					Workflow workflow = new Workflow(titleText.getText(), descText.getText(), keyword);
 					workflow.setPath(path);
 					workflow.setSubmittor(User.username);
-					// workflow.setShared(false);
 					System.out.println(workflow.getJSON());
 
 					if (nodeID != null) {
@@ -129,9 +163,10 @@ public class ExecuteDialog {
 					}
 
 					portalPost.runCron();
-					new ProgressMonitorDialog(shell).run(true, true, new LongRunningOperation(true,
-						titleText.getText(), descText.getText(), file, folder, bucket, folderResource, page, publicURL,
-						repoOwner, isShared));
+					// publicURL = "localhost";
+					new ProgressMonitorDialog(shell).run(true, true, new LongRunningOperation(true, title, desc,
+						versionName, comment, file, folder, bucket, folderResource, page, publicURL, repoOwner,
+						isShared));
 					shell.close();
 				}
 				catch (Exception e) {
@@ -160,6 +195,9 @@ public class ExecuteDialog {
 			for (Tag tag : tags) {
 				if (tag.getKey().equalsIgnoreCase("name"))
 					instanceString[count++] = tag.getValue();
+			}
+			if (tags.isEmpty()) {
+				instanceString[count++] = instance.getInstanceId();
 			}
 			// instanceString[count++] = instance.getKeyName();
 		}
