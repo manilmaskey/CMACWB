@@ -67,6 +67,7 @@ public class ExecutionService {
 		String secretKey = execCommand.getSecretKey();
 		String fileName = execCommand.getFileName();
 		String repoOwner = execCommand.getRepoOwner();
+		String large_bucket_name = execCommand.getLargeBucketName();
 		boolean isSharedRepo = execCommand.isSharedRepo();
 
 		PropertyUtility property = new PropertyUtility("cmacBackend.properties");
@@ -75,12 +76,10 @@ public class ExecutionService {
 		String userDirPath = null;
 		String ignore_large_size_limit = null;
 		String large_directory = null;
-		String large_bucket_name = null;
 
 		userDirPath = property.getValue("backend_environment_path");
 		ignore_large_size_limit = property.getValue("ignore_large_size_limit");
 		large_directory = property.getValue("large_directory");
-		large_bucket_name = property.getValue("large_bucket_name");
 
 		if (userDirPath == null)
 			userDirPath = "/home/ec2-user/cmac_backend_environment/s3/";
@@ -92,7 +91,7 @@ public class ExecutionService {
 			large_directory = "large_files";
 
 		if (large_bucket_name == null)
-			large_bucket_name = "cmac_large_files_bucket";
+			large_bucket_name = "cwb_large_files_bucket";
 
 		if (isSharedRepo) {
 			userDirPath = userDirPath + "cmac-community/";
@@ -131,25 +130,23 @@ public class ExecutionService {
 		}
 		System.out.println("User directory: " + userDirectory.getAbsolutePath());
 
-		// 2. Check if the workflow is cloned already. If not clone the workflow otherwise pull the latest changes here
+		// 2. Check if the workflow is cloned already. If not clone the workflow otherwise delete old repository
 		File workflowDirectory = new File(userDirPath + "/" + repoName);
 		if (workflowDirectory.exists()) {
-			GITUtility.pull(repoName, userDirPath, repoRemotePath + "/" + repoName + ".git");
-			System.out.println("Make local repositories upto date");
+			delete(workflowDirectory);
+			// GITUtility.pull(repoName, userDirPath, repoRemotePath + "/" + repoName + ".git");
+			// System.out.println("Make local repositories upto date");
+			System.out.println("Deleted old repository");
 		}
-		else {
-			try {
-				GITUtility.cloneRepository(workflowDirectory.getAbsolutePath(), repoRemotePath + "/" + repoName
-					+ ".git");
-				System.out.println("Clone remote repository at workflow directory: "
-					+ workflowDirectory.getAbsolutePath());
+		try {
+			GITUtility.cloneRepository(workflowDirectory.getAbsolutePath(), repoRemotePath + "/" + repoName + ".git");
+			System.out.println("Clone remote repository at workflow directory: " + workflowDirectory.getAbsolutePath());
 
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-				return buildResponse(500,
-					"GIT Exception during execution of file " + fileName + ".\n" + e.getMessage(), execCommand.toJSON());
-			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return buildResponse(500, "GIT Exception during execution of file " + fileName + ".\n" + e.getMessage(),
+				execCommand.toJSON());
 		}
 
 		// 3. Find the specified file
@@ -158,6 +155,9 @@ public class ExecutionService {
 			System.out.println("Unable to find file: " + fileToExecute.getAbsolutePath());
 			return buildResponse(500, "File not found while trying to execute file " + fileName, execCommand.toJSON());
 		}
+
+		// 3.1 Store current directory structure in ArrayList
+		ArrayList<File> prevDirectoryStructure = walkDirectory(workflowDirectory);
 
 		// 4. Execute the file
 		System.out.println("We execute actual program here");
@@ -201,11 +201,18 @@ public class ExecutionService {
 
 		// 4.1. After execution of programs, list all huge files
 		int large_file_limit = Integer.parseInt(ignore_large_size_limit);
-		
-		ArrayList<File> ignoredFiles = getLargeFileList(workflowDirectory, large_file_limit);
-		
+
+		// 4.1.1 Store current directory structure in ArrayList
+		ArrayList<File> currDirectoryStructure = walkDirectory(workflowDirectory);
+		currDirectoryStructure.removeAll(prevDirectoryStructure);
+
+		ArrayList<File> ignoredFiles = new ArrayList<File>();
+		for (File newFile : currDirectoryStructure) {
+			if (newFile.length() >= large_file_limit)
+				ignoredFiles.add(newFile);
+		}
+
 		JSONArray ignoredFilesArray = null;
-		// TODO: Consider newly generated files only.
 		// 4.2. If there are any huge files move them into a folder
 		if (ignoredFiles.size() > 0) {
 			File largeDir = new File(workflowDirectory.getAbsolutePath() + "/" + large_directory);
@@ -245,21 +252,35 @@ public class ExecutionService {
 			ignoredFilesArray = new JSONArray();
 			AmazonS3Client amazonS3Client = new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey));
 			for (File file : ignoredFiles) {
-				String s3Location = bucketName + "/" + userName + "/" + repoName + "/" + file.getName();
+				String relativePath = file.getPath().replace(workflowDirectory.getPath(), "").replaceAll("\\\\", "/");
+				if (relativePath.startsWith("/"))
+					relativePath = relativePath.replaceFirst("/", "");
+				String s3Location = bucketName + "/" + userName + "/" + repoName + "/" + large_directory + "/"
+					+ relativePath;
+				s3Location = s3Location.replaceAll("//", "/");
 				amazonS3Client.putObject(large_bucket_name, s3Location, file);
 				JSONObject fileObject = new JSONObject();
 				fileObject.put("name", file.getName());
+				fileObject.put("path", relativePath);
 				fileObject.put("size", file.length());
-				fileObject.put("s3Location", large_bucket_name + "/" + s3Location);
+				fileObject.put("s3Location", s3Location);
 				ignoredFilesArray.put(fileObject);
 			}
 
-
 			// 4.6 Put all the large files inside the directory
 			for (File file : ignoredFiles) {
-				String name = file.getAbsolutePath().replace(workflowDirectory.getAbsolutePath(), "");
+				String name = file.getPath().replace(workflowDirectory.getPath(), "");
 				String newName = largeDir.getAbsolutePath() + "/" + name;
-				file.renameTo(new File(newName));
+				File newFile = new File(newName);
+
+				// The new file may be created anywhere in a directory, so create directory if necessary
+				String newDirName = newFile.getAbsolutePath().replace(newFile.getName(), "");
+				File newDir = new File(newDirName);
+				if (!newDir.exists())
+					newDir.mkdirs();
+				if (newFile.exists())
+					newFile.delete();
+				file.renameTo(newFile);
 			}
 
 		}
@@ -283,31 +304,40 @@ public class ExecutionService {
 		responseObject.put("files", ignoredFilesArray);
 		responseObject.put("requestInput", execCommand.toJSON());
 		responseObject.put("largeDir", large_directory);
-		
+		responseObject.put("largeBucketName", large_bucket_name);
+
 		// 7. Return successful message
-		return buildResponse(200, "Successfully executed " + fileName , responseObject);
+		return buildResponse(200, "Successfully executed " + fileName, responseObject);
 	}
 
-	private ArrayList<File> getLargeFileList(File workflowDirectory, int large_file_limit) {
-		ArrayList<File> largeFileList = new ArrayList<File>();
-		walkDirectory(workflowDirectory, large_file_limit, largeFileList);
-		return largeFileList;
+	private void delete(File file) {
+		if (file.isDirectory()) {
+			for (File listFile: file.listFiles()) {
+				delete(listFile);
+			}
+		}
+		file.delete();
 	}
 
-	private void walkDirectory(File file, int large_file_limit, ArrayList<File> list) {
-		if (file == null || list == null)
-			return;
+	private ArrayList<File> walkDirectory(File file) {
+		if (file == null)
+			return null;
 
 		if (file.getName().startsWith(".git"))
-			return;
+			return null;
+
+		ArrayList<File> directoryStructure = new ArrayList<File>();
 
 		if (file.isDirectory()) {
-			for (File listFile : file.listFiles())
-				walkDirectory(listFile, large_file_limit, list);
+			for (File listFile : file.listFiles()) {
+				if (listFile.getName().startsWith(".git"))
+					continue;
+				directoryStructure.addAll(walkDirectory(listFile));
+			}
 		}
-		else if (file.length() >= large_file_limit)
-			list.add(file);
-
+		else
+			directoryStructure.add(file);
+		return directoryStructure;
 	}
 
 	private String getSystemCommand(String fileName) {
