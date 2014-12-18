@@ -24,7 +24,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;

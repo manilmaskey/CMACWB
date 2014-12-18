@@ -20,6 +20,7 @@ public class ExecuteCommand implements JSONCommunication {
 	private final String	accessKey;
 	private final String	secretKey;
 	private final String	repoOwner;
+	private final String	largeBucketName;
 	private final boolean	isSharedRepo;
 
 	/**
@@ -33,12 +34,13 @@ public class ExecuteCommand implements JSONCommunication {
 		private final String	repoName;
 		private final String	fileName;
 
-		private String			userName		= "cmac";
-		private String			userEmail		= "cmac@itsc.uah.edu";
+		private String			userName		= "cwb";
+		private String			userEmail		= "cwb@itsc.uah.edu";
 		private String			comment			= "Execute a program";
 		private String			accessKey;
 		private String			secretKey;
 		private String			repoOwner;
+		private String			largeBucketName;
 		private boolean			isSharedRepo	= false;
 
 		public Builder(String bucketName, String repoName, String fileName) {
@@ -82,6 +84,11 @@ public class ExecuteCommand implements JSONCommunication {
 			return this;
 		}
 
+		public Builder largeBucketName(String largeBucketName) {
+			this.largeBucketName = largeBucketName;
+			return this;
+		}
+
 		public ExecuteCommand build() {
 			return new ExecuteCommand(this);
 		}
@@ -99,6 +106,7 @@ public class ExecuteCommand implements JSONCommunication {
 		accessKey = builder.accessKey;
 		secretKey = builder.secretKey;
 		repoOwner = builder.repoOwner;
+		largeBucketName = builder.largeBucketName;
 	}
 
 	public String toJSONString() {
@@ -111,7 +119,7 @@ public class ExecuteCommand implements JSONCommunication {
 			jsonECmd.put("userName", userName).put("userEmail", userEmail).put("bucketName", bucketName)
 				.put("repoName", repoName).put("fileName", fileName).put("comment", comment)
 				.put("repoOwner", repoOwner).put("isSharedRepo", isSharedRepo).put("accessKey", accessKey)
-				.put("secretKey", secretKey);
+				.put("secretKey", secretKey).put("largeBucketName", largeBucketName);
 		}
 		catch (JSONException e) {
 			e.printStackTrace();
@@ -131,6 +139,7 @@ public class ExecuteCommand implements JSONCommunication {
 		String accessKey = null;
 		String secretKey = null;
 		String repoOwner = null;
+		String largeBucketName = null;
 		boolean isSharedRepo = false;
 
 		try {
@@ -145,6 +154,7 @@ public class ExecuteCommand implements JSONCommunication {
 			accessKey = jsonEcmd.getString("accessKey");
 			secretKey = jsonEcmd.getString("secretKey");
 			repoOwner = jsonEcmd.getString("repoOwner");
+			largeBucketName = jsonEcmd.getString("largeBucketName");
 
 		}
 		catch (JSONException e) {
@@ -152,7 +162,7 @@ public class ExecuteCommand implements JSONCommunication {
 		}
 		ExecuteCommand eCmd = new ExecuteCommand.Builder(bucketName, repoName, fileName).mail(userEmail).name(userName)
 			.comment(comment).repoOwner(repoOwner).shared(isSharedRepo).accessKey(accessKey).secretKey(secretKey)
-			.build();
+			.largeBucketName(largeBucketName).build();
 		return eCmd;
 	}
 
@@ -194,6 +204,10 @@ public class ExecuteCommand implements JSONCommunication {
 
 	public String getRepoOwner() {
 		return repoOwner;
+	}
+
+	public String getLargeBucketName() {
+		return null;
 	}
 
 }

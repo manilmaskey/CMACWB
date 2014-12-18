@@ -20,7 +20,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.swt.SWT;
@@ -29,6 +31,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -187,7 +190,8 @@ class LongRunningOperation implements IRunnableWithProgress {
 			ExecuteCommand execCommand = new ExecuteCommand.Builder(bucket, repoName, file).shared(isSharedRepo)
 				.name(User.username).mail(User.userEmail).repoOwner(repoOwner)
 				.accessKey(Utilities.getKeyValueFromPreferences("s3", "aws_admin_access_key"))
-				.secretKey(Utilities.getKeyValueFromPreferences("s3", "aws_admin_secret_key")).build();
+				.secretKey(Utilities.getKeyValueFromPreferences("s3", "aws_admin_secret_key"))
+				.largeBucketName(Utilities.getKeyValueFromPreferences("s3", "large_bucket_name")).build();
 			StringEntity seData = new StringEntity(execCommand.toJSONString());
 			seData.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 			String postURL = Utilities.getKeyValueFromPreferences("s3", "backend_execute_url");
@@ -218,7 +222,7 @@ class LongRunningOperation implements IRunnableWithProgress {
 		try {
 			JSONObject jsonResponse = new JSONObject(message);
 			jsonResponse = jsonResponse.getJSONObject("response");
-			String largeDir = jsonResponse.getString("largeDir");
+			final String largeDir = jsonResponse.getString("largeDir");
 			JSONArray largeFiles = jsonResponse.getJSONArray("files");
 			if (largeFiles.length() <= 0)
 				return;
@@ -231,18 +235,44 @@ class LongRunningOperation implements IRunnableWithProgress {
 				JSONObject file = (JSONObject) largeFiles.get(i);
 				String fileName = file.getString("name");
 				int fileSize = file.getInt("size");
+				String relativePath = file.getString("path");
 				String s3Location = file.getString("s3Location");
-				IFile ifile = largeDirFolder.getFile(fileName);
-				if (!ifile.exists()) {
-					ifile.createLink(ifile.getProjectRelativePath(), IResource.ALLOW_MISSING_LOCAL, null);
+				IFile ifile = largeDirFolder.getFile(relativePath);
+				if (ifile.exists())
+					ifile.delete(true, null);
+				if (!ifile.getParent().exists()) {
+					File parentDir = new File(ifile.getParent().getLocation().toString());
+					parentDir.mkdirs();
+					largeDirFolder.refreshLocal(IFolder.DEPTH_INFINITE, null);
+
 				}
+				File localFile = new File(ifile.getLocation().toString());
+				if (!localFile.exists())
+					localFile.createNewFile();
+				ifile.createLink(ifile.getLocation(), IResource.NONE, null);
+				ifile.setPersistentProperty(new QualifiedName("edu.uah.itsc.cmac3.needS3Download", "needS3Download"),
+					"true");
+				ifile.setPersistentProperty(new QualifiedName("edu.uah.itsc.cmac3.s3Location", "s3Location"),
+					s3Location);
 			}
+
+			Display.getDefault().asyncExec(new Runnable() {
+				@Override
+				public void run() {
+					MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Information",
+						"Some large files were generated while executing this program.\nThese files are stored in directory '"
+							+ largeDir + "' and will be downloaded when you try to open them.");
+				}
+			});
+
 		}
 		catch (JSONException e) {
 			e.printStackTrace();
 		}
 		catch (CoreException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
