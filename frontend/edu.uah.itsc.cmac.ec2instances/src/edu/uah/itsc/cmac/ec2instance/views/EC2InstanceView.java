@@ -6,11 +6,14 @@ package edu.uah.itsc.cmac.ec2instance.views;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -24,11 +27,16 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
 
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.ec2.model.CreateImageRequest;
+import com.amazonaws.services.ec2.model.CreateImageResult;
+import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.StartInstancesResult;
 import com.amazonaws.services.ec2.model.StopInstancesResult;
 import com.amazonaws.services.ec2.model.Tag;
 
+import edu.uah.itsc.aws.CustomAWSInstance;
 import edu.uah.itsc.aws.EC2;
 import edu.uah.itsc.aws.User;
 
@@ -40,6 +48,7 @@ public class EC2InstanceView extends ViewPart {
 	private TableViewer	viewer;
 	private Button		stopButton;
 	private Button		startButton;
+	private Button		createAMIButton;
 
 	/**
 	 * This is a callback that will allow us to create the viewer and initialize it.
@@ -73,7 +82,7 @@ public class EC2InstanceView extends ViewPart {
 		// addComposite.setLayoutData(layoutData);
 
 		Composite buttonComposite = new Composite(parent, SWT.NONE);
-		buttonComposite.setLayout(new GridLayout(3, false));
+		buttonComposite.setLayout(new GridLayout(4, false));
 		startButton = new Button(buttonComposite, SWT.PUSH);
 		startButton.setText("Start");
 		Image image = new Image(parent.getDisplay(), getClass().getClassLoader().getResourceAsStream("icons/start.png"));
@@ -90,11 +99,12 @@ public class EC2InstanceView extends ViewPart {
 					"Are you sure you want to start the selected instance(s)?");
 				if (userConfirmation)
 					for (TableItem tableItem : selectedItems) {
-						Instance instance = (Instance) tableItem.getData();
-						System.out.println(instance.getInstanceId());
-						instanceIds.add(instance.getInstanceId());
-						StartInstancesResult result = amazonEC2.startInstances(instanceIds);
+						CustomAWSInstance instance = (CustomAWSInstance) tableItem.getData();
+						instanceIds.add(instance.getInstance().getInstanceId());
+						StartInstancesResult result = amazonEC2.startInstances(instanceIds, instance.getRegion());
 						viewer.refresh();
+						MessageDialog.openInformation(parent.getShell(), "Success",
+							"Sent request to start the instance. It may take a while. Refresh to see the changes.");
 					}
 			}
 		});
@@ -115,11 +125,13 @@ public class EC2InstanceView extends ViewPart {
 					"Are you sure you want to stop the selected instance(s)?");
 				if (userConfirmation)
 					for (TableItem tableItem : selectedItems) {
-						Instance instance = (Instance) tableItem.getData();
-						System.out.println(instance.getInstanceId());
-						instanceIds.add(instance.getInstanceId());
-						StopInstancesResult result = amazonEC2.stopInstances(instanceIds);
+						CustomAWSInstance instance = (CustomAWSInstance) tableItem.getData();
+						instanceIds.add(instance.getInstance().getInstanceId());
+						StopInstancesResult result = amazonEC2.stopInstances(instanceIds, instance.getRegion());
 						viewer.refresh();
+						MessageDialog.openInformation(parent.getShell(), "Success",
+							"Sent request to stop the instance. It may take a while. Refresh to see the changes.");
+
 					}
 			}
 		});
@@ -136,7 +148,69 @@ public class EC2InstanceView extends ViewPart {
 			}
 
 		});
+
+		createAMIButton = new Button(buttonComposite, SWT.PUSH);
+		createAMIButton.setText("Create AMI");
+		createAMIButton.setToolTipText("Creates AMI Image from the selected instance");
+		image = new Image(parent.getDisplay(), getClass().getClassLoader().getResourceAsStream("icons/submit.gif"));
+		createAMIButton.setImage(image);
+		createAMIButton.setEnabled(false);
+		createAMIButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				super.widgetSelected(e);
+				Table table = viewer.getTable();
+				TableItem selectedItems[] = table.getSelection();
+				if (selectedItems.length != 1) {
+					MessageDialog.openError(parent.getShell(), "Error!!", "Please select one instance to create AMI");
+					return;
+				}
+				boolean userConfirmation = MessageDialog.openConfirm(parent.getShell(), "Warning! Create AMI!!",
+					"Are you sure you want to create new AMI from selected instance?");
+				if (userConfirmation) {
+					CustomAWSInstance instance = (CustomAWSInstance) selectedItems[0].getData();
+					InputDialog dialog = new InputDialog(parent.getShell(), "Create AMI", "Enter name for the AMI",
+						User.username + "-" + instance.getInstance().getPublicDnsName(), new IInputValidator() {
+
+							@Override
+							public String isValid(String newText) {
+								if (newText.trim().isEmpty())
+									return "You must provide a name for the image";
+								return null;
+							}
+						});
+					String amiName = null;
+					if (dialog.open() == Window.OK) {
+						amiName = dialog.getValue();
+					}
+					else
+						return;
+					try {
+						createAMI(amazonEC2, amiName, instance.getInstance().getInstanceId(), instance.getRegion());
+					}
+					catch (Exception e1) {
+						MessageDialog.openError(parent.getShell(), "Error", "Unable to create AMI.\n" + e1.getMessage());
+					}
+				}
+			}
+		});
+
 		buttonComposite.setLayoutData(layoutData);
+	}
+
+	private void createAMI(EC2 amazonEC2, String name, String instanceId, Regions instanceRegion) throws Exception {
+		CreateImageRequest createRequest = new CreateImageRequest();
+		createRequest.withName(name).withDescription(name);
+		createRequest.withInstanceId(instanceId);
+		CreateImageResult result = amazonEC2.createImage(createRequest, instanceRegion);
+		String imageId = result.getImageId();
+		ArrayList<Tag> tags = new ArrayList<Tag>();
+		Tag tag = new Tag("owner", User.username);
+		tags.add(tag);
+		CreateTagsRequest ctRequest = new CreateTagsRequest();
+		ctRequest.withResources(imageId);
+		ctRequest.withTags(tags);
+		amazonEC2.createTags(ctRequest, instanceRegion);
 	}
 
 	/**
@@ -162,11 +236,10 @@ public class EC2InstanceView extends ViewPart {
 		table.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				Instance instance = (Instance) e.item.getData();
-				System.out.println("selected: " + e.item + " name: " + instance.getInstanceId());
 				if (User.isAdmin) {
 					startButton.setEnabled(true);
 					stopButton.setEnabled(true);
+					createAMIButton.setEnabled(true);
 				}
 
 			}
@@ -175,7 +248,7 @@ public class EC2InstanceView extends ViewPart {
 
 	public void createColumns(final TableViewer viewer) {
 		String[] titles = { "Name", "Instance ID", "Instance Type", "Instance State", "Status Checks", "Public DNS",
-				"Public IP", "Key Name" };
+			"Public IP", "Key Name" };
 		int[] bounds = { 100, 75, 100, 100, 100, 300, 100, 100 };
 
 		// Name
@@ -183,13 +256,13 @@ public class EC2InstanceView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Instance instance = (Instance) element;
-				List<Tag> tags = instance.getTags();
+				CustomAWSInstance instance = (CustomAWSInstance) element;
+				List<Tag> tags = instance.getInstance().getTags();
 				for (Tag tag : tags) {
 					if (tag.getKey().equalsIgnoreCase("name"))
 						return tag.getValue();
 				}
-				return instance.getInstanceId();
+				return instance.getInstance().getInstanceId();
 			}
 		});
 
@@ -198,8 +271,8 @@ public class EC2InstanceView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Instance instance = (Instance) element;
-				return instance.getInstanceId();
+				CustomAWSInstance instance = (CustomAWSInstance) element;
+				return instance.getInstance().getInstanceId();
 			}
 		});
 
@@ -208,8 +281,8 @@ public class EC2InstanceView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Instance instance = (Instance) element;
-				return instance.getInstanceType();
+				CustomAWSInstance instance = (CustomAWSInstance) element;
+				return instance.getInstance().getInstanceType();
 			}
 		});
 
@@ -218,8 +291,8 @@ public class EC2InstanceView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Instance instance = (Instance) element;
-				return instance.getState().getName();
+				CustomAWSInstance instance = (CustomAWSInstance) element;
+				return instance.getInstance().getState().getName();
 			}
 		});
 
@@ -228,8 +301,8 @@ public class EC2InstanceView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Instance instance = (Instance) element;
-				return instance.getInstanceId();
+				CustomAWSInstance instance = (CustomAWSInstance) element;
+				return instance.getInstance().getInstanceId();
 			}
 		});
 
@@ -238,8 +311,8 @@ public class EC2InstanceView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Instance instance = (Instance) element;
-				return instance.getPublicDnsName();
+				CustomAWSInstance instance = (CustomAWSInstance) element;
+				return instance.getInstance().getPublicDnsName();
 			}
 		});
 
@@ -248,8 +321,8 @@ public class EC2InstanceView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Instance instance = (Instance) element;
-				return instance.getPublicIpAddress();
+				CustomAWSInstance instance = (CustomAWSInstance) element;
+				return instance.getInstance().getPublicIpAddress();
 			}
 		});
 
@@ -258,8 +331,8 @@ public class EC2InstanceView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Instance instance = (Instance) element;
-				return instance.getKeyName();
+				CustomAWSInstance instance = (CustomAWSInstance) element;
+				return instance.getInstance().getKeyName();
 			}
 		});
 	}
