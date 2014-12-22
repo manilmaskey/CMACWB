@@ -18,21 +18,21 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.model.CreateImageRequest;
 import com.amazonaws.services.ec2.model.CreateImageResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DeregisterImageRequest;
-import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.Tag;
 
+import edu.uah.itsc.aws.CustomAWSImage;
 import edu.uah.itsc.aws.EC2;
 import edu.uah.itsc.aws.User;
 
@@ -71,10 +71,10 @@ public class AMIView extends ViewPart {
 	private void createWidgets(final Composite parent, final EC2 amazonEC2) {
 		GridData layoutData = new GridData();
 		Composite addComposite = new Composite(parent, SWT.NONE);
-		addComposite.setLayout(new GridLayout(5, false));
+		addComposite.setLayout(new GridLayout(7, false));
 
 		GridData widgetLayoutData = new GridData();
-		widgetLayoutData.widthHint = 180;
+		widgetLayoutData.widthHint = 140;
 		Label nameLabel = new Label(addComposite, SWT.NONE);
 
 		nameLabel.setText("New AMI Name");
@@ -84,12 +84,12 @@ public class AMIView extends ViewPart {
 		instanceLabel.setText("Instance ID");
 		final Text instanceText = new Text(addComposite, SWT.BORDER);
 		instanceText.setLayoutData(widgetLayoutData);
+
 		Button submitButton = new Button(addComposite, SWT.PUSH);
-		submitButton.setText("Submit AMI");
+		submitButton.setText("Submit");
 		org.eclipse.swt.graphics.Image image = new org.eclipse.swt.graphics.Image(parent.getDisplay(), getClass()
 			.getClassLoader().getResourceAsStream("icons/submit.gif"));
 		submitButton.setImage(image);
-		submitButton.setLayoutData(widgetLayoutData);
 		submitButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -99,19 +99,19 @@ public class AMIView extends ViewPart {
 					"Are you sure you want to create a new AMI in the cloud?");
 				if (userConfirmation) {
 					try {
-						createAMI(amazonEC2, nameText.getText(), instanceText.getText());
-						MessageBox message = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
-						message.setMessage("Added new AMI successfully");
-						message.setText("Success");
-						message.open();
+						Regions region = amazonEC2.getInstanceRegion(instanceText.getText());
+						if (region == null) {
+							MessageDialog.openError(parent.getShell(), "Error", "Invalid instance ID");
+							return;
+						}
+						createAMI(amazonEC2, nameText.getText(), instanceText.getText(), region);
+						MessageDialog.openInformation(parent.getShell(), "Success", "Added new AMI successfully");
 						nameText.setText("");
 						instanceText.setText("");
 					}
 					catch (Exception exception) {
-						MessageBox message = new MessageBox(parent.getShell(), SWT.ERROR);
-						message.setText("Error");
-						message.setMessage("Unable to create new AMI.\n" + exception.getMessage());
-						message.open();
+						MessageDialog.openError(parent.getShell(), "Error",
+							"Unable to create new AMI.\n" + exception.getMessage());
 					}
 				}
 			}
@@ -146,27 +146,25 @@ public class AMIView extends ViewPart {
 					"Warning! Run a new instance using Amazon Machine Image in Amazon cloud!!",
 					"Are you sure you want to run a new instance using selected AMI?");
 				if (userConfirmation) {
+					if (runInstanceText.getText().trim().isEmpty()) {
+						MessageDialog.openError(parent.getShell(), "Error", "You must provide name for the instance");
+						return;
+					}
 					try {
 						Table table = viewer.getTable();
-						Image ami = (Image) table.getSelection()[0].getData();
-						runInstanceUsingAMI(amazonEC2, ami.getImageId(), runInstanceText.getText());
-						MessageBox message = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
-						message.setMessage("A new instance is run successfully");
-						message.setText("Success");
-						message.open();
+						CustomAWSImage ami = (CustomAWSImage) table.getSelection()[0].getData();
+						runInstanceUsingAMI(amazonEC2, ami.getImage().getImageId(), runInstanceText.getText(),
+							ami.getRegion());
+						MessageDialog.openInformation(parent.getShell(), "Success",
+							"Sent request to start the instance based on this. It may take a while. Refresh to see the changes.");
 						runInstanceText.setText("");
 					}
 					catch (Exception exception) {
-						MessageBox message = new MessageBox(parent.getShell(), SWT.ERROR);
-						message.setText("Error");
-						message.setMessage("Unable to run new instance.\n" + exception.getMessage());
-						message.open();
+						MessageDialog.openError(parent.getShell(), "Error",
+							"Unable to run new instance.\n" + exception.getMessage());
 					}
-
 				}
-
 			}
-
 		});
 
 		deleteButton = new Button(buttonComposite, SWT.PUSH);
@@ -187,9 +185,10 @@ public class AMIView extends ViewPart {
 					"Are you sure you want to delete the selected AMI(s) from the cloud?");
 				if (userConfirmation) {
 					for (TableItem tableItem : selectedItems) {
-						Image image = (Image) tableItem.getData();
-						System.out.println(image.getImageId());
-						degregisterAMI(amazonEC2, image.getImageId());
+						CustomAWSImage image = (CustomAWSImage) tableItem.getData();
+						degregisterAMI(amazonEC2, image.getImage().getImageId(), image.getRegion());
+						MessageDialog.openInformation(parent.getShell(), "Success",
+							"Sent request to delete the AMI. It may take a while. Refresh to see the changes.");
 					}
 				}
 			}
@@ -243,8 +242,6 @@ public class AMIView extends ViewPart {
 		table.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				Image image = (Image) e.item.getData();
-				System.out.println("selected: " + e.item + " name: " + image.getImageId());
 				if (User.isAdmin) {
 					runButton.setEnabled(true);
 					deleteButton.setEnabled(true);
@@ -262,8 +259,8 @@ public class AMIView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Image ami = (Image) element;
-				return ami.getName();
+				CustomAWSImage ami = (CustomAWSImage) element;
+				return ami.getImage().getName();
 			}
 		});
 
@@ -272,13 +269,13 @@ public class AMIView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Image ami = (Image) element;
-				List<Tag> tags = ami.getTags();
+				CustomAWSImage ami = (CustomAWSImage) element;
+				List<Tag> tags = ami.getImage().getTags();
 				for (Tag tag : tags) {
 					if (tag.getKey().equalsIgnoreCase("owner"))
 						return tag.getValue();
 				}
-				return ami.getOwnerId();
+				return ami.getImage().getOwnerId();
 			}
 		});
 
@@ -287,8 +284,8 @@ public class AMIView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Image ami = (Image) element;
-				return ami.getDescription();
+				CustomAWSImage ami = (CustomAWSImage) element;
+				return ami.getImage().getDescription();
 			}
 		});
 
@@ -297,8 +294,8 @@ public class AMIView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Image ami = (Image) element;
-				return ami.getImageId();
+				CustomAWSImage ami = (CustomAWSImage) element;
+				return ami.getImage().getImageId();
 			}
 		});
 
@@ -307,8 +304,8 @@ public class AMIView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Image ami = (Image) element;
-				return ami.getImageLocation();
+				CustomAWSImage ami = (CustomAWSImage) element;
+				return ami.getImage().getImageLocation();
 			}
 		});
 
@@ -317,8 +314,8 @@ public class AMIView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Image ami = (Image) element;
-				return ami.getState();
+				CustomAWSImage ami = (CustomAWSImage) element;
+				return ami.getImage().getState();
 			}
 		});
 
@@ -327,8 +324,8 @@ public class AMIView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Image ami = (Image) element;
-				return ami.getPlatform();
+				CustomAWSImage ami = (CustomAWSImage) element;
+				return ami.getImage().getPlatform();
 			}
 		});
 
@@ -337,8 +334,8 @@ public class AMIView extends ViewPart {
 		column.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				Image ami = (Image) element;
-				return ami.getRootDeviceType();
+				CustomAWSImage ami = (CustomAWSImage) element;
+				return ami.getImage().getRootDeviceType();
 			}
 		});
 	}
@@ -363,11 +360,11 @@ public class AMIView extends ViewPart {
 	/**
 	 * @param amazonEC2
 	 */
-	private void createAMI(EC2 amazonEC2, String name, String instanceId) {
+	private void createAMI(EC2 amazonEC2, String name, String instanceId, Regions region) {
 		CreateImageRequest createRequest = new CreateImageRequest();
 		createRequest.withName(name).withDescription(name);
 		createRequest.withInstanceId(instanceId);
-		CreateImageResult result = amazonEC2.createImage(createRequest);
+		CreateImageResult result = amazonEC2.createImage(createRequest, region);
 		String imageId = result.getImageId();
 		ArrayList<Tag> tags = new ArrayList<Tag>();
 		Tag tag = new Tag("owner", User.username);
@@ -375,13 +372,13 @@ public class AMIView extends ViewPart {
 		CreateTagsRequest ctRequest = new CreateTagsRequest();
 		ctRequest.withResources(imageId);
 		ctRequest.withTags(tags);
-		amazonEC2.createTags(ctRequest);
+		amazonEC2.createTags(ctRequest, region);
 		refreshAMI(amazonEC2);
 	}
 
-	private void degregisterAMI(EC2 amazonEC2, String imageID) {
+	private void degregisterAMI(EC2 amazonEC2, String imageID, Regions region) {
 		DeregisterImageRequest deregisterRequest = new DeregisterImageRequest(imageID);
-		amazonEC2.deregisterImage(deregisterRequest);
+		amazonEC2.deregisterImage(deregisterRequest, region);
 		refreshAMI(amazonEC2);
 	}
 
@@ -392,8 +389,8 @@ public class AMIView extends ViewPart {
 		deleteButton.setEnabled(false);
 	}
 
-	private void runInstanceUsingAMI(EC2 amazonEC2, String imageId, String instanceName) {
+	private void runInstanceUsingAMI(EC2 amazonEC2, String imageId, String instanceName, Regions region) {
 		RunInstancesRequest runInstancesRequest = new RunInstancesRequest(imageId, 1, 1);
-		amazonEC2.runInstances(runInstancesRequest, instanceName);
+		amazonEC2.runInstances(runInstancesRequest, instanceName, region);
 	}
 }

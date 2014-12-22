@@ -27,6 +27,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
 
+import edu.uah.itsc.aws.CustomAWSInstance;
 import edu.uah.itsc.aws.EC2;
 import edu.uah.itsc.aws.User;
 import edu.uah.itsc.cmac.portal.PortalPost;
@@ -187,17 +188,17 @@ public class ExecuteDialog {
 
 	private String[] getInstanceList() {
 		EC2 amazonEC2 = new EC2();
-		ArrayList<Instance> instances = amazonEC2.getInstances("running");
+		ArrayList<CustomAWSInstance> instances = amazonEC2.getInstances("running");
 		String[] instanceString = new String[instances.size()];
 		int count = 0;
-		for (Instance instance : instances) {
-			List<Tag> tags = instance.getTags();
+		for (CustomAWSInstance instance : instances) {
+			List<Tag> tags = instance.getInstance().getTags();
 			for (Tag tag : tags) {
 				if (tag.getKey().equalsIgnoreCase("name"))
 					instanceString[count++] = tag.getValue();
 			}
 			if (tags.isEmpty()) {
-				instanceString[count++] = instance.getInstanceId();
+				instanceString[count++] = instance.getInstance().getInstanceId();
 			}
 			// instanceString[count++] = instance.getKeyName();
 		}

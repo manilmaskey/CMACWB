@@ -20,6 +20,7 @@ import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DeregisterImageRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
+import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Filter;
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
@@ -54,10 +55,26 @@ public class EC2 {
 		amazonEC2 = new AmazonEC2Client(credentials);
 	}
 
-	public List<Image> getAMIImages() throws AmazonServiceException, AmazonClientException {
+	public List<CustomAWSImage> getAMIImages() throws AmazonServiceException, AmazonClientException {
 		DescribeImagesRequest request = new DescribeImagesRequest();
 		request.withOwners(awsUserID);
-		List<Image> images = amazonEC2.describeImages(request).getImages();
+		List<CustomAWSImage> images = new ArrayList<CustomAWSImage>();
+
+		for (Regions r : Regions.values()) {
+			// We won't have access to all regions, for eg. GovCloud, so catch exception that AWS throws and continue
+			try {
+				amazonEC2.setRegion(Region.getRegion(r));
+				List<Image> amiImages = amazonEC2.describeImages(request).getImages();
+				for (Image amiImage : amiImages) {
+					CustomAWSImage image = new CustomAWSImage(amiImage, r);
+					images.add(image);
+				}
+			}
+			catch (Exception e) {
+				continue;
+			}
+		}
+
 		return images;
 	}
 
@@ -66,25 +83,34 @@ public class EC2 {
 		amazonEC2.modifyImageAttribute(request);
 	}
 
-	public CreateImageResult createImage(CreateImageRequest createRequest) throws AmazonServiceException,
+	public CreateImageResult createImage(CreateImageRequest createRequest, Regions region)
+		throws AmazonServiceException, AmazonClientException {
+		amazonEC2.setRegion(Region.getRegion(region));
+		CreateImageResult createImageResult = amazonEC2.createImage(createRequest);
+		amazonEC2.setRegion(Region.getRegion(Regions.US_EAST_1));
+		return createImageResult;
+	}
+
+	public void deregisterImage(DeregisterImageRequest request, Regions region) throws AmazonServiceException,
 		AmazonClientException {
-		return amazonEC2.createImage(createRequest);
-
-	}
-
-	public void deregisterImage(DeregisterImageRequest request) throws AmazonServiceException, AmazonClientException {
+		amazonEC2.setRegion(Region.getRegion(region));
 		amazonEC2.deregisterImage(request);
+		amazonEC2.setRegion(Region.getRegion(Regions.US_EAST_1));
 	}
 
-	public void createTags(CreateTagsRequest ctRequest) throws AmazonServiceException, AmazonClientException {
+	public void createTags(CreateTagsRequest ctRequest, Regions region) throws AmazonServiceException,
+		AmazonClientException {
+		amazonEC2.setRegion(Region.getRegion(region));
 		amazonEC2.createTags(ctRequest);
+		amazonEC2.setRegion(Region.getRegion(Regions.US_EAST_1));
 	}
 
-	public ArrayList<Instance> getInstances(String instanceState) throws AmazonServiceException, AmazonClientException {
+	public ArrayList<CustomAWSInstance> getInstances(String instanceState) throws AmazonServiceException,
+		AmazonClientException {
 		/*
 		 * Amazon EC2 instance state Allowed Values: pending, running, shutting-down, terminated, stopping, stopped
 		 */
-		ArrayList<Instance> allInstances = new ArrayList<Instance>();
+		ArrayList<CustomAWSInstance> allInstances = new ArrayList<CustomAWSInstance>();
 		DescribeInstancesRequest request = new DescribeInstancesRequest();
 		if (instanceState != null) {
 			Filter filter = new Filter();
@@ -93,26 +119,18 @@ public class EC2 {
 			request.withFilters(filter);
 		}
 
-		List<Reservation> reservations = new ArrayList<Reservation>();
-
 		for (Regions r : Regions.values()) {
 			// We won't have access to all regions, for eg. GovCloud, so catch exception that AWS throws and continue
 			try {
 				amazonEC2.setRegion(Region.getRegion(r));
-				reservations.addAll(amazonEC2.describeInstances(request).getReservations());
+				for (Reservation reservation : amazonEC2.describeInstances(request).getReservations()) {
+					for (Instance instance : reservation.getInstances()) {
+						allInstances.add(new CustomAWSInstance(instance, r));
+					}
+				}
 			}
 			catch (Exception e) {
 				continue;
-			}
-		}
-
-		amazonEC2.setRegion(Region.getRegion(Regions.US_EAST_1));
-
-		for (Reservation reservation : reservations) {
-			List<Instance> instances = reservation.getInstances();
-			for (Instance instance : instances) {
-				allInstances.add(instance);
-
 			}
 		}
 		return allInstances;
@@ -154,19 +172,26 @@ public class EC2 {
 		return null;
 	}
 
-	public StartInstancesResult startInstances(List<String> instanceIds) throws AmazonServiceException,
-		AmazonClientException {
+	public StartInstancesResult startInstances(List<String> instanceIds, Regions regions)
+		throws AmazonServiceException, AmazonClientException {
+		amazonEC2.setRegion(Region.getRegion(regions));
 		StartInstancesRequest startRequest = new StartInstancesRequest(instanceIds);
-		return amazonEC2.startInstances(startRequest);
+		StartInstancesResult result = amazonEC2.startInstances(startRequest);
+		amazonEC2.setRegion(Region.getRegion(Regions.US_EAST_1));
+		return result;
 	}
 
-	public StopInstancesResult stopInstances(List<String> instanceIds) throws AmazonServiceException,
+	public StopInstancesResult stopInstances(List<String> instanceIds, Regions regions) throws AmazonServiceException,
 		AmazonClientException {
+		amazonEC2.setRegion(Region.getRegion(regions));
 		StopInstancesRequest stopRequest = new StopInstancesRequest(instanceIds);
-		return amazonEC2.stopInstances(stopRequest);
+		StopInstancesResult result = amazonEC2.stopInstances(stopRequest);
+		amazonEC2.setRegion(Region.getRegion(Regions.US_EAST_1));
+		return result;
 	}
 
-	public void runInstances(RunInstancesRequest runInstancesRequest, String instanceName) {
+	public void runInstances(RunInstancesRequest runInstancesRequest, String instanceName, Regions region) {
+		amazonEC2.setRegion(Region.getRegion(region));
 		RunInstancesResult result = amazonEC2.runInstances(runInstancesRequest);
 		Reservation reservation = result.getReservation();
 		List<Instance> instanceList = reservation.getInstances();
@@ -179,5 +204,21 @@ public class EC2 {
 		CreateTagsRequest tagRequest = new CreateTagsRequest(resources, tags);
 		amazonEC2.createTags(tagRequest);
 
+	}
+
+	public Regions getInstanceRegion(String instanceId) {
+		DescribeInstancesRequest dir = new DescribeInstancesRequest().withInstanceIds(instanceId);
+		for (Regions region : Regions.values()) {
+			try {
+				DescribeInstancesResult result = amazonEC2.describeInstances(dir);
+				if (!result.getReservations().isEmpty())
+					return region;
+			}
+			catch (Exception e) {
+				continue;
+			}
+		}
+
+		return null;
 	}
 }
