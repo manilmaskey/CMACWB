@@ -98,6 +98,16 @@ public class AMIView extends ViewPart {
 					"Warning! Create new Amazon Machine Image in Amazon cloud!!",
 					"Are you sure you want to create a new AMI in the cloud?");
 				if (userConfirmation) {
+					if (instanceText.getText().trim().isEmpty()) {
+						MessageDialog.openError(parent.getShell(), "Error", "You must provide the instance ID");
+						return;
+					}
+
+					if (nameText.getText().trim().isEmpty()) {
+						MessageDialog.openError(parent.getShell(), "Error", "You must provide name for the AMI");
+						return;
+					}
+					
 					try {
 						Regions region = amazonEC2.getInstanceRegion(instanceText.getText());
 						if (region == null) {

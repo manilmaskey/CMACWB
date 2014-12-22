@@ -208,17 +208,20 @@ public class EC2 {
 
 	public Regions getInstanceRegion(String instanceId) {
 		DescribeInstancesRequest dir = new DescribeInstancesRequest().withInstanceIds(instanceId);
+		Regions instanceRegion = null;
 		for (Regions region : Regions.values()) {
 			try {
+				amazonEC2.setRegion(Region.getRegion(region));
 				DescribeInstancesResult result = amazonEC2.describeInstances(dir);
-				if (!result.getReservations().isEmpty())
-					return region;
+				if (!result.getReservations().isEmpty()) {
+					instanceRegion = region;
+				}
 			}
 			catch (Exception e) {
 				continue;
 			}
 		}
-
-		return null;
+		amazonEC2.setRegion(Region.getRegion(Regions.US_EAST_1));
+		return instanceRegion;
 	}
 }
