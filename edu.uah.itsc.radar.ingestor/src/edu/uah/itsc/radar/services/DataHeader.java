@@ -1,6 +1,5 @@
 package edu.uah.itsc.radar.services;
 
-import java.util.Vector;
 
 public class DataHeader {
 

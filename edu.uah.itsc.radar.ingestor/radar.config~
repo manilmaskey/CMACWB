@@ -1,0 +1,10 @@
+#Radar Configurations
+
+#Radar IP
+RADAR_IP=vchill.chill.colostate.edu
+
+#Radar Port
+RADAR_PORT=2511
+
+#File to which NetCDF will be published
+NETCDF_PUBLISH_FILE=/tmp/test3.nc

@@ -4,6 +4,7 @@ package edu.uah.itsc.radar.main;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
@@ -13,17 +14,15 @@ import java.util.Date;
 import java.util.Vector;
 
 import edu.uah.itsc.radar.config.RadarConfig;
+import edu.uah.itsc.radar.postprocessing.RadarIngestorPPIToNetCDF;
 import edu.uah.itsc.radar.services.DataHeader;
 import edu.uah.itsc.radar.services.FieldTypeInfoHeader;
 import edu.uah.itsc.radar.services.HousekeepingHeader;
 import edu.uah.itsc.radar.services.RadarIngestorServices;
+import edu.uah.itsc.radar.services.RadarIngestorTimer;
 import edu.uah.itsc.radar.services.ScanSegmentHeader;
 
 public class RadarIngestor {
-
-	/**
-	 * @param args
-	 */
 
 	//Server
 	private static Socket server = null;
@@ -35,21 +34,26 @@ public class RadarIngestor {
 	private static DataOutputStream dos = null;
 	private static DataInputStream dis = null;
 	private static int headerType, headerLength;
-	private static String headerName = null;
 
 	//Log File 
 	private static BufferedWriter logFile = null;
+
+	//Data File [ AT THE MOMENT I AM ONLY RECORDING DATA FOR PPI SCAN ]
 	private static BufferedWriter dataFile = null;
 
+	//Main
 	public static void main(String[] args) {
 
+		//Timer
+		RadarIngestorTimer rit = null;
+
 		//Initialize log file
-//		try {
-//			logFile = new BufferedWriter(new FileWriter("data.csv"));
-//		} catch (IOException e) {
-//			System.out.println("Log Error: " + e.getMessage());
-//			System.exit(1);
-//		}
+		try {
+			logFile = new BufferedWriter(new FileWriter("log.txt"));
+		} catch (IOException e) {
+			System.out.println("Log Error: " + e.getMessage());
+			System.exit(1);
+		}
 
 		try {
 			//Connect to radar server
@@ -69,12 +73,14 @@ public class RadarIngestor {
 			Log("Requesting DATA CHANNEL");
 			dos.writeInt(RadarConfig.DATA_CHANNEL);
 
-			//Wait for buffer to be ready [NEED A BETTER WAY TO DO THIS!]
-			for(long i =0; i<999999999; ++i);
+			//Wait for buffer to be ready
+			rit = new RadarIngestorTimer(2500); // milisecs
+			rit.start();
+			rit.join();
 
 			//Read the field_type_info header sent by server
 			while(dis.available() > 0){
-				
+
 				//Read header type and header length
 				headerType = dis.readInt();
 				headerLength = dis.readInt();
@@ -85,26 +91,23 @@ public class RadarIngestor {
 			}
 			Log("Received " + fieldHeaders.size() + " field info type header(s)");
 
-			//Display the field info received
-			for(int i=0; i<fieldHeaders.size(); ++i)
-				Log(fieldHeaders.get(i).toString());
-
-
 			//Send request to receive all feeds
-			Log("Send request for all feeds");
+			Log("Send request for reflectivity");
 			dos.writeLong(RadarConfig.FEED_REFLECTIVITY);
 
-			//Wait for buffer to be ready [NEED A BETTER WAY TO DO THIS!]
-			for(long i =0; i<999999999; ++i);
-
+			//Wait for buffer to be ready
+			rit = new RadarIngestorTimer(2500);
+			rit.start();
+			rit.join();
 
 			//Various packets that can be received during real time reading of data from server
 			DataHeader dh = null;
 			HousekeepingHeader hk = null;
 			ScanSegmentHeader sgh = null;
-			
-			//Variables used while processing data during PPI scan
-			float _lat, _lon, _angle, _range;
+
+			//Keep info about last scan
+			String lastPPIFilename = null;
+			int lastScanMode = -1;
 
 			//Main loop
 			while(true){
@@ -113,105 +116,136 @@ public class RadarIngestor {
 				headerType = dis.readInt();
 				headerLength = dis.readInt();
 
-				//Determine type of header
-				headerName = RadarIngestorServices.getHeaderName(headerType);
-				if(headerName.compareTo("UNKNOWN") != 0){
-					//KNOWN HEADER
+				//Apply action based on type of header
+				switch(headerType){
 
-					if(headerName.compareTo("DATA") == 0){
-						//DATA HEADER
+				case RadarConfig.HEADER_DATA:
+					//DATA HEADER
 
-						//Parse the data header
-						dh = RadarIngestorServices.parseDataHeader(dis);
+					//Parse the data header
+					dh = RadarIngestorServices.parseDataHeader(dis);
 
-						//Skip extra bytes at the end of data header
-						dis.skipBytes(headerLength - 8 - RadarConfig.SIZE_DATA_HEADER);
+					//Skip extra bytes at the end of data header
+					dis.skipBytes(headerLength - 8 - RadarConfig.SIZE_DATA_HEADER);
 
-						//Now process the following data based on the current radar scan mode
+					//Now process the following data based on the current radar scan mode
+					if(sgh != null && hk != null){
+
 						//Determine the radar scan mode
-						if(sgh != null && hk != null && sgh.getScanMode() == 0){
+						switch(sgh.getScanMode()){
+
+						case 0:
 							//PPI Scan mode
-							
-							//Determine the current angle of the ray
-							_angle = ((float)(dh.getStartAz() + dh.getEndAz())) / 2;
-							_angle = (_angle * 360) / hk.getAngleScale();
-							
-							//Compute lat and lon for each data point and dump that tuple(lat,lon,data) to file
-							for(int i = 0; i < dh.getNumGates(); ++i){
-								
-								//Distance from radar
-								_range = i * hk.getGateWidth();
-								
-								//Latitude
-								_lat = (float) (_range * Math.sin( Math.toRadians(_angle)));
-									_lat = (float) (((float)hk.getRadarLatitude() / 1000000) + Math.toDegrees(_lat / RadarConfig.RADIUS_OF_EARTH));
-									
-								//Longitude
-								_lon = (float) (_range * Math.cos( Math.toRadians(_angle)));
-									_lon = (float) (((float)hk.getRadarLongitude() / 1000000) + Math.toDegrees(_lon / RadarConfig.RADIUS_OF_EARTH));
-									
-								//Dump to file
-								logFile.write(_lat+","+_lon+","+ fieldHeaders.get(0).getValue(dis.readByte()));	
-								logFile.newLine();
-								logFile.flush();
-							}
-						}
-						else{
+
+							//Record reflectivity data
+							RadarIngestorServices.recordData_PPI(dataFile, dis, dh, hk, fieldHeaders.get(0));
+							break;
+
+
+							//[FILL IN LOGIC FOR OTHER SCAN MODES HERE!]
+
+						default:
+							//AT THE MOMENT NO PROCESSING LOGIC IS SPECIFIED FOR OTHER TYPE OF RADAR SCANS!
 							//Other scan mode [RHI, Fixed Angle, etc.]
-							for(int j=0; j < dh.getNumGates(); ++j){
-								logFile.write(fieldHeaders.get(0).getValue(dis.readByte()) + ",");
+							dis.skipBytes(dh.getNumGates());
+							break;
+						}
+					}
+					break;
+				case RadarConfig.HEADER_HOUSEKEEPING:
+					//HOUSEKEEPING HEADER
+
+					//Parse the house keeping header
+					hk = RadarIngestorServices.parseHousekeepingHeader(dis);
+					//Log("Antenna Mode: " + hk.getAntennaMode());
+					break;
+
+				case RadarConfig.HEADER_SCAN_SEGMENT:
+					//SCAN SEGMENT HEADER
+
+					//Parse the scan segment header
+					sgh = RadarIngestorServices.parseScanSegmentHeader(dis);
+					Log("Radar Scan Mode: " + sgh.getScanMode());
+					
+					//Determine the last scan mode and process the file accordingly
+					if(lastScanMode >= 0){
+						switch(lastScanMode){
+						case 0:
+							//PPI mode
+							if(dataFile != null){
+								
+								//Close data file
+								dataFile.close();
+								File tempFile = new File(lastPPIFilename);
+								if( tempFile.length() > 100){
+									//Run Post Processor to convert that to netCDF file
+									(new RadarIngestorPPIToNetCDF(lastPPIFilename, 
+											hk.getRadarLatitude() / 1000000.0f, 
+											hk.getRadarLongitude() / 1000000.0f,
+											lastPPIFilename.replace(".csv", ".nc"))).start();
+								}else{
+									System.out.println("Skipping file: " + lastPPIFilename);
+									tempFile.delete();
+								}
 							}
-							logFile.newLine();
-							logFile.flush();
+							break;
+							//ADD POST PROCESSING LOGIC FOR OTHER MODES
 						}
 					}
-					else if(headerName.compareTo("HOUSEKEEPING") == 0){
-						//HOUSEKEEPING HEADER
 
-						//Parse the house keeping header
-						hk = RadarIngestorServices.parseHousekeepingHeader(dis);
-						Log("Antenna Mode: " + hk.getAntennaMode());
-					}
-					else if(headerName.compareTo("SCAN_SEGMENT") == 0){
-						//SCAN SEGMENT HEADER
+					//Now logic for new mode
+					//Create new data file based on the radar scan mode
+					switch(sgh.getScanMode()){
+					case 5:
+						//IDLE mode
 
-						//Parse the scan segment header
-						sgh = RadarIngestorServices.parseScanSegmentHeader(dis);
-						Log("Radar Scan Mode: " + sgh.getScanMode());
+						//Radar is idle i.e. not sending valid data.
+						Log("Radar is idle!");
+						Log("Retrying in 10 secs");
+						rit = new RadarIngestorTimer(10000);
+						rit.start(); rit.join();
 
-						//Create new data file based on the radar scan mode
-						if(sgh.getScanMode() == 5){
-							
-							//Radar is idle i.e. not sending valid data.
-							Log("Radar is idle!");
-							break; //QUIT???
-							
-						}
-						else{
-							
-							//Close previous data file
-							if(logFile != null) logFile.close();
-							
-							//Create a new data file for given scan mode [fileName = CSU-CHILL_SCAN-MODE_TIMESTAMP.csv]
-							String fileName = hk.getRadarID()+ "_"+sgh.getScanMode()+"_"+ new Date()+".csv";
-							fileName = fileName.replaceAll(" ", "");
-							logFile = new BufferedWriter(new FileWriter(fileName));
-						}
+						Log("Resending request for feeds...");
+						dos.writeLong(RadarConfig.FEED_REFLECTIVITY);
+						rit = new RadarIngestorTimer(2500);
+						rit.start(); rit.join();
+
+						break;
+					case 0:
+						//PPI Mode
+						//Create a new data file for given scan mode [fileName = CSU-CHILL_SCAN-MODE_TIMESTAMP.csv]
+						lastPPIFilename = hk.getRadarID()+ "_"+sgh.getScanMode()+"_"+ new Date()+ ".csv";
+						lastPPIFilename = lastPPIFilename.replaceAll(" ", "_");
+						dataFile = new BufferedWriter(new FileWriter(lastPPIFilename));
+						break;
+					default:
+						//HANDLE INITIALIZATION FOR OTHER MODES
 					}
-					else{
-						//KNOWN BUT NOT DATA HEADER
-						//System.out.println(headerName);
-						dis.skipBytes(headerLength - 8);
-					}
-				}
-				else{
+
+					//Save the mode
+					lastScanMode = sgh.getScanMode();
+					break;
+
+				case RadarConfig.HEADER_EXTENDED_TRACKING:
+				case RadarConfig.HEADER_FIELD_INFO_TYPE:
+				case RadarConfig.HEADER_POWER_METERS_UPDATE:
+				case RadarConfig.HEADER_PROCESSOR_INFO:
+				case RadarConfig.HEADER_RADAR_INFO:
+				case RadarConfig.HEADER_SWEEP_NOTICE:
+				case RadarConfig.HEADER_TRACKING:
+				case RadarConfig.HEADER_TRANSMITTER_INFO:
+					//KNOWN BUT NOT NECESSARY
+					dis.skipBytes(headerLength - 8);
+					break;
+				default:
 					//UNKNOWN HEADER
 					//WHAT TO DO ?
 				}
 			}
 
 			//Close the connection to server
-			server.close();
+			//logFile.close();
+			//server.close();
 
 		} catch (UnknownHostException e) {
 
@@ -221,21 +255,23 @@ public class RadarIngestor {
 
 			Log("IO Exception: " + e.getMessage());
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}
 
+	//Logger
 	private static void Log(String message){
 		System.out.println("["+Calendar.getInstance().getTime().toString() +"] "+ message);
-		/*try {
+		try {
 			logFile.write("["+Calendar.getInstance().getTime().toString() +"] "+ message);
 			logFile.newLine();
 			logFile.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
+		}
 	}
-
-
 }

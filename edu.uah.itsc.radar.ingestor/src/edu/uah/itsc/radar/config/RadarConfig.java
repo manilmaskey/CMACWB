@@ -1,12 +1,18 @@
 package edu.uah.itsc.radar.config;
 
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 public class RadarConfig {
 
 	//Radius of Earth
-	public static final long RADIUS_OF_EARTH = 6371000 * 1000; // Mili meters
+	public static final float RADIUS_OF_EARTH = 6378100000.0f; // Millimeters
+	
 	//Server configurations
-	public static final String RADAR_IP = "vchill.chill.colostate.edu";
-	public static final int RADAR_PORT = 2511;
+	public static String RADAR_IP = "vchill.chill.colostate.edu";
+	public static int RADAR_PORT = 2511;
 	
 	//General constants
 	public static final int HELLO = 0xF0F00F0F;
@@ -33,4 +39,59 @@ public class RadarConfig {
 	public static final int SIZE_FIELD_TYPE_INFO_HEADER = 224;
 	public static final int SIZE_DATA_HEADER = 52;
 	public static final int SIZE_SCAN_SEGMENT = 112;
+	
+	//Location to where NETCDF File will be published
+	public static String NETCDF_PUBLISH_FILE = "/tmp/test3.nc";
+	
+	//Load config from file
+	@SuppressWarnings("deprecation")
+	public static void loadConfig(){
+		
+		
+		try {
+			//Open the config file
+			DataInputStream dis = new DataInputStream(new FileInputStream("radar.config"));
+			
+			//Read the contents of the file and load the configurations
+			String line = null, s[] = null;
+			while( (line = dis.readLine()) != null){
+				
+				//Ignore comment or blank lines
+				if(line.trim().compareTo("") == 0 || line.charAt(0) == '#') continue;
+				
+				//Split the line
+				s = line.split("=");
+				
+				//Ignore illegally formed configs
+				if(s.length < 2) continue;
+				
+				//Assign the config
+				s[0] = s[0].trim();
+				if(s[0].compareTo("RADAR_IP") == 0){
+					RADAR_IP = s[1];
+				}
+				else if(s[0].compareTo("RADAR_PORT") == 0){
+					RADAR_PORT = Integer.parseInt(s[1]);
+				}
+				else if(s[0].compareTo("NETCDF_PUBLISH_FILE") == 0){
+					NETCDF_PUBLISH_FILE = s[1];
+				}
+				else{
+					System.out.println("Unknown Configuration!");
+				}
+				
+			}
+			dis.close();
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+	}
 }
